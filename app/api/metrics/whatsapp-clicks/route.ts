@@ -1,5 +1,6 @@
-// app/api/metrics/whatsapp-clicks/route.ts
-export const runtime = 'nodejs'; // garante execução em Node (server)
+export const dynamic = 'force-dynamic'; // Adiciona esta linha
+export const runtime = 'nodejs';
+
 import { NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 
@@ -14,7 +15,7 @@ export async function GET() {
 
     if (error) {
       console.error('Supabase error (whatsapp-clicks GET):', error);
-      return NextResponse.json({ data: [] }, { status: 200 }); // degrade gracefully
+      return NextResponse.json({ data: [] }, { status: 200 });
     }
 
     return NextResponse.json({ data: data ?? [] });
