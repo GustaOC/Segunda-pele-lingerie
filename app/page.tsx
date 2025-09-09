@@ -1,5 +1,4 @@
 "use client"
-
 import ShaderBackground from "@/components/shader-background"
 import { Button } from "@/components/ui/button"
 import { LogIn, MessageCircle } from "lucide-react"
@@ -55,67 +54,68 @@ export default function HomePage() {
   return (
     <ShaderBackground>
       {/* Botão Admin */}
-      <div className="absolute top-8 right-8 z-30">
+      <div className="absolute top-4 right-4 z-30">
         <Link href="/admin/login">
           <Button
             variant="outline"
             size="sm"
-            className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 hover:border-white/30"
+            className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 hover:border-white/30 text-sm"
           >
-            <LogIn className="w-4 h-4 mr-2" />
+            <LogIn className="w-3 h-3 mr-1" />
             Área Administrativa
           </Button>
         </Link>
       </div>
 
       {/* Conteúdo principal */}
-      <div
-        className={`relative z-20 flex flex-col items-center px-4 py-12 space-y-16 ${poppins.variable} ${playfair.variable} font-sans`}
-      >
+      <div className={`relative z-20 flex flex-col items-center px-4 py-8 space-y-12 ${poppins.variable} ${playfair.variable} font-sans`}>
+        
         {/* Logo + título */}
-        <div className="flex flex-col items-center text-center space-y-6">
-          <Image
-            src="/logo.png"
-            alt="Segunda Pele Lingerie"
-            width={500}
-            height={500}
-            className="drop-shadow-lg"
+        <div className="flex flex-col items-center text-center space-y-4">
+          <Image 
+            src="/logo.png" 
+            alt="Segunda Pele Lingerie" 
+            width={300} 
+            height={300} 
+            className="drop-shadow-lg" 
           />
-          <h1
-            className="text-9xl md:text-10xl font-bold text-white drop-shadow-2xl leading-tight mt-8"
+          <h1 
+            className="text-5xl md:text-6xl font-bold text-white drop-shadow-2xl leading-tight"
             style={{ fontFamily: "var(--font-playfair)" }}
           >
             Seja uma de nossas consultoras
           </h1>
-          <p
-            className="text-xl md:text-2xl text-violet-200 italic"
+          <p 
+            className="text-lg md:text-xl text-violet-200 italic"
             style={{ fontFamily: "var(--font-poppins)" }}
           >
-            Para você usar, ousar e lucrar !
+            Para você usar, ousar e lucrar!
           </p>
         </div>
 
         {/* Banner + Cadastro */}
-        <section className="w-full max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-28 items-start">
-          {/* Banner */}
-          <div className="relative w-[650px] h-[1000px] mx-auto rounded-3xl overflow-hidden border border-white/20 shadow-2xl">
-            <Image
-              src="/imagem1.jpeg"
-              alt="Coleção Segunda Pele"
-              fill
-              className="object-cover"
-              priority
+        <section className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch">
+          
+          {/* Banner - Ajustado para ter altura igual ao formulário */}
+          <div className="relative w-full h-[500px] lg:h-[600px] mx-auto rounded-2xl overflow-hidden border border-white/20 shadow-xl">
+            <Image 
+              src="/imagem1.jpeg" 
+              alt="Coleção Segunda Pele" 
+              fill 
+              className="object-cover" 
+              priority 
+              sizes="(max-width: 768px) 100vw, 50vw"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-            <div className="absolute bottom-10 left-6 right-6 text-center">
-              <h2
-                className="text-white text-2xl md:text-3xl font-bold drop-shadow-lg"
+            <div className="absolute bottom-6 left-4 right-4 text-center">
+              <h2 
+                className="text-white text-xl md:text-2xl font-bold drop-shadow-lg"
                 style={{ fontFamily: "var(--font-playfair)" }}
               >
                 Sofisticação que se sente na pele
               </h2>
-              <p
-                className="text-violet-100 text-lg md:text-xl drop-shadow-md"
+              <p 
+                className="text-violet-100 text-base md:text-lg drop-shadow-md"
                 style={{ fontFamily: "var(--font-poppins)" }}
               >
                 Segunda Pele Lingerie — Para você usar, ousar e lucrar!
@@ -123,27 +123,27 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Formulário */}
-          <form
-            onSubmit={handleSubmit}
-            className="w-[650px] h-[1000px] mx-auto p-14 rounded-2xl bg-white/10 backdrop-blur-lg border border-white/20 shadow-xl flex flex-col justify-center"
+          {/* Formulário - Ajustado para ter altura igual à imagem */}
+          <form 
+            onSubmit={handleSubmit} 
+            className="w-full mx-auto p-6 md:p-8 rounded-xl bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg flex flex-col justify-center lg:h-[600px]"
           >
-            <h2
-              className="text-5xl font-semibold text-center text-white mb-12"
+            <h2 
+              className="text-2xl md:text-3xl font-semibold text-center text-white mb-6"
               style={{ fontFamily: "var(--font-playfair)" }}
             >
               Faça agora mesmo seu cadastro
             </h2>
-
-            <div className="grid grid-cols-2 gap-8">
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {[
-                { name: "nome", placeholder: "Nome completo", span: "col-span-2" },
+                { name: "nome", placeholder: "Nome completo", span: "md:col-span-2" },
                 { name: "cpf", placeholder: "CPF" },
                 { name: "telefone", placeholder: "Telefone" },
-                { name: "rua", placeholder: "Rua", span: "col-span-2" },
+                { name: "rua", placeholder: "Rua", span: "md:col-span-2" },
                 { name: "numero", placeholder: "Número" },
                 { name: "bairro", placeholder: "Bairro" },
-                { name: "cidade", placeholder: "Cidade", span: "col-span-2" },
+                { name: "cidade", placeholder: "Cidade", span: "md:col-span-2" },
               ].map((field, i) => (
                 <input
                   key={i}
@@ -153,18 +153,20 @@ export default function HomePage() {
                   onChange={handleChange}
                   placeholder={field.placeholder}
                   maxLength={
-                    field.name === "cpf" ? 11 : field.name === "telefone" ? 11 : undefined
+                    field.name === "cpf" ? 11 : 
+                    field.name === "telefone" ? 11 : 
+                    undefined
                   }
                   required
-                  className={`${field.span ?? ""} p-6 rounded-lg bg-violet-900/40 border border-violet-400 text-white text-xl placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300`}
+                  className={`${field.span ?? ""} p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white text-base placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300`}
                   style={{ fontFamily: "var(--font-poppins)" }}
                 />
               ))}
             </div>
-
-            <Button
-              type="submit"
-              className="w-full mt-12 bg-violet-500 hover:bg-violet-600 text-white font-semibold py-6 rounded-xl text-2xl shadow-lg"
+            
+            <Button 
+              type="submit" 
+              className="w-full mt-6 bg-violet-500 hover:bg-violet-600 text-white font-semibold py-3 rounded-lg text-lg shadow-md"
               style={{ fontFamily: "var(--font-poppins)" }}
             >
               Concluir cadastro
@@ -173,9 +175,9 @@ export default function HomePage() {
         </section>
 
         {/* Frase abaixo do formulário */}
-        <section className="max-w-4xl w-full text-center mt-12">
-          <h3
-            className="text-4xl md:text-5xl font-medium text-white opacity-90"
+        <section className="max-w-3xl w-full text-center mt-8">
+          <h3 
+            className="text-2xl md:text-3xl font-medium text-white opacity-90"
             style={{ fontFamily: "var(--font-playfair)" }}
           >
             A maior empresa de lingerie do estado de Mato Grosso do Sul
@@ -183,17 +185,17 @@ export default function HomePage() {
         </section>
 
         {/* Benefícios */}
-        <section className="max-w-6xl w-full text-center">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-10">
+        <section className="max-w-4xl w-full text-center">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
             {[
               "Comissão de até 40%",
               "Produtos totalmente em consignação",
               "Prazo de 45 dias para pagar",
               "Pague somente o que vender",
             ].map((benefit, i) => (
-              <div
+              <div 
                 key={i}
-                className="p-6 rounded-xl bg-violet-900/40 border border-violet-400 text-white text-2xl text-center shadow-lg"
+                className="p-4 rounded-lg bg-violet-900/40 border border-violet-400 text-white text-base text-center shadow-md"
                 style={{ fontFamily: "var(--font-poppins)" }}
               >
                 {benefit}
@@ -203,24 +205,24 @@ export default function HomePage() {
         </section>
 
         {/* Rodapé */}
-        <footer className="flex flex-col items-center text-white text-base opacity-90 space-y-4 mt-16">
-          <Image
-            src="/logo2.png"
-            alt="Segunda Pele Lingerie"
-            width={220}
-            height={220}
+        <footer className="flex flex-col items-center text-white text-sm opacity-90 space-y-3 mt-10">
+          <Image 
+            src="/logo2.png" 
+            alt="Segunda Pele Lingerie" 
+            width={150} 
+            height={150} 
           />
-          <p
-            className="italic text-xl"
+          <p 
+            className="italic text-lg"
             style={{ fontFamily: "var(--font-playfair)" }}
           >
-            Para você usar, ousar e lucrar !
+            Para você usar, ousar e lucrar!
           </p>
-          <div className="mt-4">
-            <Link
-              href="https://www.instagram.com"
+          <div className="mt-2">
+            <Link 
+              href="https://www.instagram.com" 
               target="_blank"
-              className="px-6 py-3 rounded-full bg-pink-600 hover:bg-pink-700 text-white font-semibold shadow-lg transition"
+              className="px-4 py-2 rounded-full bg-pink-600 hover:bg-pink-700 text-white font-semibold shadow-md transition text-sm"
             >
               Instagram
             </Link>
@@ -229,13 +231,13 @@ export default function HomePage() {
       </div>
 
       {/* Botão WhatsApp fixo */}
-      <Link
-        href="https://wa.me/5599999999999"
+      <Link 
+        href="https://wa.me/5599999999999" 
         target="_blank"
-        className="fixed bottom-8 right-8 z-50 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white w-28 h-28 rounded-full shadow-2xl animate-pulse"
+        className="fixed bottom-4 right-4 z-50 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white w-14 h-14 rounded-full shadow-lg animate-pulse"
         aria-label="Fale conosco no WhatsApp"
       >
-        <MessageCircle className="w-14 h-14" />
+        <MessageCircle className="w-6 h-6" />
       </Link>
     </ShaderBackground>
   )

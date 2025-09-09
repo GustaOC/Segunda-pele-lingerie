@@ -83,13 +83,13 @@ const poppins = Poppins({
   variable: "--font-poppins",
 })
 
-// Dados mockados para demonstração
+// Dados mockados para demonstração - MATO GROSSO DO SUL
 const pendingRegistrations = [
-  { id: 1, nome: "Maria Silva", email: "maria@email.com", telefone: "(11) 98765-4321", cidade: "São Paulo", dataEnvio: "2024-01-10", status: "pendente" },
-  { id: 2, nome: "Ana Santos", email: "ana@email.com", telefone: "(21) 98765-4321", cidade: "Rio de Janeiro", dataEnvio: "2024-01-11", status: "pendente" },
-  { id: 3, nome: "Carla Oliveira", email: "carla@email.com", telefone: "(31) 98765-4321", cidade: "Belo Horizonte", dataEnvio: "2024-01-11", status: "pendente" },
-  { id: 4, nome: "Juliana Costa", email: "juliana@email.com", telefone: "(41) 98765-4321", cidade: "Curitiba", dataEnvio: "2024-01-12", status: "pendente" },
-  { id: 5, nome: "Patricia Lima", email: "patricia@email.com", telefone: "(51) 98765-4321", cidade: "Porto Alegre", dataEnvio: "2024-01-12", status: "pendente" },
+  { id: 1, nome: "Maria Silva", email: "maria@email.com", telefone: "(67) 98765-4321", cidade: "Campo Grande", dataEnvio: "2024-01-10", status: "pendente" },
+  { id: 2, nome: "Ana Santos", email: "ana@email.com", telefone: "(67) 98765-4322", cidade: "Dourados", dataEnvio: "2024-01-11", status: "pendente" },
+  { id: 3, nome: "Carla Oliveira", email: "carla@email.com", telefone: "(67) 98765-4323", cidade: "Três Lagoas", dataEnvio: "2024-01-11", status: "pendente" },
+  { id: 4, nome: "Juliana Costa", email: "juliana@email.com", telefone: "(67) 98765-4324", cidade: "Corumbá", dataEnvio: "2024-01-12", status: "pendente" },
+  { id: 5, nome: "Patricia Lima", email: "patricia@email.com", telefone: "(67) 98765-4325", cidade: "Ponta Porã", dataEnvio: "2024-01-12", status: "pendente" },
 ]
 
 const registrationData = [
@@ -119,11 +119,11 @@ const statusData = [
 ]
 
 const cityData = [
-  { cidade: "São Paulo", cadastros: 234 },
-  { cidade: "Rio de Janeiro", cadastros: 156 },
-  { cidade: "Belo Horizonte", cadastros: 98 },
-  { cidade: "Brasília", cadastros: 87 },
-  { cidade: "Salvador", cadastros: 76 },
+  { cidade: "Campo Grande", cadastros: 234 },
+  { cidade: "Dourados", cadastros: 156 },
+  { cidade: "Três Lagoas", cadastros: 98 },
+  { cidade: "Corumbá", cadastros: 87 },
+  { cidade: "Ponta Porã", cadastros: 76 },
 ]
 
 export default function AdminDashboard() {
@@ -164,12 +164,12 @@ export default function AdminDashboard() {
     
     // Simular busca de dados
     setTimeout(() => {
-      // Dados mockados para exportação
+      // Dados mockados para exportação - MS
       const data = [
-        { Nome: "Maria Silva", Email: "maria@email.com", Telefone: "(11) 98765-4321", Cidade: "São Paulo", Data: "10/01/2024", Status: "Aprovado" },
-        { Nome: "Ana Santos", Email: "ana@email.com", Telefone: "(21) 98765-4321", Cidade: "Rio de Janeiro", Data: "11/01/2024", Status: "Pendente" },
-        { Nome: "Carla Oliveira", Email: "carla@email.com", Telefone: "(31) 98765-4321", Cidade: "Belo Horizonte", Data: "11/01/2024", Status: "Aprovado" },
-        { Nome: "Juliana Costa", Email: "juliana@email.com", Telefone: "(41) 98765-4321", Cidade: "Curitiba", Data: "12/01/2024", Status: "Reprovado" },
+        { Nome: "Maria Silva", Email: "maria@email.com", Telefone: "(67) 98765-4321", Cidade: "Campo Grande", Data: "10/01/2024", Status: "Aprovado" },
+        { Nome: "Ana Santos", Email: "ana@email.com", Telefone: "(67) 98765-4322", Cidade: "Dourados", Data: "11/01/2024", Status: "Pendente" },
+        { Nome: "Carla Oliveira", Email: "carla@email.com", Telefone: "(67) 98765-4323", Cidade: "Três Lagoas", Data: "11/01/2024", Status: "Aprovado" },
+        { Nome: "Juliana Costa", Email: "juliana@email.com", Telefone: "(67) 98765-4324", Cidade: "Corumbá", Data: "12/01/2024", Status: "Reprovado" },
       ]
 
       // Criar workbook e worksheet
@@ -229,7 +229,7 @@ export default function AdminDashboard() {
                     Segunda Pele Lingerie
                   </span>
                   <p className="text-sm text-violet-200" style={{ fontFamily: "var(--font-poppins)" }}>
-                    Painel Administrativo
+                    Painel Administrativo - Mato Grosso do Sul
                   </p>
                 </div>
               </div>
@@ -265,10 +265,10 @@ export default function AdminDashboard() {
                 className="text-4xl font-bold text-white mb-2 drop-shadow-lg"
                 style={{ fontFamily: "var(--font-playfair)" }}
               >
-                Dashboard Analytics
+                Dashboard Analytics - MS
               </h1>
               <p className="text-violet-200 text-lg" style={{ fontFamily: "var(--font-poppins)" }}>
-                Métricas detalhadas e análises em tempo real
+                Métricas detalhadas de Mato Grosso do Sul em tempo real
               </p>
             </div>
 
@@ -677,7 +677,7 @@ export default function AdminDashboard() {
                             <Label htmlFor="whatsapp" className="text-white">WhatsApp (com DDD)</Label>
                             <Input
                               id="whatsapp"
-                              placeholder="Ex: 11987654321"
+                              placeholder="Ex: 67987654321"
                               value={whatsappNumber}
                               onChange={(e) => setWhatsappNumber(e.target.value)}
                               className="bg-white/10 border-white/20 text-white placeholder-violet-200"
@@ -972,29 +972,29 @@ export default function AdminDashboard() {
                 <Card className="bg-white/10 backdrop-blur-lg border-white/20 shadow-xl">
                   <CardHeader>
                     <CardTitle className="text-white" style={{ fontFamily: "var(--font-playfair)" }}>
-                      Regiões por Desempenho
+                      Regiões por Desempenho - MS
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-violet-200">Sudeste</span>
+                        <span className="text-violet-200">Campo Grande (Capital)</span>
                         <Badge className="bg-green-600">Alta performance</Badge>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-violet-200">Sul</span>
+                        <span className="text-violet-200">Região Sul (Dourados)</span>
                         <Badge className="bg-blue-600">Estável</Badge>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-violet-200">Nordeste</span>
+                        <span className="text-violet-200">Região Leste (Três Lagoas)</span>
                         <Badge className="bg-yellow-600">Crescendo</Badge>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-violet-200">Centro-Oeste</span>
+                        <span className="text-violet-200">Região Pantanal (Corumbá)</span>
                         <Badge className="bg-orange-600">Potencial</Badge>
                       </div>
                       <div className="flex justify-between items-center">
-                        <span className="text-violet-200">Norte</span>
+                        <span className="text-violet-200">Fronteira (Ponta Porã)</span>
                         <Badge className="bg-purple-600">Emergente</Badge>
                       </div>
                     </div>
@@ -1004,20 +1004,20 @@ export default function AdminDashboard() {
                 <Card className="bg-white/10 backdrop-blur-lg border-white/20 shadow-xl">
                   <CardHeader>
                     <CardTitle className="text-white" style={{ fontFamily: "var(--font-playfair)" }}>
-                      Oportunidades
+                      Oportunidades em MS
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="p-4 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 rounded-lg border border-yellow-500/30">
-                      <h4 className="font-semibold text-white mb-2">Região Norte</h4>
+                      <h4 className="font-semibold text-white mb-2">Região do Pantanal</h4>
                       <p className="text-sm text-violet-200">Baixa penetração, alto potencial de crescimento (+150%)</p>
                     </div>
                     <div className="p-4 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-lg border border-blue-500/30">
-                      <h4 className="font-semibold text-white mb-2">Interior SP</h4>
+                      <h4 className="font-semibold text-white mb-2">Interior de MS</h4>
                       <p className="text-sm text-violet-200">Cidades médias com boa conversão (+45%)</p>
                     </div>
                     <div className="p-4 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-lg border border-purple-500/30">
-                      <h4 className="font-semibold text-white mb-2">Capitais NE</h4>
+                      <h4 className="font-semibold text-white mb-2">Região Fronteiriça</h4>
                       <p className="text-sm text-violet-200">Mercado aquecido, expandir operação (+30%)</p>
                     </div>
                   </CardContent>
@@ -1027,10 +1027,10 @@ export default function AdminDashboard() {
               <Card className="bg-white/10 backdrop-blur-lg border-white/20 shadow-xl">
                 <CardHeader>
                   <CardTitle className="text-white" style={{ fontFamily: "var(--font-playfair)" }}>
-                    Cadastros por Cidade
+                    Cadastros por Cidade - MS
                   </CardTitle>
                   <CardDescription className="text-violet-200" style={{ fontFamily: "var(--font-poppins)" }}>
-                    Top 5 cidades com mais cadastros
+                    Top 5 cidades de Mato Grosso do Sul com mais cadastros
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
