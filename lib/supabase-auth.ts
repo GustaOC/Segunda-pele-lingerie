@@ -1,15 +1,5 @@
 import { supabaseAdmin } from './supabase-server'
 
-export interface User {
-  id: string
-  nome: string
-  email: string
-  password: string  // Mudando de hashSenha para password
-  role: "ADMIN" | "TRIAGEM" | "PROMOTOR"
-  ativo: boolean
-  createdAt: Date
-}
-
 // Operações reais com Supabase
 export const userOperations = {
   findUnique: async (where: { email: string; ativo?: boolean }) => {
@@ -31,7 +21,7 @@ export const userOperations = {
   create: async (data: {
     nome: string
     email: string
-    password: string
+    hashSenha: string  // Mantendo hashSenha para compatibilidade
     role: string
     ativo: boolean
   }) => {
@@ -40,7 +30,7 @@ export const userOperations = {
       .insert({
         nome: data.nome,
         email: data.email,
-        password: data.password,
+        password: data.hashSenha,  // Salvando hashSenha como password
         role: data.role,
         ativo: data.ativo
       })
