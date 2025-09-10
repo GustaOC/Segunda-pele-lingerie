@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
@@ -91,6 +92,22 @@ interface Consultant {
 
 // Mock data atualizado - Todas de Mato Grosso do Sul
 const mockConsultantsMS: Consultant[] = [
+  {
+    id: 1,
+    name: "Maria Silva Santos",
+    cpf: "123.456.789-00",
+    phone: "(67) 99999-1234",
+    email: "maria.silva@email.com",
+    city: "Campo Grande",
+    state: "MS",
+    address: "Rua das Flores, 123 - Centro",
+    cep: "79002-567",
+    status: "pending",
+    registrationDate: "2024-12-07T10:30:00",
+    promoter: null,
+    notes: "",
+    rejectionReason: "",
+  },
   // ... (seus dados mock permanecem os mesmos)
 ]
 
@@ -208,15 +225,321 @@ export default function ConsultantManagement() {
     )
   }
 
-  // Função de logout com Supabase
+  const filteredConsultants = consultants.filter((consultant) => {
+    const matchesSearch =
+      consultant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      consultant.cpf.includes(searchTerm) ||
+      consultant.phone.includes(searchTerm) ||
+      consultant.city.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesStatus = statusFilter === "all" || consultant.status === statusFilter
+    const matchesCity = cityFilter === "all" || consultant.city === cityFilter
+
+    return matchesSearch && matchesStatus && matchesCity
+  })
+
+  const totalPages = Math.ceil(filteredConsultants.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const paginatedConsultants = filteredConsultants.slice(startIndex, startIndex + itemsPerPage)
+
+  // Estatísticas dos consultores
+  const stats = {
+    total: consultants.length,
+    pending: consultants.filter(c => c.status === "pending").length,
+    approved: consultants.filter(c => c.status === "approved").length,
+    rejected: consultants.filter(c => c.status === "rejected").length,
+  }
+
+  // Estatísticas dos alertas
+  const alertStats = {
+    pending: alerts.filter(a => a.status === 'pending').length,
+    overdue: alerts.filter(a => a.status === 'overdue').length,
+    responded: alerts.filter(a => a.status === 'responded').length,
+  }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "pending":
+        return (
+          <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">
+            Em Análise
+          </Badge>
+        )
+      case "approved":
+        return (
+          <Badge className="bg-green-500/20 text-green-300 border-green-500/30">
+            Aprovado
+          </Badge>
+        )
+      case "rejected":
+        return (
+          <Badge className="bg-red-500/20 text-red-300 border-red-500/30">
+            Reprovado
+          </Badge>
+        )
+      default:
+        return <Badge variant="outline">{status}</Badge>
+    }
+  }
+
+  const handleStatusChange = (
+    consultantId: number,
+    newStatus: string,
+    notes?: string,
+    promoter?: string,
+    rejectionReason?: string,
+  ) => {
+    const consultant = consultants.find(c => c.id === consultantId)
+    
+    setConsultants((prev) =>
+      prev.map((consultant) =>
+        consultant.id === consultantId
+          ? {
+              ...consultant,
+              status: newStatus as 'pending' | 'approved' | 'rejected',
+              notes: notes || consultant.notes,
+              promoter: promoter || consultant.promoter,
+              rejectionReason: rejectionReason || consultant.rejectionReason,
+            }
+          : consultant,
+      ),
+    )
+
+    // Se foi aprovado, criar alerta automático de acompanhamento
+    if (newStatus === 'approved' && consultant && promoter) {
+      const now = new Date()
+      const dueDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000) // 7 dias para primeiro contato
+
+      const newAlert: Alert = {
+        id: `alert-auto-${Date.now()}`,
+        consultantId: consultant.id,
+        consultantName: consultant.name,
+        promoter: promoter,
+        sentDate: now.toISOString(),
+        dueDate: dueDate.toISOString(),
+        method: 'whatsapp', // método padrão
+        status: 'pending'
+      }
+
+      setAlerts(prev => [...prev, newAlert])
+      
+      toast({
+        title: "Cadastro aprovado",
+        description: `Consultora aprovada! Alerta de acompanhamento criado para ${promoter}.`,
+      })
+    } else {
+      toast({
+        title: "Status atualizado",
+        description: `Consultora ${newStatus === 'approved' ? 'aprovada' : 'reprovada'} com sucesso.`,
+      })
+    }
+
+    setIsDetailModalOpen(false)
+  }
+
+  const copyConsultantData = (consultant: Consultant) => {
+    const data = `
+Nome: ${consultant.name}
+CPF: ${consultant.cpf}
+Telefone: ${consultant.phone}
+Email: ${consultant.email}
+Endereço: ${consultant.address}
+Cidade: ${consultant.city} - ${consultant.state}
+CEP: ${consultant.cep}
+Data de Cadastro: ${new Date(consultant.registrationDate).toLocaleString("pt-BR")}
+    `.trim()
+
+    navigator.clipboard.writeText(data)
+    toast({
+      title: "Dados copiados",
+      description: "Informações da consultora copiadas para a área de transferência.",
+    })
+  }
+
+  const sendToWhatsApp = (consultant: Consultant) => {
+    const message = `🎀 NOVA CONSULTORA APROVADA - Segunda Pele Lingerie
+
+👤 Nome: ${consultant.name}
+📱 Telefone: ${consultant.phone}
+📧 Email: ${consultant.email}
+📍 Cidade: ${consultant.city} - ${consultant.state}
+🏠 Endereço: ${consultant.address}
+📅 Data de Cadastro: ${new Date(consultant.registrationDate).toLocaleString("pt-BR")}
+👨‍💼 Promotor: ${consultant.promoter || 'Não atribuído'}
+
+✨ Status: APROVADA ✅
+
+Segunda Pele Lingerie - Transformando sonhos em realidade!`
+
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`
+    window.open(whatsappUrl, "_blank")
+    
+    toast({
+      title: "WhatsApp aberto",
+      description: "Mensagem preparada para envio via WhatsApp.",
+    })
+  }
+
+  const sendToEmail = (consultant: Consultant) => {
+    const subject = `Nova Consultora Aprovada - ${consultant.name}`
+    const body = `Olá!
+
+Temos uma nova consultora aprovada na Segunda Pele Lingerie:
+
+DADOS DA CONSULTORA:
+Nome: ${consultant.name}
+CPF: ${consultant.cpf}
+Telefone: ${consultant.phone}
+Email: ${consultant.email}
+Endereço: ${consultant.address}
+Cidade: ${consultant.city} - ${consultant.state}
+CEP: ${consultant.cep}
+Data de Cadastro: ${new Date(consultant.registrationDate).toLocaleString("pt-BR")}
+Promotor Responsável: ${consultant.promoter || 'Não atribuído'}
+
+Status: APROVADA ✅
+
+${consultant.notes ? `Observações: ${consultant.notes}` : ''}
+
+Atenciosamente,
+Equipe Segunda Pele Lingerie`
+
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+    window.open(mailtoUrl, "_blank")
+    
+    toast({
+      title: "Email preparado",
+      description: "Cliente de email aberto com os dados da consultora.",
+    })
+  }
+
+  // Função para abrir modal de envio
+  const handleSendToPromoter = (consultant: Consultant) => {
+    if (!consultant.promoter) {
+      toast({
+        title: "Erro",
+        description: "Esta consultora ainda não tem um promotor atribuído.",
+        variant: "destructive",
+      })
+      return
+    }
+    setConsultantToSend(consultant)
+    setIsSendModalOpen(true)
+  }
+
+  // Função para enviar cadastro ao promotor
+  const handleSendConsultant = (method: 'whatsapp' | 'email') => {
+    if (!consultantToSend) return
+
+    const consultant = consultantToSend
+    const now = new Date()
+    const dueDate = new Date(now.getTime() + 5 * 24 * 60 * 60 * 1000) // 5 dias
+
+    // Criar novo alerta
+    const newAlert: Alert = {
+      id: `alert-${Date.now()}`,
+      consultantId: consultant.id,
+      consultantName: consultant.name,
+      promoter: consultant.promoter!,
+      sentDate: now.toISOString(),
+      dueDate: dueDate.toISOString(),
+      method,
+      status: 'pending'
+    }
+
+    setAlerts(prev => [...prev, newAlert])
+
+    // Enviar via método selecionado
+    if (method === 'whatsapp') {
+      const message = `📋 NOVO CADASTRO PARA ATENDIMENTO
+
+Consultora: ${consultant.name}
+CPF: ${consultant.cpf}
+Telefone: ${consultant.phone}
+Email: ${consultant.email}
+Cidade: ${consultant.city} - ${consultant.state}
+Endereço: ${consultant.address}
+
+⏰ PRAZO: Você tem 5 dias para retornar o status do atendimento.
+
+Por favor, confirme se conseguiu atender esta consultora e informe o motivo caso não tenha sido possível.`
+
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`
+      window.open(whatsappUrl, "_blank")
+    } else {
+      // Simular envio de email
+      const subject = `Novo Cadastro - ${consultant.name}`
+      const body = `Olá ${consultant.promoter},
+
+Você recebeu um novo cadastro para atendimento:
+
+Nome: ${consultant.name}
+CPF: ${consultant.cpf}
+Telefone: ${consultant.phone}
+Email: ${consultant.email}
+Cidade: ${consultant.city} - ${consultant.state}
+Endereço: ${consultant.address}
+
+PRAZO: Você tem 5 dias para retornar o status do atendimento.
+
+Por favor, confirme se conseguiu atender esta consultora e informe o motivo caso não tenha sido possível.
+
+Atenciosamente,
+Equipe Segunda Pele Lingerie`
+
+      const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
+      window.open(mailtoUrl, "_blank")
+    }
+
+    toast({
+      title: "Cadastro enviado",
+      description: `Cadastro enviado via ${method === 'whatsapp' ? 'WhatsApp' : 'Email'}! Alerta de 5 dias criado.`,
+    })
+    setIsSendModalOpen(false)
+    setConsultantToSend(null)
+  }
+
+  // Função para responder alerta
+  const handleAlertResponse = (alertId: string, attended: boolean, reason: string) => {
+    setAlerts(prev => prev.map(alert => 
+      alert.id === alertId 
+        ? {
+            ...alert,
+            status: 'responded' as const,
+            response: {
+              attended,
+              reason,
+              responseDate: new Date().toISOString()
+            }
+          }
+        : alert
+    ))
+
+    // Atualizar observações da consultora
+    if (attended) {
+      setConsultants(prev => prev.map(consultant =>
+        consultant.id === selectedAlert?.consultantId
+          ? { ...consultant, notes: `${consultant.notes}\n\nCadastro atendido pelo promotor em ${new Date().toLocaleDateString('pt-BR')}. Motivo: ${reason}`.trim() }
+          : consultant
+      ))
+    }
+
+    toast({
+      title: "Resposta registrada",
+      description: "Resposta do promotor registrada com sucesso!",
+    })
+    setIsResponseModalOpen(false)
+    setSelectedAlert(null)
+  }
+
+  const handleBackToDashboard = () => {
+    router.push("/admin/dashboard")
+  }
+
   const handleLogout = async () => {
     await supabase.auth.signOut()
     router.push("/admin/login")
   }
-
-  // ... (o restante do código permanece igual, exceto pela remoção das referências a session)
-
-  // O restante do código permanece inalterado, apenas substituímos as partes de autenticação
 
   return (
     <ShaderBackground>
@@ -288,13 +611,6 @@ export default function ConsultantManagement() {
           </div>
         </header>
 
-        {/* O restante do JSX permanece igual */}
-        {/* ... */}
-      </div>
-    </ShaderBackground>
-  )
-}
-
         <div className="container mx-auto px-4 py-8">
           {/* Title Section */}
           <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-8 gap-4">
@@ -353,11 +669,6 @@ export default function ConsultantManagement() {
                   <SelectItem value="Nova Andradina" className="text-white hover:bg-violet-500/20">Nova Andradina</SelectItem>
                   <SelectItem value="Sidrolândia" className="text-white hover:bg-violet-500/20">Sidrolândia</SelectItem>
                   <SelectItem value="Maracaju" className="text-white hover:bg-violet-500/20">Maracaju</SelectItem>
-                  <SelectItem value="Coxim" className="text-white hover:bg-violet-500/20">Coxim</SelectItem>
-                  <SelectItem value="Paranaíba" className="text-white hover:bg-violet-500/20">Paranaíba</SelectItem>
-                  <SelectItem value="Bonito" className="text-white hover:bg-violet-500/20">Bonito</SelectItem>
-                  <SelectItem value="Miranda" className="text-white hover:bg-violet-500/20">Miranda</SelectItem>
-                  <SelectItem value="Jardim" className="text-white hover:bg-violet-500/20">Jardim</SelectItem>
                 </SelectContent>
               </Select>
             </div>
