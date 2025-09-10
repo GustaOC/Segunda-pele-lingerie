@@ -1,3 +1,4 @@
+// lib/supabase-auth.ts
 import { supabaseAdmin } from './supabase-server'
 
 // Operações reais com Supabase

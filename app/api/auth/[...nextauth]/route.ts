@@ -5,20 +5,6 @@ import { supabaseAdmin } from '@/lib/supabase-server'
 import bcrypt from 'bcryptjs'
 import type { NextAuthOptions } from 'next-auth'
 
-// Debug completo
-const isDev = process.env.NODE_ENV === 'development'
-
-if (isDev) {
-  console.log('🔍 NextAuth Debug Mode')
-  console.log('Environment:', {
-    NODE_ENV: process.env.NODE_ENV,
-    NEXTAUTH_URL: process.env.NEXTAUTH_URL,
-    hasSecret: !!process.env.NEXTAUTH_SECRET,
-    supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL,
-    hasServiceKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY
-  })
-}
-
 export const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
@@ -28,83 +14,52 @@ export const authOptions: NextAuthOptions = {
         password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        console.log('🔐 Authorize attempt:', {
-          email: credentials?.email,
-          hasPassword: !!credentials?.password,
-          timestamp: new Date().toISOString()
-        })
+        console.log('🔐 Login attempt for:', credentials?.email)
         
         if (!credentials?.email || !credentials?.password) {
-          console.log('❌ Missing credentials')
+          console.log('❌ Missing email or password')
           return null
         }
 
         try {
-          // Log da query
-          console.log('📡 Querying Supabase for user:', credentials.email)
-          
+          // Buscar usuário no Supabase
           const { data: user, error } = await supabaseAdmin
             .from('users')
-            .select('*')
+            .select('id, email, nome, password, role, ativo')
             .eq('email', credentials.email)
+            .eq('ativo', true) // Só usuários ativos
             .single()
 
-          if (error) {
-            console.error('❌ Supabase query error:', {
-              code: error.code,
-              message: error.message,
-              details: error.details
-            })
+          if (error || !user) {
+            console.log('❌ User not found or inactive:', credentials.email)
             return null
           }
 
-          if (!user) {
-            console.log('❌ User not found in database')
+          // Verificar se a senha existe
+          if (!user.password) {
+            console.log('❌ No password set for user:', credentials.email)
             return null
           }
-
-          console.log('✅ User found:', {
-            id: user.id,
-            email: user.email,
-            role: user.role,
-            hasPassword: !!user.password
-          })
 
           // Verificar senha
-          console.log('🔑 Checking password...')
-          const isValid = await bcrypt.compare(credentials.password, user.password)
+          const isValidPassword = await bcrypt.compare(credentials.password, user.password)
           
-          if (!isValid) {
-            console.log('❌ Invalid password')
-            
-            // Em dev, mostrar mais detalhes
-            if (isDev) {
-              const testHash = await bcrypt.hash(credentials.password, 10)
-              console.log('Debug - Password check:', {
-                providedPassword: credentials.password,
-                storedHashFirst10: user.password.substring(0, 10),
-                newHashFirst10: testHash.substring(0, 10),
-                bcryptValidFormat: user.password.startsWith('$2')
-              })
-            }
+          if (!isValidPassword) {
+            console.log('❌ Invalid password for:', credentials.email)
             return null
           }
 
-          console.log('✅ Password valid! Login successful')
+          console.log('✅ Login successful for:', credentials.email)
           
-          // Retornar dados do usuário
-          const userData = {
+          return {
             id: user.id,
             email: user.email,
             name: user.nome,
             role: user.role
           }
           
-          console.log('✅ Returning user data:', userData)
-          return userData
-          
         } catch (error) {
-          console.error('❌ Authorization error:', error)
+          console.error('❌ Authentication error:', error)
           return null
         }
       }
@@ -113,7 +68,7 @@ export const authOptions: NextAuthOptions = {
   
   session: {
     strategy: 'jwt',
-    maxAge: 24 * 60 * 60, // 24 hours
+    maxAge: 24 * 60 * 60, // 24 horas
   },
   
   secret: process.env.NEXTAUTH_SECRET,
@@ -125,12 +80,6 @@ export const authOptions: NextAuthOptions = {
   
   callbacks: {
     async jwt({ token, user }) {
-      console.log('🎫 JWT Callback:', {
-        hasUser: !!user,
-        hasToken: !!token,
-        tokenId: token?.id
-      })
-      
       if (user) {
         token.id = user.id
         token.email = user.email
@@ -141,12 +90,6 @@ export const authOptions: NextAuthOptions = {
     },
     
     async session({ session, token }) {
-      console.log('📦 Session Callback:', {
-        hasSession: !!session,
-        hasToken: !!token,
-        tokenRole: token?.role
-      })
-      
       if (session?.user && token) {
         session.user.id = token.id as string
         session.user.email = token.email as string
@@ -157,24 +100,9 @@ export const authOptions: NextAuthOptions = {
     }
   },
   
-  debug: true, // Ativa todos os logs do NextAuth
-  
-  events: {
-    async signIn(message) {
-      console.log('✅ SignIn Event:', message)
-    },
-    async signOut(message) {
-      console.log('👋 SignOut Event:', message)
-    },
-    async createUser(message) {
-      console.log('👤 CreateUser Event:', message)
-    },
-    async session(message) {
-      console.log('📦 Session Event:', message)
-    }
-  }
+  // Remover debug em produção
+  debug: process.env.NODE_ENV === 'development',
 }
 
 const handler = NextAuth(authOptions)
-
 export { handler as GET, handler as POST }
