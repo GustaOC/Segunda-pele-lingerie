@@ -1,0 +1,6 @@
+import { createBrowserClient } from "@supabase/ssr"
+
+export const supabase = createBrowserClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL=https://segundapelelingerie.com/
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx1dWZzcm5waXpya3d2c29veXFjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTczODQwMTcsImV4cCI6MjA3Mjk2MDAxN30.fiARIflw81ZQUfbWISfte-TFJJE9vADncS5mlGgSYso
+)
