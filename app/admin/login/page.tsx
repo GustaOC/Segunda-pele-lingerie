@@ -1,9 +1,6 @@
-//app/admin/login/page.tsx
 "use client"
 
-import type React from "react"
-import { useState } from "react"
-import { signIn, getSession } from "next-auth/react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -15,6 +12,7 @@ import { Eye, EyeOff, Shield } from "lucide-react"
 import ShaderBackground from "@/components/shader-background"
 import { Playfair_Display, Poppins } from "next/font/google"
 import Image from "next/image"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -38,6 +36,19 @@ export default function AdminLogin() {
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const supabase = createClientComponentClient()
+
+  // Verificar se já existe uma sessão ativa
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        router.push("/admin/dashboard")
+      }
+    }
+    
+    checkSession()
+  }, [router, supabase.auth])
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -49,7 +60,7 @@ export default function AdminLogin() {
     setIsLoading(true)
     setError("")
 
-    // Basic validation
+    // Validação básica
     if (!formData.email || !formData.password) {
       setError("Por favor, preencha todos os campos")
       setIsLoading(false)
@@ -63,35 +74,54 @@ export default function AdminLogin() {
     }
 
     try {
-      const result = await signIn("credentials", {
+      // Fazer login com Supabase
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
-        redirect: false,
       })
 
-      if (result?.error) {
+      if (signInError) {
+        console.error("Erro de login:", signInError)
         setError("Credenciais inválidas. Verifique seu email e senha.")
-      } else if (result?.ok) {
-        // Update session maxAge if remember me is checked
-        if (formData.rememberMe) {
-          // Extend session to 24 hours by updating the session
-          await getSession()
-        }
+        return
+      }
 
+      if (data.session) {
+        // Se "Lembrar-me" estiver marcado, a sessão dura mais tempo (configurado no Supabase)
         router.push("/admin/dashboard")
         router.refresh()
       }
     } catch (err) {
-      console.error("Login error:", err)
+      console.error("Erro inesperado:", err)
       setError("Erro ao fazer login. Tente novamente.")
     } finally {
       setIsLoading(false)
     }
   }
 
-  const handleForgotPassword = () => {
-    // In a real app, this would trigger a password reset flow
-    alert("Funcionalidade de recuperação de senha será implementada em breve.")
+  const handleForgotPassword = async () => {
+    if (!formData.email) {
+      setError("Por favor, informe seu email para redefinir a senha")
+      return
+    }
+
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(
+        formData.email,
+        { redirectTo: `${window.location.origin}/admin/reset-password` }
+      )
+
+      if (resetError) {
+        console.error("Erro ao solicitar redefinição:", resetError)
+        setError("Erro ao solicitar redefinição de senha. Tente novamente.")
+        return
+      }
+
+      alert("Email de redefinição de senha enviado! Verifique sua caixa de entrada.")
+    } catch (err) {
+      console.error("Erro inesperado:", err)
+      setError("Erro ao solicitar redefinição de senha.")
+    }
   }
 
   return (
@@ -102,7 +132,13 @@ export default function AdminLogin() {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <div className="flex flex-col items-center space-y-4 mb-6">
-              <Image src="/logo2.png" alt="Segunda Pele Lingerie" width={120} height={120} className="drop-shadow-lg" />
+              <Image 
+                src="/logo2.png" 
+                alt="Segunda Pele Lingerie" 
+                width={120} 
+                height={120} 
+                className="drop-shadow-lg" 
+              />
             </div>
             <h1
               className="text-4xl font-bold text-white mb-2 drop-shadow-lg"

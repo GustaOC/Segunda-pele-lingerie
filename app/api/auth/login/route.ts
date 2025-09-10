@@ -1,63 +1,89 @@
 // app/api/auth/login/route.ts
 import { NextRequest, NextResponse } from 'next/server'
-import { supabaseAdmin } from '@/lib/supabase-server'
-import bcrypt from 'bcryptjs'
-import jwt from 'jsonwebtoken'
-
-const JWT_SECRET = process.env.NEXTAUTH_SECRET || 'your-secret-key'
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 
 export async function POST(req: NextRequest) {
   try {
     const { email, password } = await req.json()
     
-    // Buscar usuário
-    const { data: user, error } = await supabaseAdmin
-      .from('users')
-      .select('*')
-      .eq('email', email)
-      .single()
-    
-    if (error || !user) {
+    // Validar entrada
+    if (!email || !password) {
       return NextResponse.json(
-        { error: 'Credenciais inválidas' },
-        { status: 401 }
+        { error: 'Email e senha são obrigatórios' },
+        { status: 400 }
       )
     }
-    
-    // Verificar senha
-    const isValid = await bcrypt.compare(password, user.password)
-    if (!isValid) {
+
+    // Validar formato do email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+    if (!emailRegex.test(email)) {
       return NextResponse.json(
-        { error: 'Credenciais inválidas' },
-        { status: 401 }
+        { error: 'Formato de email inválido' },
+        { status: 400 }
       )
     }
-    
-    // Criar token JWT
-    const token = jwt.sign(
-      { 
-        id: user.id,
-        email: user.email,
-        nome: user.nome,
-        role: user.role 
-      },
-      JWT_SECRET,
-      { expiresIn: '7d' }
-    )
-    
-    return NextResponse.json({
-      token,
-      user: {
-        id: user.id,
-        email: user.email,
-        nome: user.nome,
-        role: user.role
-      }
+
+    // Criar cliente Supabase
+    const cookieStore = cookies()
+    const supabase = createRouteHandlerClient({ cookies: () => cookieStore })
+
+    // Fazer login
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     })
+
+    if (error) {
+      console.error('Erro de login do Supabase:', error.message)
+      
+      // Mensagens de erro mais específicas
+      if (error.message.includes('Invalid login credentials')) {
+        return NextResponse.json(
+          { error: 'Credenciais inválidas' },
+          { status: 401 }
+        )
+      }
+      
+      if (error.message.includes('Email not confirmed')) {
+        return NextResponse.json(
+          { error: 'Email não confirmado. Verifique sua caixa de entrada.' },
+          { status: 401 }
+        )
+      }
+      
+      return NextResponse.json(
+        { error: 'Erro ao fazer login' },
+        { status: 500 }
+      )
+    }
+
+    // Buscar informações adicionais do usuário se necessário
+    const { data: userProfile, error: profileError } = await supabase
+      .from('profiles')
+      .select('nome, role')
+      .eq('id', data.user.id)
+      .single()
+
+    if (profileError) {
+      console.error('Erro ao buscar perfil:', profileError.message)
+    }
+
+    // Retornar resposta de sucesso
+    return NextResponse.json({
+      user: {
+        id: data.user.id,
+        email: data.user.email,
+        nome: userProfile?.nome || data.user.user_metadata?.name || '',
+        role: userProfile?.role || 'user',
+      },
+      // O access_token já está sendo definido como cookie automaticamente pelo Supabase
+    })
+
   } catch (error) {
-    console.error('Login error:', error)
+    console.error('Erro inesperado no login:', error)
     return NextResponse.json(
-      { error: 'Erro no servidor' },
+      { error: 'Erro interno do servidor' },
       { status: 500 }
     )
   }

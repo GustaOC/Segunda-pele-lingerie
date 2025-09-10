@@ -18,7 +18,7 @@ const handler = NextAuth({
 
         // Buscar usuário no Supabase
         const { data: user, error } = await supabase
-          .from("usuarios")
+          .from("usuarios") // CONFIRMAR O NOME EXATO DA TABELA
           .select("*")
           .eq("email", credentials.email)
           .single()
@@ -27,18 +27,18 @@ const handler = NextAuth({
           throw new Error("Usuário não encontrado.")
         }
 
-        // Verificar se o usuário está ativo
+        // Verificar se está ativo
         if (!user.ativo) {
           throw new Error("Usuário desativado. Contate o administrador.")
         }
 
-        // Comparar senha usando bcrypt
-        const senhaCorreta = await bcrypt.compare(credentials.password, user.password)
-        if (!senhaCorreta) {
+        // Comparar senha com bcrypt
+        const senhaValida = await bcrypt.compare(credentials.password, user.password)
+        if (!senhaValida) {
           throw new Error("Credenciais inválidas.")
         }
 
-        // Retornar usuário autorizado
+        // Retornar dados essenciais do usuário
         return {
           id: user.id,
           name: user.nome,
@@ -48,11 +48,12 @@ const handler = NextAuth({
       },
     }),
   ],
-  pages: {
-    signIn: "/admin/login",
-  },
   session: {
     strategy: "jwt",
+    maxAge: 24 * 60 * 60, // 24 horas
+  },
+  pages: {
+    signIn: "/admin/login",
   },
   callbacks: {
     async jwt({ token, user }) {
