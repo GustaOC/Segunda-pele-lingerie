@@ -1,7 +1,6 @@
 "use client"
 
-import { useState } from "react"
-import { useSession, signOut } from "next-auth/react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -53,6 +52,7 @@ import {
 import ShaderBackground from "@/components/shader-background"
 import { Playfair_Display, Poppins } from "next/font/google"
 import Image from "next/image"
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -123,9 +123,10 @@ const consultantStats = {
 }
 
 export default function ReportsPage() {
-  const { data: session, status } = useSession()
   const router = useRouter()
   const { toast } = useToast()
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const [selectedReport, setSelectedReport] = useState("overview")
   const [dateFrom, setDateFrom] = useState("")
   const [dateTo, setDateTo] = useState("")
@@ -135,49 +136,29 @@ export default function ReportsPage() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
 
-  // Loading state
-  if (status === "loading") {
-    return (
-      <ShaderBackground>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-400 mx-auto mb-4"></div>
-            <p className="text-violet-200">Verificando autenticação...</p>
-          </div>
-        </div>
-      </ShaderBackground>
-    )
-  }
+  const supabase = createClientComponentClient()
 
-  // Not authenticated
-  if (status === "unauthenticated" || !session) {
-    return (
-      <ShaderBackground>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-violet-200 mb-4">Redirecionando para login...</p>
-          </div>
-        </div>
-      </ShaderBackground>
-    )
-  }
+  // Efeito para verificar autenticação
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error || !session) {
+          router.push("/admin/login")
+          return
+        }
+        
+        setUser(session.user)
+        setLoading(false)
+      } catch (error) {
+        console.error("Auth error:", error)
+        router.push("/admin/login")
+      }
+    }
 
-  // Check if user has admin role
-  const userRole = (session.user as any)?.role
-  if (userRole !== "ADMIN") {
-    return (
-      <ShaderBackground>
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-red-400 mb-4">Acesso negado. Você não tem permissão para acessar esta página.</p>
-            <Button onClick={() => router.push("/admin/login")} className="bg-violet-600 hover:bg-violet-700">
-              Voltar ao Login
-            </Button>
-          </div>
-        </div>
-      </ShaderBackground>
-    )
-  }
+    checkAuth()
+  }, [router, supabase.auth])
 
   const handleExport = async () => {
     setIsGenerating(true)
@@ -198,7 +179,7 @@ export default function ReportsPage() {
   const handleScheduleReport = () => {
     toast({
       title: "Agendamento",
-      description: "Funcionalidade de agendamento será implementada em breve.",
+      description: "Funcionalidade de agendamento será implementeda em breve.",
     })
   }
 
@@ -207,12 +188,57 @@ export default function ReportsPage() {
   }
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: "/admin/login" })
+    await supabase.auth.signOut()
+    router.push("/admin/login")
   }
 
   const filteredPromoters = promoterPerformance.filter(promoter =>
     promoter.promoter.toLowerCase().includes(searchTerm.toLowerCase())
   )
+
+  // Loading state
+  if (loading) {
+    return (
+      <ShaderBackground>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-violet-400 mx-auto mb-4"></div>
+            <p className="text-violet-200">Verificando autenticação...</p>
+          </div>
+        </div>
+      </ShaderBackground>
+    )
+  }
+
+  // Not authenticated
+  if (!user) {
+    return (
+      <ShaderBackground>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-violet-200 mb-4">Redirecionando para login...</p>
+          </div>
+        </div>
+      </ShaderBackground>
+    )
+  }
+
+  // Check if user has admin role
+  const userRole = user.user_metadata?.role
+  if (userRole !== "ADMIN") {
+    return (
+      <ShaderBackground>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-red-400 mb-4">Acesso negado. Você não tem permissão para acessar esta página.</p>
+            <Button onClick={() => router.push("/admin/login")} className="bg-violet-600 hover:bg-violet-700">
+              Voltar ao Login
+            </Button>
+          </div>
+        </div>
+      </ShaderBackground>
+    )
+  }
 
   return (
     <ShaderBackground>
@@ -246,10 +272,10 @@ export default function ReportsPage() {
                 </Button>
                 <div className="text-right">
                   <p className="text-sm font-medium text-white" style={{ fontFamily: "var(--font-poppins)" }}>
-                    {session.user?.email}
+                    {user.email}
                   </p>
                   <p className="text-xs text-violet-200" style={{ fontFamily: "var(--font-poppins)" }}>
-                    Cargo: {session.user?.role}
+                    Cargo: {userRole}
                   </p>
                 </div>
                 <Button

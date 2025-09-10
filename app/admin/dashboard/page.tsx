@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { useSession, signOut } from "next-auth/react"
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -70,6 +70,7 @@ import Link from "next/link"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 import * as XLSX from 'xlsx'
+import { createClientComponentClient } from "@supabase/auth-helpers-nextjs"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -127,7 +128,9 @@ const cityData = [
 ]
 
 export default function AdminDashboard() {
-  const { data: session, status } = useSession()
+  const router = useRouter()
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const [selectedPeriod, setSelectedPeriod] = useState("30d")
   const [searchTerm, setSearchTerm] = useState("")
   
@@ -139,6 +142,30 @@ export default function AdminDashboard() {
   const [dateTo, setDateTo] = useState("")
   const [isExporting, setIsExporting] = useState(false)
   const [whatsappNumber, setWhatsappNumber] = useState("")
+
+  const supabase = createClientComponentClient()
+
+  // Efeito para verificar autenticação
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error || !session) {
+          router.push("/admin/login")
+          return
+        }
+        
+        setUser(session.user)
+        setLoading(false)
+      } catch (error) {
+        console.error("Auth error:", error)
+        router.push("/admin/login")
+      }
+    }
+
+    checkAuth()
+  }, [router, supabase.auth])
 
   // Função para calcular relatório de 30 dias
   const calculate30DaysReport = () => {
@@ -196,9 +223,15 @@ export default function AdminDashboard() {
     }, 2000)
   }
 
+  // Função de logout com Supabase
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+    router.push("/admin/login")
+  }
+
   const reportData = calculate30DaysReport()
 
-  if (status === "loading") {
+  if (loading) {
     return (
       <ShaderBackground>
         <div className="min-h-screen flex items-center justify-center">
@@ -211,9 +244,33 @@ export default function AdminDashboard() {
     )
   }
 
-  if (!session) {
-    window.location.href = "/admin/login"
-    return null
+  if (!user) {
+    return (
+      <ShaderBackground>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-violet-200 mb-4">Redirecionando para login...</p>
+          </div>
+        </div>
+      </ShaderBackground>
+    )
+  }
+
+  // Check if user has admin role
+  const userRole = user.user_metadata?.role
+  if (userRole !== "ADMIN") {
+    return (
+      <ShaderBackground>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-red-400 mb-4">Acesso negado. Você não tem permissão para acessar esta página.</p>
+            <Button onClick={() => router.push("/admin/login")} className="bg-violet-600 hover:bg-violet-700">
+              Voltar ao Login
+            </Button>
+          </div>
+        </div>
+      </ShaderBackground>
+    )
   }
 
   return (
@@ -237,14 +294,14 @@ export default function AdminDashboard() {
               <div className="flex items-center space-x-4">
                 <div className="text-right">
                   <p className="text-sm font-medium text-white" style={{ fontFamily: "var(--font-poppins)" }}>
-                    {session.user?.email}
+                    {user.email}
                   </p>
                   <p className="text-xs text-violet-200" style={{ fontFamily: "var(--font-poppins)" }}>
-                    Cargo: {session.user?.role}
+                    Cargo: {userRole}
                   </p>
                 </div>
                 <Button
-                  onClick={() => signOut({ callbackUrl: "/admin/login" })}
+                  onClick={handleLogout}
                   variant="outline"
                   size="sm"
                   className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 hover:border-white/30"
@@ -414,7 +471,6 @@ export default function AdminDashboard() {
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
-              {/* Conteúdo da aba Overview mantido igual */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <Card className="bg-white/10 backdrop-blur-lg border-white/20 shadow-xl">
                   <CardHeader>
