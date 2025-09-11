@@ -4,7 +4,6 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { z } from "zod";
 
-// Schema de validação para os dados do formulário
 const registerSchema = z.object({
   nome: z.string().min(2, "Nome deve ter pelo menos 2 caracteres"),
   email: z.string().email("Email inválido"),
@@ -15,7 +14,6 @@ const registerSchema = z.object({
 export async function POST(request: NextRequest) {
   const cookieStore = cookies();
 
-  // Cria um cliente Supabase para ser usado no servidor
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -25,10 +23,18 @@ export async function POST(request: NextRequest) {
           return cookieStore.get(name)?.value;
         },
         set(name: string, value: string, options: CookieOptions) {
-          cookieStore.set({ name, value, ...options });
+          try {
+            cookieStore.set({ name, value, ...options });
+          } catch (error) {
+            // Ignora o erro se os cabeçalhos já foram enviados.
+          }
         },
         remove(name: string, options: CookieOptions) {
-          cookieStore.set({ name, value: "", ...options });
+          try {
+            cookieStore.set({ name, value: "", ...options });
+          } catch (error) {
+            // Ignora o erro se os cabeçalhos já foram enviados.
+          }
         },
       },
     }
@@ -38,12 +44,10 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const validatedData = registerSchema.parse(body);
 
-    // Usa a função nativa do Supabase para criar um novo usuário
     const { data, error } = await supabase.auth.signUp({
       email: validatedData.email,
       password: validatedData.password,
       options: {
-        // Armazena dados extras (como nome e role) nos metadados do usuário
         data: {
           nome: validatedData.nome,
           role: validatedData.role,
@@ -53,11 +57,10 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("Erro ao registrar no Supabase:", error);
-      // Retorna um erro mais específico se o usuário já existir
       if (error.message.includes("User already registered")) {
         return NextResponse.json(
           { error: "Já existe um usuário com este email." },
-          { status: 409 } // Status "Conflict"
+          { status: 409 }
         );
       }
       return NextResponse.json(
@@ -73,14 +76,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Retorna uma resposta de sucesso
     return NextResponse.json({
-      message: "Usuário criado com sucesso! Por padrão, o Supabase pode exigir confirmação por e-mail.",
+      message: "Usuário criado com sucesso! Verifique seu email para confirmação, se aplicável.",
       user: data.user,
     });
 
   } catch (error) {
-    // Trata erros de validação do Zod ou outros erros inesperados
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Dados de entrada inválidos.", details: error.errors },
