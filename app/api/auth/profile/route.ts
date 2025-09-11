@@ -1,6 +1,10 @@
 // app/api/auth/profile/route.ts
+
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+
+// Garante que a rota seja sempre dinâmica e nunca cacheada estaticamente
+export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {

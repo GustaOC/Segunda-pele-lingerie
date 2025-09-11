@@ -1,7 +1,11 @@
 // app/api/auth/me/route.ts
+
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
+
+// Garante que a rota seja sempre dinâmica e nunca cacheada estaticamente
+export const dynamic = 'force-dynamic'
 
 export async function GET(req: NextRequest) {
   try {
