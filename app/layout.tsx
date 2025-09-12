@@ -1,9 +1,9 @@
-import type React from "react"
+// app/layout.tsx
+
 import type { Metadata } from "next"
 import { Figtree } from "next/font/google"
 import { GeistMono } from "geist/font/mono"
 import { Instrument_Serif } from "next/font/google"
-import { AuthProvider } from "@/components/auth-provider"
 import "./globals.css"
 
 const figtree = Figtree({
@@ -22,9 +22,8 @@ const instrumentSerif = Instrument_Serif({
 })
 
 export const metadata: Metadata = {
-  title: "v0 App",
-  description: "Created with v0",
-  generator: "v0.app",
+  title: "Segunda Pele Lingerie",
+  description: "Sistema de Gestão Segunda Pele Lingerie",
 }
 
 export default function RootLayout({
@@ -34,13 +33,12 @@ export default function RootLayout({
 }>) {
   return (
     <html
-      lang="en"
+      lang="pt-BR"
       className={`${figtree.variable} ${instrumentSerif.variable} ${GeistMono.variable}`}
     >
       <body>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
+        {/* O AuthProvider foi removido daqui, pois não é mais necessário */}
+        {children}
       </body>
     </html>
   )
