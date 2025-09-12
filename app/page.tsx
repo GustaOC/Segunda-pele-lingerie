@@ -1,11 +1,12 @@
 "use client"
 import ShaderBackground from "@/components/shader-background"
 import { Button } from "@/components/ui/button"
-import { LogIn, MessageCircle } from "lucide-react"
+import { LogIn, MessageCircle, Loader2 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { useState } from "react"
 import { Playfair_Display, Poppins } from "next/font/google"
+import { useToast } from "@/components/ui/use-toast"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -20,35 +21,80 @@ const poppins = Poppins({
 })
 
 export default function HomePage() {
+  const { toast } = useToast()
+  const [isLoading, setIsLoading] = useState(false)
   const [formData, setFormData] = useState({
-    nome: "",
+    nomeCompleto: "",
     cpf: "",
     telefone: "",
-    rua: "",
-    numero: "",
-    bairro: "",
-    cidade: "",
+    endereco: {
+        rua: "",
+        numero: "",
+        bairro: "",
+        cidade: "",
+        uf: "MS",
+        cep: ""
+    }
   })
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
-    if (name === "cpf" || name === "telefone") {
-      if (!/^\d*$/.test(value)) return
+    if (name in formData.endereco) {
+        setFormData(prev => ({...prev, endereco: {...prev.endereco, [name]: value}}))
+    } else {
+        setFormData(prev => ({...prev, [name]: value}))
     }
-    setFormData({ ...formData, [name]: value })
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (formData.cpf.length !== 11) {
-      alert("CPF deve ter exatamente 11 dígitos")
-      return
+    setIsLoading(true)
+
+    // Validação simples
+    if (formData.cpf.replace(/\D/g, '').length !== 11) {
+        toast({ title: "Erro de Validação", description: "CPF deve ter exatamente 11 dígitos.", variant: "destructive" })
+        setIsLoading(false)
+        return
     }
-    if (formData.telefone.length !== 11) {
-      alert("Telefone deve ter exatamente 11 dígitos (DDD + número)")
-      return
+    if (formData.telefone.replace(/\D/g, '').length < 10) {
+        toast({ title: "Erro de Validação", description: "Telefone deve ter pelo menos 10 dígitos (DDD + número).", variant: "destructive"})
+        setIsLoading(false)
+        return
     }
-    alert("Cadastro enviado com sucesso!")
+
+    try {
+        const response = await fetch('/api/leads/id', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        })
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Ocorreu um erro no servidor.');
+        }
+
+        toast({
+            title: "Cadastro Enviado com Sucesso!",
+            description: "Seus dados foram recebidos. Entraremos em contato em breve.",
+        })
+        
+        // Limpar formulário
+        setFormData({
+            nomeCompleto: "", cpf: "", telefone: "",
+            endereco: { rua: "", numero: "", bairro: "", cidade: "", uf: "MS", cep: "" }
+        })
+
+    } catch (error: any) {
+        toast({
+            title: "Erro no Cadastro",
+            description: error.message === 'CPF já cadastrado' ? 'O CPF informado já está cadastrado em nosso sistema.' : 'Não foi possível concluir seu cadastro. Tente novamente.',
+            variant: "destructive"
+        })
+    } finally {
+        setIsLoading(false)
+    }
   }
 
   return (
@@ -96,8 +142,8 @@ export default function HomePage() {
         {/* Banner + Cadastro */}
         <section className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch">
           
-          {/* Banner - Ajustado para ter altura igual ao formulário */}
-          <div className="relative w-full h-[500px] lg:h-[600px] mx-auto rounded-2xl overflow-hidden border border-white/20 shadow-xl">
+          {/* Banner */}
+          <div className="relative w-full h-[500px] lg:h-auto mx-auto rounded-2xl overflow-hidden border border-white/20 shadow-xl">
             <Image 
               src="/imagem1.jpeg" 
               alt="Coleção Segunda Pele" 
@@ -123,10 +169,10 @@ export default function HomePage() {
             </div>
           </div>
 
-          {/* Formulário - Ajustado para ter altura igual à imagem */}
+          {/* Formulário */}
           <form 
             onSubmit={handleSubmit} 
-            className="w-full mx-auto p-6 md:p-8 rounded-xl bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg flex flex-col justify-center lg:h-[600px]"
+            className="w-full mx-auto p-6 md:p-8 rounded-xl bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg flex flex-col justify-center"
           >
             <h2 
               className="text-2xl md:text-3xl font-semibold text-center text-white mb-6"
@@ -136,40 +182,22 @@ export default function HomePage() {
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[
-                { name: "nome", placeholder: "Nome completo", span: "md:col-span-2" },
-                { name: "cpf", placeholder: "CPF" },
-                { name: "telefone", placeholder: "Telefone" },
-                { name: "rua", placeholder: "Rua", span: "md:col-span-2" },
-                { name: "numero", placeholder: "Número" },
-                { name: "bairro", placeholder: "Bairro" },
-                { name: "cidade", placeholder: "Cidade", span: "md:col-span-2" },
-              ].map((field, i) => (
-                <input
-                  key={i}
-                  type="text"
-                  name={field.name}
-                  value={(formData as any)[field.name]}
-                  onChange={handleChange}
-                  placeholder={field.placeholder}
-                  maxLength={
-                    field.name === "cpf" ? 11 : 
-                    field.name === "telefone" ? 11 : 
-                    undefined
-                  }
-                  required
-                  className={`${field.span ?? ""} p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white text-base placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300`}
-                  style={{ fontFamily: "var(--font-poppins)" }}
-                />
-              ))}
+              <input name="nomeCompleto" value={formData.nomeCompleto} onChange={handleChange} placeholder="Nome completo" required className="md:col-span-2 p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+              <input name="cpf" value={formData.cpf} onChange={handleChange} placeholder="CPF" maxLength={14} required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+              <input name="telefone" value={formData.telefone} onChange={handleChange} placeholder="Telefone com DDD" maxLength={15} required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+              <input name="rua" value={formData.endereco.rua} onChange={handleChange} placeholder="Rua" required className="md:col-span-2 p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+              <input name="numero" value={formData.endereco.numero} onChange={handleChange} placeholder="Número" required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+              <input name="bairro" value={formData.endereco.bairro} onChange={handleChange} placeholder="Bairro" required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+              <input name="cidade" value={formData.endereco.cidade} onChange={handleChange} placeholder="Cidade" required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+               <input name="cep" value={formData.endereco.cep} onChange={handleChange} placeholder="CEP" maxLength={9} required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
             </div>
             
             <Button 
               type="submit" 
               className="w-full mt-6 bg-violet-500 hover:bg-violet-600 text-white font-semibold py-3 rounded-lg text-lg shadow-md"
-              style={{ fontFamily: "var(--font-poppins)" }}
+              disabled={isLoading}
             >
-              Concluir cadastro
+              {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Concluir cadastro"}
             </Button>
           </form>
         </section>

@@ -8,7 +8,7 @@ export async function PATCH(
   try {
     const { id } = params
     const body = await req.json().catch(() => ({}))
-    const { motivo, valorDivida, dataConsulta, observacoes } = body
+    const { motivo, observacoes } = body
 
     // Atualizar o lead
     const { data: lead, error: leadError } = await supabaseAdmin
@@ -16,9 +16,7 @@ export async function PATCH(
       .update({ 
         status: 'REPROVADO', 
         motivoReprovacao: motivo, 
-        valorDivida, 
-        dataConsultaOrgaos: dataConsulta ? new Date(dataConsulta).toISOString() : null, 
-        observacoes 
+        observacoes: observacoes 
       })
       .eq('id', id)
       .select()
@@ -29,20 +27,8 @@ export async function PATCH(
       return NextResponse.json({ error: 'Failed to update lead' }, { status: 500 })
     }
 
-    // Criar histórico
-    const { error: historyError } = await supabaseAdmin
-      .from('leadHistory')
-      .insert({
-        leadId: id,
-        actorUserId: 'system',
-        fromStatus: 'EM_ANALISE',
-        toStatus: 'REPROVADO',
-        motivo
-      })
-
-    if (historyError) {
-      console.error('Error creating history:', historyError)
-    }
+    // Criar histórico (opcional, se tiver a tabela)
+    // await supabaseAdmin.from('leadHistory').insert(...)
 
     return NextResponse.json({ ok: true, lead })
   } catch (error) {

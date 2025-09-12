@@ -15,8 +15,8 @@ export async function PATCH(
       .from('lead')
       .update({ 
         status: 'APROVADO', 
-        promotorId, 
-        observacoes, 
+        promotorId: promotorId, 
+        observacoes: observacoes, 
         encaminhadoEm: new Date().toISOString() 
       })
       .eq('id', id)
@@ -28,20 +28,8 @@ export async function PATCH(
       return NextResponse.json({ error: 'Failed to update lead' }, { status: 500 })
     }
 
-    // Criar histórico
-    const { error: historyError } = await supabaseAdmin
-      .from('leadHistory')
-      .insert({
-        leadId: id,
-        actorUserId: 'system',
-        fromStatus: 'EM_ANALISE',
-        toStatus: 'APROVADO',
-        motivo: observacoes
-      })
-
-    if (historyError) {
-      console.error('Error creating history:', historyError)
-    }
+    // Criar histórico (opcional, se tiver a tabela)
+    // await supabaseAdmin.from('leadHistory').insert(...)
 
     return NextResponse.json({ ok: true, lead })
   } catch (error) {
