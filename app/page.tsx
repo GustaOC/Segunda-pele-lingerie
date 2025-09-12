@@ -33,7 +33,6 @@ export default function HomePage() {
         bairro: "",
         cidade: "",
         uf: "MS",
-        cep: ""
     }
   })
 
@@ -90,7 +89,7 @@ export default function HomePage() {
         // Limpar formulário
         setFormData({
             nomeCompleto: "", cpf: "", telefone: "",
-            endereco: { rua: "", numero: "", bairro: "", cidade: "", uf: "MS", cep: "" }
+            endereco: { rua: "", numero: "", bairro: "", cidade: "", uf: "MS" }
         })
 
     } catch (error: any) {
@@ -206,7 +205,6 @@ export default function HomePage() {
               <input name="numero" value={formData.endereco.numero} onChange={handleChange} placeholder="Número" required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
               <input name="bairro" value={formData.endereco.bairro} onChange={handleChange} placeholder="Bairro" required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
               <input name="cidade" value={formData.endereco.cidade} onChange={handleChange} placeholder="Cidade" required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
-               <input name="cep" value={formData.endereco.cep} onChange={handleChange} placeholder="CEP" maxLength={9} required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
             </div>
             
             <Button 
@@ -265,7 +263,7 @@ export default function HomePage() {
           </p>
           <div className="mt-2">
             <Link 
-              href="https://www.instagram.com" 
+              href="https://www.instagram.com/segundapelemslingerie?igsh=MTMxZGJmczBsdGNraA%3D%3D&utm_source=qr" 
               target="_blank"
               className="px-4 py-2 rounded-full bg-pink-600 hover:bg-pink-700 text-white font-semibold shadow-md transition text-sm"
             >
@@ -277,7 +275,7 @@ export default function HomePage() {
 
       {/* Botão WhatsApp fixo */}
       <Link 
-        href="https://wa.me/5599999999999" 
+        href="https://api.whatsapp.com/send?phone=5567992149878&text=Olá%20gostaria%20de%20fazer%20o%20meu%20cadastro!%20" 
         target="_blank"
         className="fixed bottom-4 right-4 z-50 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white w-14 h-14 rounded-full shadow-lg animate-pulse"
         aria-label="Fale conosco no WhatsApp"

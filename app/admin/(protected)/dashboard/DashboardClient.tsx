@@ -79,7 +79,9 @@ export default function DashboardClient({ user }: { user: User }) {
     const [searchTerm, setSearchTerm] = useState("");
     const [showPendingModal, setShowPendingModal] = useState(false);
     const [showPromoterReportModal, setShowPromoterReportModal] = useState(false);
+    const [showDetailedReportModal, setShowDetailedReportModal] = useState(false);
     const [selectedPromoter, setSelectedPromoter] = useState("all");
+    const [detailedReportPeriod, setDetailedReportPeriod] = useState("7");
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
     const [isExporting, setIsExporting] = useState(false);
@@ -386,6 +388,24 @@ export default function DashboardClient({ user }: { user: User }) {
         });
     };
 
+    const handleViewDetailedReport = () => {
+        if (detailedReportPeriod) {
+            router.push(`/admin/consultants/reports?period=${detailedReportPeriod}`);
+        }
+    };
+
+    const handleViewPromoterReport = () => {
+        if (selectedPromoter && selectedPromoter !== 'all') {
+            router.push(`/admin/consultants/reports?promoter=${selectedPromoter}`);
+        } else {
+            toast({
+                title: "Atenção!",
+                description: "Selecione um promotor para gerar o relatório.",
+                variant: 'destructive'
+            });
+        }
+    };
+
     if (leadsError || whatsappError) {
         return (
             <ShaderBackground>
@@ -582,12 +602,37 @@ export default function DashboardClient({ user }: { user: User }) {
                                                 Gerenciar Consultoras ({totalLeads})
                                             </Button>
                                         </Link>
-                                        <Link href="/admin/consultants/reports">
-                                            <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10">
-                                                <FileText className="w-4 h-4 mr-2" />
-                                                Relatórios Detalhados
-                                            </Button>
-                                        </Link>
+                                        <Dialog open={showDetailedReportModal} onOpenChange={setShowDetailedReportModal}>
+                                            <DialogTrigger asChild>
+                                                <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10">
+                                                    <FileText className="w-4 h-4 mr-2" />
+                                                    Relatórios Detalhados
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent className="max-w-md bg-violet-900/95 backdrop-blur-lg border-violet-400/30">
+                                                <DialogHeader>
+                                                    <DialogTitle className="text-white text-xl">Relatório Detalhado</DialogTitle>
+                                                    <DialogDescription className="text-violet-200">
+                                                        Selecione o período para o relatório.
+                                                    </DialogDescription>
+                                                </DialogHeader>
+                                                <div className="mt-6 space-y-6">
+                                                    <Select value={detailedReportPeriod} onValueChange={setDetailedReportPeriod}>
+                                                        <SelectTrigger className="w-full bg-white/10 border-white/20 text-white">
+                                                            <SelectValue />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="bg-violet-900/90 text-white border-violet-400/30">
+                                                            <SelectItem value="7">Últimos 7 dias</SelectItem>
+                                                            <SelectItem value="15">Últimos 15 dias</SelectItem>
+                                                            <SelectItem value="30">Últimos 30 dias</SelectItem>
+                                                        </SelectContent>
+                                                    </Select>
+                                                    <Button onClick={handleViewDetailedReport} className="w-full">
+                                                        Visualizar Relatório
+                                                    </Button>
+                                                </div>
+                                            </DialogContent>
+                                        </Dialog>
                                         <Dialog open={showPromoterReportModal} onOpenChange={setShowPromoterReportModal}>
                                             <DialogTrigger asChild>
                                                 <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10">
@@ -595,7 +640,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                                     Relatório por Promotor
                                                 </Button>
                                             </DialogTrigger>
-                                            <DialogContent className="max-w-4xl bg-violet-900/95 backdrop-blur-lg border-violet-400/30">
+                                            <DialogContent className="max-w-md bg-violet-900/95 backdrop-blur-lg border-violet-400/30">
                                                 <DialogHeader>
                                                     <DialogTitle className="text-white text-xl">Relatório por Promotor</DialogTitle>
                                                     <DialogDescription className="text-violet-200">
@@ -612,28 +657,9 @@ export default function DashboardClient({ user }: { user: User }) {
                                                             {promoters.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                                                         </SelectContent>
                                                     </Select>
-
-                                                    {/* Tabela de Relatório */}
-                                                    <Table>
-                                                        <TableHeader>
-                                                            <TableRow className="border-b border-white/20">
-                                                                <TableHead className="text-violet-200">Consultora</TableHead>
-                                                                <TableHead className="text-violet-200">Status</TableHead>
-                                                                <TableHead className="text-violet-200">Data</TableHead>
-                                                                <TableHead className="text-violet-200">Promotor</TableHead>
-                                                            </TableRow>
-                                                        </TableHeader>
-                                                        <TableBody>
-                                                            {leadsResponse?.data?.filter((lead: any) => selectedPromoter === 'all' || lead.promotorId === selectedPromoter).slice(0, 10).map((lead: any) => (
-                                                                <TableRow key={lead.id} className="border-b border-white/20 hover:bg-white/5">
-                                                                    <TableCell className="text-white">{lead.consultant?.nome}</TableCell>
-                                                                    <TableCell>{getStatusBadge(lead.status)}</TableCell>
-                                                                    <TableCell className="text-white">{lead.createdAt ? format(new Date(lead.createdAt), 'dd/MM/yyyy') : 'N/A'}</TableCell>
-                                                                    <TableCell className="text-white">{lead.promotorId || 'N/A'}</TableCell>
-                                                                </TableRow>
-                                                            ))}
-                                                        </TableBody>
-                                                    </Table>
+                                                    <Button onClick={handleViewPromoterReport} className="w-full">
+                                                        Visualizar Relatório
+                                                    </Button>
                                                 </div>
                                             </DialogContent>
                                         </Dialog>

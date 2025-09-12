@@ -2,21 +2,18 @@
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import useSWR from 'swr';
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/components/ui/use-toast";
 import {
   Download,
-  FileText,
-  Calendar,
   ChevronLeft,
   Loader2,
-  RefreshCw
+  Copy
 } from "lucide-react"
 import ShaderBackground from "@/components/shader-background"
 import { Playfair_Display, Poppins } from "next/font/google"
@@ -33,11 +30,14 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function DetailedReportsPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const { toast } = useToast();
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
-    const [period, setPeriod] = useState("7");
     const [isExporting, setIsExporting] = useState(false);
+
+    const period = searchParams.get('period');
+    const promoter = searchParams.get('promoter');
 
     const supabase = createClient();
 
@@ -58,10 +58,20 @@ export default function DetailedReportsPage() {
 
     const filteredLeads = useMemo(() => {
         if (!leadsResponse?.data) return [];
-        const days = parseInt(period, 10);
-        const startDate = subDays(new Date(), days);
-        return leadsResponse.data.filter((lead: any) => new Date(lead.createdAt) >= startDate);
-    }, [leadsResponse, period]);
+        let leads = leadsResponse.data;
+
+        if (period) {
+            const days = parseInt(period, 10);
+            const startDate = subDays(new Date(), days);
+            leads = leads.filter((lead: any) => new Date(lead.createdAt) >= startDate);
+        }
+
+        if (promoter) {
+            leads = leads.filter((lead: any) => lead.promotorId === promoter);
+        }
+
+        return leads.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    }, [leadsResponse, period, promoter]);
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -76,23 +86,29 @@ export default function DetailedReportsPage() {
         }
     }
 
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text);
+        toast({ title: "CPF Copiado!", description: "O CPF da consultora foi copiado para a área de transferência." });
+    }
+
     const exportReportToExcel = () => {
         setIsExporting(true);
         const dataToExport = filteredLeads.map((lead: any) => ({
-            "Nome": lead.consultant?.nome,
+            "Consultora": lead.consultant?.nome,
             "CPF": lead.consultant?.cpf,
             "Telefone": lead.consultant?.telefone,
-            "Cidade": lead.consultant?.address?.cidade,
             "Status": lead.status,
             "Data Cadastro": format(new Date(lead.createdAt), 'dd/MM/yyyy HH:mm'),
             "Promotor": lead.promotorId || 'N/A',
-            "Motivo Reprovação": lead.motivoReprovacao || 'N/A'
+            "Data de Transferência": lead.encaminhadoEm ? format(new Date(lead.encaminhadoEm), 'dd/MM/yyyy HH:mm') : 'N/A',
+            "Observações": lead.observacoes || 'N/A'
         }));
 
         const ws = XLSX.utils.json_to_sheet(dataToExport);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Relatorio");
-        XLSX.writeFile(wb, `relatorio_detalhado_${period}_dias.xlsx`);
+        const reportType = promoter ? `promotor_${promoter}` : `detalhado_${period}_dias`;
+        XLSX.writeFile(wb, `relatorio_${reportType}.xlsx`);
         setIsExporting(false);
         toast({ title: "Sucesso!", description: "Relatório exportado para Excel." });
     }
@@ -131,21 +147,14 @@ export default function DetailedReportsPage() {
                 <div className="container mx-auto px-4 py-8 text-white">
                     <div className="flex items-center justify-between mb-6">
                         <div>
-                            <h1 className="text-3xl font-bold">Relatório de Cadastros</h1>
-                            <p className="text-violet-200">Exibindo cadastros dos últimos {period} dias.</p>
+                            <h1 className="text-3xl font-bold">
+                                {promoter ? `Relatório do Promotor: ${promoter}` : 'Relatório de Cadastros'}
+                            </h1>
+                            <p className="text-violet-200">
+                                {period ? `Exibindo cadastros dos últimos ${period} dias.` : 'Exibindo todos os cadastros do promotor.'}
+                            </p>
                         </div>
                         <div className="flex items-center gap-4">
-                            <Select value={period} onValueChange={setPeriod}>
-                                <SelectTrigger className="w-48 bg-white/10 border-white/20">
-                                    <Calendar className="w-4 h-4 mr-2" />
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="bg-violet-900/90 text-white border-violet-400/30">
-                                    <SelectItem value="7">Últimos 7 dias</SelectItem>
-                                    <SelectItem value="15">Últimos 15 dias</SelectItem>
-                                    <SelectItem value="30">Últimos 30 dias</SelectItem>
-                                </SelectContent>
-                            </Select>
                             <Button onClick={exportReportToExcel} disabled={isExporting}>
                                 {isExporting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Download className="w-4 h-4 mr-2" />}
                                 Exportar Dados
@@ -159,20 +168,36 @@ export default function DetailedReportsPage() {
                                 <TableHeader>
                                     <TableRow className="border-b border-white/20">
                                         <TableHead className="text-violet-200">Consultora</TableHead>
+                                        <TableHead className="text-violet-200">CPF</TableHead>
+                                        <TableHead className="text-violet-200">Telefone</TableHead>
                                         <TableHead className="text-violet-200">Status</TableHead>
-                                        <TableHead className="text-violet-200">Data</TableHead>
+                                        <TableHead className="text-violet-200">Data Cadastro</TableHead>
                                         <TableHead className="text-violet-200">Promotor</TableHead>
-                                        <TableHead className="text-violet-200">Motivo (se reprovado)</TableHead>
+                                        <TableHead className="text-violet-200">Data Transferência</TableHead>
+                                        <TableHead className="text-violet-200">Observações</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
                                     {filteredLeads.map((lead: any) => (
                                         <TableRow key={lead.id} className="border-b border-white/20 hover:bg-white/5">
                                             <TableCell className="font-medium text-white">{lead.consultant?.nome}</TableCell>
+                                            <TableCell
+                                                className="text-white cursor-pointer hover:text-violet-300"
+                                                onClick={() => copyToClipboard(lead.consultant?.cpf)}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    {lead.consultant?.cpf}
+                                                    <Copy className="w-3 h-3" />
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-white">{lead.consultant?.telefone}</TableCell>
                                             <TableCell>{getStatusBadge(lead.status)}</TableCell>
                                             <TableCell className="text-white">{format(new Date(lead.createdAt), 'dd/MM/yyyy HH:mm')}</TableCell>
                                             <TableCell className="text-white">{lead.promotorId || 'N/A'}</TableCell>
-                                            <TableCell className="text-white">{lead.motivoReprovacao || 'N/A'}</TableCell>
+                                            <TableCell className="text-white">
+                                                {lead.encaminhadoEm ? format(new Date(lead.encaminhadoEm), 'dd/MM/yyyy HH:mm') : 'N/A'}
+                                            </TableCell>
+                                            <TableCell className="text-white">{lead.observacoes || 'N/A'}</TableCell>
                                         </TableRow>
                                     ))}
                                 </TableBody>
