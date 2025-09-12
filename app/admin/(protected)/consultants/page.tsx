@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useToast } from "@/components/ui/use-toast";
@@ -39,8 +39,6 @@ import { format } from "date-fns"
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-const promoters = ["Carlos Mendes", "Juliana Santos", "Roberto Silva", "Patricia Lima", "Anderson Costa"]
-
 const rejectionReasons = [
   "Histórico de inadimplência",
   "Documentação incompleta",
@@ -52,17 +50,24 @@ const rejectionReasons = [
 export default function ConsultantManagement() {
   const router = useRouter()
   const { toast } = useToast()
+  
+  // Fetching leads and promoters
   const { data: leadsResponse, error: leadsError, isLoading: leadsLoading } = useSWR('/api/leads/id', fetcher, { refreshInterval: 5000 });
+  const { data: promotersResponse, error: promotersError, isLoading: promotersLoading } = useSWR('/api/promoters', fetcher);
 
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [cityFilter, setCityFilter] = useState("all")
   const [selectedConsultant, setSelectedConsultant] = useState<any>(null)
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false)
+  const [isConfirmWhatsappOpen, setIsConfirmWhatsappOpen] = useState(false);
+  const [whatsappData, setWhatsappData] = useState<{ promoter: any, consultant: any } | null>(null);
+
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
   
   const consultants = useMemo(() => leadsResponse?.data || [], [leadsResponse]);
+  const promoters = useMemo(() => promotersResponse?.data || [], [promotersResponse]);
 
   const filteredConsultants = useMemo(() => consultants.filter((consultant: any) => {
     const c = consultant.consultant;
@@ -98,47 +103,69 @@ export default function ConsultantManagement() {
     }
   }
 
-  const handleStatusChange = async (leadId: string, newStatus: string, notes?: string, promoter?: string, rejectionReason?: string) => {
+  const handleStatusChange = async (leadId: string, newStatus: string, details: any) => {
     try {
-      const endpoint = newStatus === 'APROVADO' ? 'approve' : 'reject';
+      const endpoint = newStatus === 'APROVADO' ? `/api/leads/id/approve` : `/api/leads/id/reject`;
       const body = newStatus === 'APROVADO'
-        ? { promotorId: promoter, observacoes: notes }
-        : { motivo: rejectionReason, observacoes: notes };
-
-      const response = await fetch(`/api/leads/id/approve`, { // Endpoint fixo para aprovação
+        ? { promotorId: details.promoter, observacoes: details.notes }
+        : { motivo: details.rejectionReason, observacoes: details.notes };
+  
+      const response = await fetch(endpoint, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...body, id: leadId }),
       });
-
-      if (!response.ok) throw new Error('Falha ao atualizar status.');
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Falha ao atualizar status.');
+      }
+      
       toast({ title: "Sucesso!", description: `Cadastro ${newStatus === 'APROVADO' ? 'aprovado' : 'reprovado'}.` });
       mutate('/api/leads/id');
-    } catch (error) {
-      toast({ title: "Erro!", description: "Não foi possível atualizar o status.", variant: 'destructive' });
+      
+      if (newStatus === 'APROVADO') {
+        const selectedPromoter = promoters.find((p: any) => p.name === details.promoter);
+        if (selectedPromoter) {
+            setWhatsappData({ promoter: selectedPromoter, consultant: selectedConsultant.consultant });
+            setIsConfirmWhatsappOpen(true);
+        }
+      }
+
+    } catch (error: any) {
+      toast({ title: "Erro!", description: error.message || "Não foi possível atualizar o status.", variant: 'destructive' });
     }
     setIsDetailModalOpen(false);
   };
   
-  const copyConsultantData = (lead: any) => {
-    const c = lead.consultant;
-    const a = c.address;
-    const data = `
-Nome: ${c.nome}
-CPF: ${c.cpf}
-Telefone: ${c.telefone}
-Email: ${c.email || 'N/A'}
-Endereço: ${a.rua}, ${a.numero} - ${a.bairro}
-Cidade: ${a.cidade} - ${a.uf}
-CEP: ${a.cep}
-Data de Cadastro: ${new Date(lead.createdAt).toLocaleString("pt-BR")}
-    `.trim()
+  const copyToClipboard = (text: string, fieldName: string) => {
+    navigator.clipboard.writeText(text);
+    toast({ description: `${fieldName} copiado para a área de transferência!` });
+  };
 
-    navigator.clipboard.writeText(data)
-    toast({ description: "Dados copiados para a área de transferência!" })
-  }
+  const handleSendToWhatsapp = () => {
+    if (!whatsappData) return;
+    const { promoter, consultant } = whatsappData;
+    const message = `
+Olá, ${promoter.name}!
+Um novo cadastro de consultora foi aprovado para você:
 
-  if (leadsLoading) {
+*Nome:* ${consultant.nome}
+*CPF:* ${consultant.cpf}
+*Telefone:* ${consultant.telefone}
+*Endereço:* ${consultant.address.rua}, ${consultant.address.numero}, ${consultant.address.bairro}
+*Cidade:* ${consultant.address.cidade} - ${consultant.address.uf}
+
+Por favor, entre em contato para os próximos passos.
+    `.trim();
+
+    const phone = promoter.phone.replace(/\D/g, '');
+    const whatsappUrl = `https://wa.me/55${phone}?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    setIsConfirmWhatsappOpen(false);
+  };
+
+  if (leadsLoading || promotersLoading) {
     return (
         <ShaderBackground>
             <div className="min-h-screen flex items-center justify-center">
@@ -161,6 +188,9 @@ Data de Cadastro: ${new Date(lead.createdAt).toLocaleString("pt-BR")}
                         </div>
                     </div>
                     <div className="flex items-center space-x-4">
+                         <Button variant="outline" size="sm" onClick={() => router.push('/admin/promoters')} className="bg-white/10 text-white hover:bg-white/20">
+                            Gerenciar Promotores
+                        </Button>
                         <Button variant="outline" size="sm" onClick={() => router.push('/admin/dashboard')} className="bg-white/10 text-white hover:bg-white/20">
                             ← Dashboard
                         </Button>
@@ -222,6 +252,7 @@ Data de Cadastro: ${new Date(lead.createdAt).toLocaleString("pt-BR")}
                 <TableHeader>
                     <TableRow className="border-b border-white/20">
                     <TableHead className="text-violet-200">Consultora</TableHead>
+                    <TableHead className="text-violet-200">CPF</TableHead>
                     <TableHead className="text-violet-200">Contato</TableHead>
                     <TableHead className="text-violet-200">Localização</TableHead>
                     <TableHead className="text-violet-200">Status</TableHead>
@@ -234,10 +265,15 @@ Data de Cadastro: ${new Date(lead.createdAt).toLocaleString("pt-BR")}
                     {paginatedConsultants.map((lead) => (
                     <TableRow key={lead.id} className="border-b border-white/20 hover:bg-white/5">
                         <TableCell>
-                        <div>
-                            <div className="font-medium text-white">{lead.consultant?.nome}</div>
-                            <div className="text-sm text-violet-300">{lead.consultant?.cpf}</div>
-                        </div>
+                          <div className="font-medium text-white">{lead.consultant?.nome}</div>
+                        </TableCell>
+                        <TableCell>
+                          <div 
+                              className="text-sm text-violet-300 flex items-center gap-2 cursor-pointer"
+                              onClick={() => copyToClipboard(lead.consultant?.cpf, 'CPF')}
+                          >
+                              {lead.consultant?.cpf} <Copy className="w-3 h-3"/>
+                          </div>
                         </TableCell>
                         <TableCell>
                         <div>
@@ -292,7 +328,7 @@ Data de Cadastro: ${new Date(lead.createdAt).toLocaleString("pt-BR")}
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="bg-violet-900/90 text-white border-violet-400/30">
-                                <DropdownMenuItem onClick={() => copyConsultantData(lead)} className="hover:bg-violet-500/20">
+                                <DropdownMenuItem onClick={() => copyToClipboard(JSON.stringify(lead, null, 2), 'Dados Completos')} className="hover:bg-violet-500/20">
                                 <Copy className="w-4 h-4 mr-2" />
                                 Copiar Dados
                                 </DropdownMenuItem>
@@ -358,6 +394,22 @@ Data de Cadastro: ${new Date(lead.createdAt).toLocaleString("pt-BR")}
             )}
             </DialogContent>
         </Dialog>
+        
+        {/* WhatsApp Confirmation Modal */}
+        <Dialog open={isConfirmWhatsappOpen} onOpenChange={setIsConfirmWhatsappOpen}>
+            <DialogContent className="bg-violet-900/95 text-white border-violet-400/30">
+                <DialogHeader>
+                    <DialogTitle>Enviar para o Promotor?</DialogTitle>
+                    <DialogDescription>
+                        Deseja enviar os dados desta consultora para o WhatsApp de {whatsappData?.promoter?.name}?
+                    </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                    <Button variant="outline" onClick={() => setIsConfirmWhatsappOpen(false)}>Não</Button>
+                    <Button onClick={handleSendToWhatsapp}>Sim, Enviar</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </ShaderBackground>
   )
 }
@@ -369,8 +421,8 @@ function ConsultantDetailForm({
     rejectionReasons,
   }: {
     lead: any
-    onStatusChange: (leadId: string, status: string, notes?: string, promoter?: string, rejectionReason?: string) => void
-    promoters: string[]
+    onStatusChange: (leadId: string, status: string, details: any) => void
+    promoters: any[]
     rejectionReasons: string[]
   }) {
     const consultant = lead.consultant;
@@ -385,7 +437,7 @@ function ConsultantDetailForm({
         alert("Por favor, selecione um promotor antes de aprovar.")
         return
       }
-      onStatusChange(lead.id, "APROVADO", notes, selectedPromoter)
+      onStatusChange(lead.id, "APROVADO", { promoter: selectedPromoter, notes })
     }
   
     const handleReject = () => {
@@ -394,7 +446,7 @@ function ConsultantDetailForm({
         alert("Por favor, selecione ou digite um motivo para a reprovação.")
         return
       }
-      onStatusChange(lead.id, "REPROVADO", notes, "", finalReason)
+      onStatusChange(lead.id, "REPROVADO", { rejectionReason: finalReason, notes })
     }
   
     return (
@@ -420,7 +472,7 @@ function ConsultantDetailForm({
         <TabsContent value="actions" className="space-y-4 pt-4">
             {lead.status === "EM_ANALISE" && (
                 <>
-                <div><Label htmlFor="promoter">Selecionar Promotor (para aprovação)</Label><Select value={selectedPromoter} onValueChange={setSelectedPromoter}><SelectTrigger className="bg-white/10"><SelectValue placeholder="Escolha um promotor" /></SelectTrigger><SelectContent className="bg-violet-800">{promoters.map((p) => (<SelectItem key={p} value={p}>{p}</SelectItem>))}</SelectContent></Select></div>
+                <div><Label htmlFor="promoter">Selecionar Promotor (para aprovação)</Label><Select value={selectedPromoter} onValueChange={setSelectedPromoter}><SelectTrigger className="bg-white/10"><SelectValue placeholder="Escolha um promotor" /></SelectTrigger><SelectContent className="bg-violet-800">{promoters.map((p) => (<SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>))}</SelectContent></Select></div>
                 <div><Label htmlFor="rejectionReason">Motivo da Reprovação (se aplicável)</Label><Select value={rejectionReason} onValueChange={setRejectionReason}><SelectTrigger className="bg-white/10"><SelectValue placeholder="Selecione um motivo" /></SelectTrigger><SelectContent className="bg-violet-800">{rejectionReasons.map((r) => (<SelectItem key={r} value={r}>{r}</SelectItem>))}</SelectContent></Select></div>
                 {rejectionReason === "Outros" && (<div><Label htmlFor="customReason">Motivo Personalizado</Label><Input id="customReason" value={customReason} onChange={(e) => setCustomReason(e.target.value)} placeholder="Digite o motivo da reprovação" className="bg-white/10" /></div>)}
                 <div className="flex gap-4 pt-4"><Button onClick={handleApprove} className="flex-1"><Check className="w-4 h-4 mr-2" />Aprovar</Button><Button onClick={handleReject} variant="destructive" className="flex-1"><X className="w-4 h-4 mr-2" />Reprovar</Button></div>
