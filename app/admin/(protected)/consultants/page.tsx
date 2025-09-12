@@ -105,16 +105,16 @@ export default function ConsultantManagement() {
 
   const handleStatusChange = async (leadId: string, newStatus: string, details: any) => {
     try {
-      const endpoint = newStatus === 'APROVADO' ? `/api/leads/id/approve` : `/api/leads/id/reject`;
-      const body = newStatus === 'APROVADO'
-        ? { promotorId: details.promoter, observacoes: details.notes }
-        : { motivo: details.rejectionReason, observacoes: details.notes };
-  
-      const response = await fetch(endpoint, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...body, id: leadId }),
-      });
+        const endpoint = newStatus === 'APROVADO' ? `/api/leads/${leadId}/approve` : `/api/leads/${leadId}/reject`;
+        const body = newStatus === 'APROVADO'
+            ? { promotorId: details.promoter, observacoes: details.notes }
+            : { motivo: details.rejectionReason, observacoes: details.notes };
+
+        const response = await fetch(endpoint, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
   
       if (!response.ok) {
         const errorData = await response.json();

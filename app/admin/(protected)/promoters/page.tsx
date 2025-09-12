@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, PlusCircle, Trash2, Users } from "lucide-react";
+import { Loader2, PlusCircle, Trash2, Users, ArrowLeft } from "lucide-react";
 import ShaderBackground from "@/components/shader-background";
 import { createClient } from "@/lib/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -17,6 +18,7 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 export default function PromoterManagementPage() {
   const { toast } = useToast();
   const supabase = createClient();
+  const router = useRouter();
   
   const { data: promotersResponse, error, isLoading } = useSWR('/api/promoters', fetcher);
   const promoters = promotersResponse?.data || [];
@@ -66,6 +68,11 @@ export default function PromoterManagementPage() {
   return (
     <ShaderBackground>
       <div className="container mx-auto p-4 py-8 text-white">
+        <div className="flex justify-end mb-4">
+          <Button variant="outline" size="sm" onClick={() => router.back()} className="bg-white/10 text-white hover:bg-white/20">
+              <ArrowLeft className="mr-2 h-4 w-4" /> Voltar
+          </Button>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="md:col-span-1">
             <Card className="bg-white/10 backdrop-blur-lg border-white/20">
