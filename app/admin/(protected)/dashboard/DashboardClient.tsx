@@ -104,12 +104,14 @@ export default function DashboardClient({ user }: { user: User }) {
 
         // Calcular crescimento mensal
         const thisMonth = allLeads.filter((l: any) => {
+            if (!l.createdAt) return false;
             const leadDate = new Date(l.createdAt);
             const now = new Date();
             return leadDate.getMonth() === now.getMonth() && leadDate.getFullYear() === now.getFullYear();
         }).length;
         
         const lastMonth = allLeads.filter((l: any) => {
+            if (!l.createdAt) return false;
             const leadDate = new Date(l.createdAt);
             const lastMonthDate = new Date();
             lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
@@ -138,11 +140,13 @@ export default function DashboardClient({ user }: { user: User }) {
         }
         
         allLeads.forEach((lead: any) => {
-            const leadDate = format(new Date(lead.createdAt), 'dd/MM');
-            if (dailyData[leadDate]) {
-                dailyData[leadDate].cadastros += 1;
-                if (lead.status === 'APROVADO') dailyData[leadDate].aprovados += 1;
-                if (lead.status === 'REPROVADO') dailyData[leadDate].reprovados += 1;
+            if (lead.createdAt) {
+                const leadDate = format(new Date(lead.createdAt), 'dd/MM');
+                if (dailyData[leadDate]) {
+                    dailyData[leadDate].cadastros += 1;
+                    if (lead.status === 'APROVADO') dailyData[leadDate].aprovados += 1;
+                    if (lead.status === 'REPROVADO') dailyData[leadDate].reprovados += 1;
+                }
             }
         });
         
@@ -287,7 +291,7 @@ export default function DashboardClient({ user }: { user: User }) {
                 Cidade: lead.consultant?.address?.cidade || 'N/A',
                 UF: lead.consultant?.address?.uf || 'MS',
                 Status: lead.status,
-                'Data Cadastro': format(new Date(lead.createdAt), 'dd/MM/yyyy HH:mm'),
+                'Data Cadastro': lead.createdAt ? format(new Date(lead.createdAt), 'dd/MM/yyyy HH:mm') : 'N/A',
                 Observações: lead.observacoes || ''
             }));
 
@@ -746,7 +750,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                                                         {lead.consultant?.address?.cidade || 'N/A'}
                                                                     </TableCell>
                                                                     <TableCell className="text-white">
-                                                                        {format(new Date(lead.createdAt), 'dd/MM/yyyy HH:mm')}
+                                                                        {lead.createdAt ? format(new Date(lead.createdAt), 'dd/MM/yyyy HH:mm') : 'N/A'}
                                                                     </TableCell>
                                                                     <TableCell className="text-right">
                                                                         <div className="flex gap-2 justify-end">

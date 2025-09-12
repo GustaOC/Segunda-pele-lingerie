@@ -4,7 +4,6 @@ import type { Metadata } from "next"
 import { Figtree } from "next/font/google"
 import { GeistMono } from "geist/font/mono"
 import { Instrument_Serif } from "next/font/google"
-import { Toaster } from "@/components/ui/toaster" // ✅ ADICIONAR ESTA LINHA
 import "./globals.css"
 
 const figtree = Figtree({
@@ -39,7 +38,6 @@ export default function RootLayout({
     >
       <body>
         {children}
-        <Toaster /> {/* ✅ ADICIONAR ESTA LINHA */}
       </body>
     </html>
   )
