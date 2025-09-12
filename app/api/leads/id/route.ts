@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
         bairro: endereco.bairro,
         cidade: endereco.cidade,
         uf: endereco.uf,
-        cep: endereco.cep.replace(/\D/g, ""),
+        cep: endereco.cep ? endereco.cep.replace(/\D/g, "") : null,
       })
       .select()
       .single()

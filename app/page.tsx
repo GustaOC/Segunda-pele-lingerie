@@ -1,10 +1,11 @@
 "use client"
-import ShaderBackground from "@/components/shader-background"
 import { Button } from "@/components/ui/button"
-import { LogIn, MessageCircle, Loader2 } from "lucide-react"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import ShaderBackground from "@/components/shader-background"
+import { LogIn, MessageCircle, Loader2, PartyPopper } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Playfair_Display, Poppins } from "next/font/google"
 
 const playfair = Playfair_Display({
@@ -19,10 +20,15 @@ const poppins = Poppins({
   variable: "--font-poppins",
 })
 
+// Tipos para os dados do IBGE
+type UF = { id: number; sigla: string; nome: string };
+type City = { id: number; nome: string };
+
 export default function HomePage() {
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState("")
   const [messageType, setMessageType] = useState<"success" | "error" | "">("")
+  const [showSuccessModal, setShowSuccessModal] = useState(false) // Novo estado para o modal
   const [formData, setFormData] = useState({
     nomeCompleto: "",
     cpf: "",
@@ -36,12 +42,57 @@ export default function HomePage() {
     }
   })
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    if (name in formData.endereco) {
-        setFormData(prev => ({...prev, endereco: {...prev.endereco, [name]: value}}))
+  const [ufs, setUfs] = useState<UF[]>([]);
+  const [cities, setCities] = useState<City[]>([]);
+  const [selectedUf, setSelectedUf] = useState("MS");
+
+  // Busca os estados (UFs) na API do IBGE
+  useEffect(() => {
+    fetch("https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome")
+      .then((res) => res.json())
+      .then(setUfs);
+  }, []);
+
+  // Busca as cidades baseadas no estado selecionado
+  useEffect(() => {
+    if (selectedUf) {
+      fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedUf}/municipios`)
+        .then((res) => res.json())
+        .then(setCities);
+    }
+  }, [selectedUf]);
+
+  // Formata os inputs enquanto o usuário digita
+  const formatInput = (name: string, value: string) => {
+    if (name === 'cpf') {
+      return value
+        .replace(/\D/g, '')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d)/, '$1.$2')
+        .replace(/(\d{3})(\d{1,2})/, '$1-$2')
+        .slice(0, 14);
+    }
+    if (name === 'telefone') {
+      return value
+        .replace(/\D/g, '')
+        .replace(/(\d{2})(\d)/, '($1) $2')
+        .replace(/(\d{5})(\d)/, '$1-$2')
+        .slice(0, 15);
+    }
+    return value;
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    const formattedValue = formatInput(name, value);
+
+    if (name === "uf") {
+      setSelectedUf(value);
+      setFormData(prev => ({...prev, endereco: {...prev.endereco, uf: value, cidade: ""}}));
+    } else if (Object.keys(formData.endereco).includes(name)) {
+        setFormData(prev => ({...prev, endereco: {...prev.endereco, [name]: formattedValue}}))
     } else {
-        setFormData(prev => ({...prev, [name]: value}))
+        setFormData(prev => ({...prev, [name]: formattedValue}))
     }
   }
 
@@ -59,14 +110,15 @@ export default function HomePage() {
     setIsLoading(true)
     setMessage("")
 
-    // Validação simples
+    // Validação
     if (formData.cpf.replace(/\D/g, '').length !== 11) {
-        showMessage("CPF deve ter exatamente 11 dígitos.", "error")
+        showMessage("CPF inválido. Deve conter 11 dígitos.", "error")
         setIsLoading(false)
         return
     }
-    if (formData.telefone.replace(/\D/g, '').length < 10) {
-        showMessage("Telefone deve ter pelo menos 10 dígitos (DDD + número).", "error")
+    const phoneLength = formData.telefone.replace(/\D/g, '').length;
+    if (phoneLength < 10 || phoneLength > 11) {
+        showMessage("Telefone inválido. Deve ter 10 ou 11 dígitos (DDD + número).", "error")
         setIsLoading(false)
         return
     }
@@ -84,7 +136,7 @@ export default function HomePage() {
             throw new Error(result.error || 'Ocorreu um erro no servidor.');
         }
 
-        showMessage(`Sucesso! ${formData.nomeCompleto}, seus dados foram recebidos. Entraremos em contato em breve.`, "success")
+        setShowSuccessModal(true); // Abre o modal de sucesso
         
         // Limpar formulário
         setFormData({
@@ -118,13 +170,9 @@ export default function HomePage() {
         </Link>
       </div>
 
-      {/* Mensagem de Feedback */}
-      {message && (
-        <div className={`fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg shadow-lg ${
-          messageType === "success" 
-            ? "bg-green-500 text-white" 
-            : "bg-red-500 text-white"
-        }`}>
+      {/* Mensagem de Erro (o de sucesso agora é o modal) */}
+      {message && messageType === 'error' && (
+        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg shadow-lg bg-red-500 text-white">
           {message}
         </div>
       )}
@@ -159,9 +207,9 @@ export default function HomePage() {
         <section className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch">
           
           {/* Banner */}
-          <div className="relative w-full h-[500px] lg:h-auto mx-auto rounded-2xl overflow-hidden border border-white/20 shadow-xl">
+          <div className="relative w-full h-[550px] lg:h-auto mx-auto rounded-2xl overflow-hidden border border-white/20 shadow-xl">
             <Image 
-              src="/imagem1.jpeg" 
+              src="https://i.imgur.com/gI895h5.jpeg" 
               alt="Coleção Segunda Pele" 
               fill 
               className="object-cover" 
@@ -199,12 +247,43 @@ export default function HomePage() {
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input name="nomeCompleto" value={formData.nomeCompleto} onChange={handleChange} placeholder="Nome completo" required className="md:col-span-2 p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
-              <input name="cpf" value={formData.cpf} onChange={handleChange} placeholder="CPF" maxLength={14} required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
-              <input name="telefone" value={formData.telefone} onChange={handleChange} placeholder="Telefone com DDD" maxLength={15} required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+              <input name="cpf" value={formData.cpf} onChange={handleChange} placeholder="CPF" required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+              <input name="telefone" value={formData.telefone} onChange={handleChange} placeholder="Telefone com DDD" required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
               <input name="rua" value={formData.endereco.rua} onChange={handleChange} placeholder="Rua" required className="md:col-span-2 p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
               <input name="numero" value={formData.endereco.numero} onChange={handleChange} placeholder="Número" required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
               <input name="bairro" value={formData.endereco.bairro} onChange={handleChange} placeholder="Bairro" required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
-              <input name="cidade" value={formData.endereco.cidade} onChange={handleChange} placeholder="Cidade" required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+              
+              <div className="relative">
+                <input
+                  name="cidade"
+                  value={formData.endereco.cidade}
+                  onChange={handleChange}
+                  placeholder="Cidade"
+                  required
+                  list="cities-list"
+                  className="w-full p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300"
+                />
+                <datalist id="cities-list">
+                  {cities.map((city) => (
+                    <option key={city.id} value={city.nome} />
+                  ))}
+                </datalist>
+              </div>
+
+              <select
+                name="uf"
+                value={selectedUf}
+                onChange={handleChange}
+                required
+                className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white focus:outline-none focus:ring-2 focus:ring-violet-300 appearance-none"
+              >
+                <option value="" disabled>UF</option>
+                {ufs.map((uf) => (
+                  <option key={uf.id} value={uf.sigla}>
+                    {uf.sigla}
+                  </option>
+                ))}
+              </select>
             </div>
             
             <Button 
@@ -282,6 +361,35 @@ export default function HomePage() {
       >
         <MessageCircle className="w-6 h-6" />
       </Link>
+
+      {/* Modal de Sucesso */}
+      <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+        <DialogContent className="sm:max-w-lg bg-white/10 backdrop-blur-lg border-white/20 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-center font-bold" style={{ fontFamily: "var(--font-playfair)" }}>
+               Cadastro Concluído com Sucesso! 
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-6 text-center space-y-4">
+                        <p className="text-lg">Bem-vinda à família Segunda Pele Lingerie 💕</p>
+            <p className="text-sm text-violet-200">
+              Agora você faz parte de um time de consultoras que valorizam beleza, confiança e independência.
+            </p>
+            <p className="text-sm text-violet-200">
+               Em breve, caso seu cadastro seja aprovado, um de nossos representantes entrará em contato para compartilhar todas as informações e ajudar você a iniciar essa nova jornada.
+            </p>
+            <p className="text-sm text-violet-200">
+              Enquanto isso, siga nossas redes sociais e fique por dentro das novidades!
+            </p>
+            <p className="text-md font-semibold text-pink-300 italic mt-4">
+               Estamos muito felizes em ter você conosco!
+            </p>
+            <p className="text-xs text-violet-whith-500">
+                Segunda Pele Lingerie – para você usar, ousar e lucrar!
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </ShaderBackground>
   )
 }
