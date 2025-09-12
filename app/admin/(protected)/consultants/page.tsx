@@ -105,7 +105,7 @@ export default function ConsultantManagement() {
 
   const handleStatusChange = async (leadId: string, newStatus: string, details: any) => {
     try {
-        const endpoint = newStatus === 'APROVADO' ? `/api/leads/${leadId}/approve` : `/api/leads/${leadId}/reject`;
+        const endpoint = newStatus === 'APROVADO' ? `/api/leads/id/approve?id=${leadId}` : `/api/leads/id/reject?id=${leadId}`;
         const body = newStatus === 'APROVADO'
             ? { promotorId: details.promoter, observacoes: details.notes }
             : { motivo: details.rejectionReason, observacoes: details.notes };
@@ -138,8 +138,19 @@ export default function ConsultantManagement() {
     setIsDetailModalOpen(false);
   };
   
-  const copyToClipboard = (text: string, fieldName: string) => {
-    navigator.clipboard.writeText(text);
+  const copyToClipboard = (lead: any, fieldName: string) => {
+    const { consultant } = lead;
+    const { address } = consultant;
+    const formattedData = `
+Nome: ${consultant.nome}
+CPF: ${consultant.cpf}
+Rua: ${address.rua}
+Número: ${address.numero}
+Bairro: ${address.bairro}
+Cidade: ${address.cidade}
+Telefone: ${consultant.telefone}
+    `.trim();
+    navigator.clipboard.writeText(formattedData);
     toast({ description: `${fieldName} copiado para a área de transferência!` });
   };
 
@@ -328,7 +339,7 @@ Por favor, entre em contato para os próximos passos.
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end" className="bg-violet-900/90 text-white border-violet-400/30">
-                                <DropdownMenuItem onClick={() => copyToClipboard(JSON.stringify(lead, null, 2), 'Dados Completos')} className="hover:bg-violet-500/20">
+                                <DropdownMenuItem onClick={() => copyToClipboard(lead, 'Dados Completos')} className="hover:bg-violet-500/20">
                                 <Copy className="w-4 h-4 mr-2" />
                                 Copiar Dados
                                 </DropdownMenuItem>

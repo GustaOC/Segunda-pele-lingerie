@@ -77,16 +77,16 @@ export default function PromoterManagementPage() {
           <div className="md:col-span-1">
             <Card className="bg-white/10 backdrop-blur-lg border-white/20">
               <CardHeader>
-                <CardTitle className="flex items-center text-xl">
+                <CardTitle className="flex items-center text-xl text-white">
                   <PlusCircle className="mr-2" />
                   Cadastrar Promotor
                 </CardTitle>
-                <CardDescription>Adicione um novo promotor ao sistema.</CardDescription>
+                <CardDescription className="text-violet-200">Adicione um novo promotor ao sistema.</CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
                   <div>
-                    <Label htmlFor="name">Nome do Promotor</Label>
+                    <Label htmlFor="name" className="text-violet-200">Nome do Promotor</Label>
                     <Input
                       id="name"
                       value={name}
@@ -97,7 +97,7 @@ export default function PromoterManagementPage() {
                     />
                   </div>
                   <div>
-                    <Label htmlFor="phone">Telefone (com DDD)</Label>
+                    <Label htmlFor="phone" className="text-violet-200">Telefone (com DDD)</Label>
                     <Input
                       id="phone"
                       value={phone}
@@ -121,14 +121,14 @@ export default function PromoterManagementPage() {
           <div className="md:col-span-2">
             <Card className="bg-white/10 backdrop-blur-lg border-white/20">
                 <CardHeader>
-                    <CardTitle className="flex items-center text-xl">
+                    <CardTitle className="flex items-center text-xl text-white">
                         <Users className="mr-2"/>
                         Promotores Cadastrados
                     </CardTitle>
-                    <CardDescription>Lista de todos os promotores no sistema.</CardDescription>
+                    <CardDescription className="text-violet-200">Lista de todos os promotores no sistema.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    {isLoading ? <Loader2 className="mx-auto h-8 w-8 animate-spin"/> : (
+                    {isLoading ? <Loader2 className="mx-auto h-8 w-8 animate-spin text-white"/> : (
                     <Table>
                         <TableHeader>
                             <TableRow className="border-b border-white/20 hover:bg-transparent">

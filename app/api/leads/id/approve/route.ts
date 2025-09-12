@@ -2,22 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
 
 export async function PATCH(
-  req: NextRequest, 
-  { params }: { params: { id: string } }
+  req: NextRequest,
 ) {
   try {
-    const { id } = params
+    const id = req.nextUrl.searchParams.get("id")
     const body = await req.json().catch(() => ({}))
     const { promotorId, observacoes } = body
 
     // Atualizar o lead
     const { data: lead, error: leadError } = await supabaseAdmin
       .from('lead')
-      .update({ 
-        status: 'APROVADO', 
-        promotorId: promotorId, 
-        observacoes: observacoes, 
-        encaminhadoEm: new Date().toISOString() 
+      .update({
+        status: 'APROVADO',
+        promotorId: promotorId,
+        observacoes: observacoes,
+        encaminhadoEm: new Date().toISOString()
       })
       .eq('id', id)
       .select()

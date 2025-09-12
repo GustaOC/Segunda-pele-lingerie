@@ -209,7 +209,7 @@ export default function HomePage() {
           {/* Banner */}
           <div className="relative w-full h-[550px] lg:h-auto mx-auto rounded-2xl overflow-hidden border border-white/20 shadow-xl">
             <Image 
-              src="https://i.imgur.com/gI895h5.jpeg" 
+              src="imagem1.jpeg" 
               alt="Coleção Segunda Pele" 
               fill 
               className="object-cover" 
