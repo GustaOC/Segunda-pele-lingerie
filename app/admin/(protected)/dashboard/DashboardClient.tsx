@@ -18,14 +18,14 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
-import { 
-  Users, UserCheck, Clock, MessageCircle, LogOut, BarChart3, FileText, TrendingUp, 
-  Calendar, Search, AlertCircle, Download, Eye, FileSpreadsheet, Send, CheckCircle, 
+import {
+  Users, UserCheck, Clock, MessageCircle, LogOut, BarChart3, FileText, TrendingUp,
+  Calendar, Search, AlertCircle, Download, Eye, FileSpreadsheet, Send, CheckCircle,
   XCircle, Loader2, RefreshCw, Mail, MapPin, Target, Activity, Filter
 } from "lucide-react";
-import { 
-  AreaChart, Area, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell, 
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line 
+import {
+  AreaChart, Area, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line
 } from "recharts";
 import ShaderBackground from "@/components/shader-background";
 import { Playfair_Display, Poppins } from "next/font/google";
@@ -44,9 +44,9 @@ const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 // Dados mockados para funcionalidades avançadas
 const whatsappHourlyData = [
-  { hora: "08:00", cliques: 5 }, { hora: "10:00", cliques: 12 }, 
-  { hora: "12:00", cliques: 18 }, { hora: "14:00", cliques: 25 }, 
-  { hora: "16:00", cliques: 22 }, { hora: "18:00", cliques: 15 }, 
+  { hora: "08:00", cliques: 5 }, { hora: "10:00", cliques: 12 },
+  { hora: "12:00", cliques: 18 }, { hora: "14:00", cliques: 25 },
+  { hora: "16:00", cliques: 22 }, { hora: "18:00", cliques: 15 },
   { hora: "20:00", cliques: 8 }
 ];
 
@@ -67,6 +67,9 @@ const monthlyEvolution = [
   { mes: "Mar", cadastros: 134, aprovados: 98, vendas: 478000 }
 ];
 
+const promoters = ["Carlos Mendes", "Juliana Santos", "Roberto Silva", "Patricia Lima", "Anderson Costa"];
+
+
 export default function DashboardClient({ user }: { user: User }) {
     const router = useRouter();
     const { toast } = useToast();
@@ -75,8 +78,8 @@ export default function DashboardClient({ user }: { user: User }) {
     const [selectedPeriod, setSelectedPeriod] = useState("30d");
     const [searchTerm, setSearchTerm] = useState("");
     const [showPendingModal, setShowPendingModal] = useState(false);
-    const [showReportModal, setShowReportModal] = useState(false);
-    const [showExportModal, setShowExportModal] = useState(false);
+    const [showPromoterReportModal, setShowPromoterReportModal] = useState(false);
+    const [selectedPromoter, setSelectedPromoter] = useState("all");
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
     const [isExporting, setIsExporting] = useState(false);
@@ -89,10 +92,10 @@ export default function DashboardClient({ user }: { user: User }) {
     const { data: whatsappResponse, error: whatsappError } = useSWR('/api/metrics/whatsapp-clicks', fetcher, { refreshInterval: 30000 });
 
     // Processamento de dados
-    const { 
-        totalLeads, approvedLeadsCount, pendingRegistrations, rejectedLeadsCount, 
-        approvalRate, whatsappClicks, statusData, registrationChartData, 
-        growthRate, conversionRate, averageProcessingTime 
+    const {
+        totalLeads, approvedLeadsCount, pendingRegistrations, rejectedLeadsCount,
+        approvalRate, whatsappClicks, statusData, registrationChartData,
+        growthRate, conversionRate, averageProcessingTime
     } = useMemo(() => {
         const allLeads = leadsResponse?.data || [];
         const total = allLeads.length;
@@ -109,7 +112,7 @@ export default function DashboardClient({ user }: { user: User }) {
             const now = new Date();
             return leadDate.getMonth() === now.getMonth() && leadDate.getFullYear() === now.getFullYear();
         }).length;
-        
+
         const lastMonth = allLeads.filter((l: any) => {
             if (!l.createdAt) return false;
             const leadDate = new Date(l.createdAt);
@@ -117,7 +120,7 @@ export default function DashboardClient({ user }: { user: User }) {
             lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
             return leadDate.getMonth() === lastMonthDate.getMonth() && leadDate.getFullYear() === lastMonthDate.getFullYear();
         }).length;
-        
+
         const growth = lastMonth > 0 ? (((thisMonth - lastMonth) / lastMonth) * 100).toFixed(1) : "0";
 
         // Taxa de conversão WhatsApp para cadastro
@@ -138,7 +141,7 @@ export default function DashboardClient({ user }: { user: User }) {
             const date = format(subDays(new Date(), i), 'dd/MM');
             dailyData[date] = { cadastros: 0, aprovados: 0, reprovados: 0 };
         }
-        
+
         allLeads.forEach((lead: any) => {
             if (lead.createdAt) {
                 const leadDate = format(new Date(lead.createdAt), 'dd/MM');
@@ -149,30 +152,43 @@ export default function DashboardClient({ user }: { user: User }) {
                 }
             }
         });
-        
+
         const chartData = Object.keys(dailyData).map(date => ({ date, ...dailyData[date] }));
-        
-        return { 
-            totalLeads: total, 
-            approvedLeadsCount: approved, 
-            pendingRegistrations: pending, 
-            rejectedLeadsCount: rejected, 
-            approvalRate: rate, 
-            whatsappClicks: clicks, 
-            statusData: status, 
+
+        return {
+            totalLeads: total,
+            approvedLeadsCount: approved,
+            pendingRegistrations: pending,
+            rejectedLeadsCount: rejected,
+            approvalRate: rate,
+            whatsappClicks: clicks,
+            statusData: status,
             registrationChartData: chartData,
             growthRate: growth,
             conversionRate: conversion,
             averageProcessingTime: avgTime
         };
     }, [leadsResponse, whatsappResponse]);
+    
+    const getStatusBadge = (status: string) => {
+        switch (status) {
+          case "EM_ANALISE":
+            return <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">Em Análise</Badge>
+          case "APROVADO":
+            return <Badge className="bg-green-500/20 text-green-300 border-green-500/30">Aprovado</Badge>
+          case "REPROVADO":
+            return <Badge className="bg-red-500/20 text-red-300 border-red-500/30">Reprovado</Badge>
+          default:
+            return <Badge variant="outline">{status}</Badge>
+        }
+    }
 
     // Função para calcular relatório detalhado
     const generateDetailedReport = useMemo(() => {
         const today = new Date();
         const startOfThisMonth = startOfMonth(today);
         const endOfThisMonth = endOfMonth(today);
-        
+
         return {
             periodo: `${format(startOfThisMonth, "dd/MM/yyyy", { locale: ptBR })} - ${format(endOfThisMonth, "dd/MM/yyyy", { locale: ptBR })}`,
             totalCadastros: totalLeads,
@@ -194,29 +210,29 @@ export default function DashboardClient({ user }: { user: User }) {
     const handleApprove = async (leadId: string) => {
         setIsUpdating(leadId);
         try {
-            const response = await fetch(`/api/leads/${leadId}/approve`, {
-                method: 'PATCH', 
+            const response = await fetch(`/api/leads/id/approve`, {
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     promotorId: 'system',
                     observacoes: 'Aprovado via dashboard administrativo'
                 }),
             });
-            
+
             if (!response.ok) throw new Error('Falha ao aprovar.');
-            
-            toast({ 
-                title: "Sucesso!", 
+
+            toast({
+                title: "Sucesso!",
                 description: "Cadastro aprovado com sucesso.",
                 duration: 3000
             });
-            
+
             // Atualizar dados
             mutateLeads();
         } catch (error) {
-            toast({ 
-                title: "Erro!", 
-                description: "Não foi possível aprovar o cadastro.", 
+            toast({
+                title: "Erro!",
+                description: "Não foi possível aprovar o cadastro.",
                 variant: 'destructive',
                 duration: 5000
             });
@@ -228,29 +244,29 @@ export default function DashboardClient({ user }: { user: User }) {
     const handleReject = async (leadId: string) => {
         setIsUpdating(leadId);
         try {
-            const response = await fetch(`/api/leads/${leadId}/reject`, {
-                method: 'PATCH', 
+            const response = await fetch(`/api/leads/id/reject`, {
+                method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     motivo: 'Análise administrativa',
                     observacoes: 'Reprovado via dashboard administrativo'
                 }),
             });
-            
+
             if (!response.ok) throw new Error('Falha ao reprovar.');
-            
-            toast({ 
-                title: "Sucesso!", 
+
+            toast({
+                title: "Sucesso!",
                 description: "Cadastro reprovado.",
                 duration: 3000
             });
-            
+
             // Atualizar dados
             mutateLeads();
         } catch (error) {
-            toast({ 
-                title: "Erro!", 
-                description: "Não foi possível reprovar o cadastro.", 
+            toast({
+                title: "Erro!",
+                description: "Não foi possível reprovar o cadastro.",
                 variant: 'destructive',
                 duration: 5000
             });
@@ -269,20 +285,20 @@ export default function DashboardClient({ user }: { user: User }) {
     // Função de exportação melhorada
     const exportToExcel = async () => {
         if (!dateFrom || !dateTo) {
-            toast({ 
-                title: "Erro!", 
-                description: "Selecione as datas para exportação.", 
-                variant: 'destructive' 
+            toast({
+                title: "Erro!",
+                description: "Selecione as datas para exportação.",
+                variant: 'destructive'
             });
             return;
         }
 
         setIsExporting(true);
-        
+
         try {
             // Simular busca de dados por período
             await new Promise(resolve => setTimeout(resolve, 2000));
-            
+
             const exportData = pendingRegistrations.map((lead: any, index: number) => ({
                 ID: lead.id,
                 Nome: lead.consultant?.nome || 'N/A',
@@ -337,22 +353,22 @@ export default function DashboardClient({ user }: { user: User }) {
                 window.open(`https://wa.me/55${cleanNumber}?text=${encodeURIComponent(message)}`, '_blank');
             }
 
-            toast({ 
-                title: "Sucesso!", 
+            toast({
+                title: "Sucesso!",
                 description: `Arquivo ${fileName} foi exportado com sucesso!`,
                 duration: 5000
             });
 
         } catch (error) {
-            toast({ 
-                title: "Erro!", 
-                description: "Falha na exportação dos dados.", 
+            toast({
+                title: "Erro!",
+                description: "Falha na exportação dos dados.",
                 variant: 'destructive',
                 duration: 5000
             });
         } finally {
             setIsExporting(false);
-            setShowExportModal(false);
+            // setShowExportModal(false); // Manter o modal aberto
             // Reset form
             setDateFrom("");
             setDateTo("");
@@ -363,8 +379,8 @@ export default function DashboardClient({ user }: { user: User }) {
     // Função para atualizar dados manualmente
     const refreshData = () => {
         mutateLeads();
-        toast({ 
-            title: "Dados atualizados!", 
+        toast({
+            title: "Dados atualizados!",
             description: "Os dados foram recarregados com sucesso.",
             duration: 2000
         });
@@ -566,16 +582,61 @@ export default function DashboardClient({ user }: { user: User }) {
                                                 Gerenciar Consultoras ({totalLeads})
                                             </Button>
                                         </Link>
-                                        <Link href="/admin/reports">
+                                        <Link href="/admin/consultants/reports">
                                             <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10">
                                                 <FileText className="w-4 h-4 mr-2" />
                                                 Relatórios Detalhados
                                             </Button>
                                         </Link>
-                                        <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10" onClick={() => setShowExportModal(true)}>
-                                            <FileSpreadsheet className="w-4 h-4 mr-2" />
-                                            Exportar Dados
-                                        </Button>
+                                        <Dialog open={showPromoterReportModal} onOpenChange={setShowPromoterReportModal}>
+                                            <DialogTrigger asChild>
+                                                <Button variant="ghost" className="w-full justify-start text-white hover:bg-white/10">
+                                                    <FileSpreadsheet className="w-4 h-4 mr-2" />
+                                                    Relatório por Promotor
+                                                </Button>
+                                            </DialogTrigger>
+                                            <DialogContent className="max-w-4xl bg-violet-900/95 backdrop-blur-lg border-violet-400/30">
+                                                <DialogHeader>
+                                                    <DialogTitle className="text-white text-xl">Relatório por Promotor</DialogTitle>
+                                                    <DialogDescription className="text-violet-200">
+                                                        Selecione um promotor para ver os detalhes
+                                                    </DialogDescription>
+                                                </DialogHeader>
+                                                <div className="mt-6 space-y-6">
+                                                    <Select value={selectedPromoter} onValueChange={setSelectedPromoter}>
+                                                        <SelectTrigger className="w-full bg-white/10 border-white/20 text-white">
+                                                            <SelectValue placeholder="Selecione um promotor" />
+                                                        </SelectTrigger>
+                                                        <SelectContent className="bg-violet-900/90 text-white border-violet-400/30">
+                                                            <SelectItem value="all">Todos os Promotores</SelectItem>
+                                                            {promoters.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                                                        </SelectContent>
+                                                    </Select>
+
+                                                    {/* Tabela de Relatório */}
+                                                    <Table>
+                                                        <TableHeader>
+                                                            <TableRow className="border-b border-white/20">
+                                                                <TableHead className="text-violet-200">Consultora</TableHead>
+                                                                <TableHead className="text-violet-200">Status</TableHead>
+                                                                <TableHead className="text-violet-200">Data</TableHead>
+                                                                <TableHead className="text-violet-200">Promotor</TableHead>
+                                                            </TableRow>
+                                                        </TableHeader>
+                                                        <TableBody>
+                                                            {leadsResponse?.data?.filter((lead: any) => selectedPromoter === 'all' || lead.promotorId === selectedPromoter).slice(0, 10).map((lead: any) => (
+                                                                <TableRow key={lead.id} className="border-b border-white/20 hover:bg-white/5">
+                                                                    <TableCell className="text-white">{lead.consultant?.nome}</TableCell>
+                                                                    <TableCell>{getStatusBadge(lead.status)}</TableCell>
+                                                                    <TableCell className="text-white">{lead.createdAt ? format(new Date(lead.createdAt), 'dd/MM/yyyy') : 'N/A'}</TableCell>
+                                                                    <TableCell className="text-white">{lead.promotorId || 'N/A'}</TableCell>
+                                                                </TableRow>
+                                                            ))}
+                                                        </TableBody>
+                                                    </Table>
+                                                </div>
+                                            </DialogContent>
+                                        </Dialog>
                                     </CardContent>
                                 </Card>
 
@@ -598,8 +659,8 @@ export default function DashboardClient({ user }: { user: User }) {
                                                 <span className="text-white font-bold">{totalLeads}</span>
                                             </div>
                                             <div className="w-full bg-gray-700 rounded-full h-2 mb-2">
-                                                <div 
-                                                    className="bg-gradient-to-r from-violet-500 to-purple-600 h-2 rounded-full transition-all duration-500" 
+                                                <div
+                                                    className="bg-gradient-to-r from-violet-500 to-purple-600 h-2 rounded-full transition-all duration-500"
                                                     style={{width: `${Math.min(Number(generateDetailedReport.percentualMeta), 100)}%`}}
                                                 ></div>
                                             </div>
@@ -627,7 +688,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                                 </div>
                                             </div>
                                         )}
-                                        
+
                                         {Number(generateDetailedReport.percentualMeta) >= 80 && (
                                             <div className="p-3 bg-green-500/20 border border-green-500/30 rounded-lg">
                                                 <div className="flex items-center text-green-300">
@@ -636,7 +697,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                                 </div>
                                             </div>
                                         )}
-                                        
+
                                         <div className="p-3 bg-blue-500/20 border border-blue-500/30 rounded-lg">
                                             <div className="flex items-center text-blue-300">
                                                 <MessageCircle className="w-4 h-4 mr-2" />
@@ -796,7 +857,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                         </Dialog>
 
                                         {/* Modal Relatório Detalhado */}
-                                        <Dialog open={showReportModal} onOpenChange={setShowReportModal}>
+                                        <Dialog>
                                             <DialogTrigger asChild>
                                                 <Button className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700">
                                                     <FileText className="w-4 h-4 mr-2" />
@@ -903,92 +964,6 @@ export default function DashboardClient({ user }: { user: User }) {
                                             </DialogContent>
                                         </Dialog>
 
-                                        {/* Modal Exportar Dados */}
-                                        <Dialog open={showExportModal} onOpenChange={setShowExportModal}>
-                                            <DialogTrigger asChild>
-                                                <Button className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700">
-                                                    <FileSpreadsheet className="w-4 h-4 mr-2" />
-                                                    Exportar Dados
-                                                </Button>
-                                            </DialogTrigger>
-                                            <DialogContent className="bg-violet-900/95 backdrop-blur-lg border-violet-400/30">
-                                                <DialogHeader>
-                                                    <DialogTitle className="text-white text-xl">Exportar Cadastros</DialogTitle>
-                                                    <DialogDescription className="text-violet-200">
-                                                        Selecione o período e formato para exportação
-                                                    </DialogDescription>
-                                                </DialogHeader>
-                                                <div className="grid gap-4 py-4">
-                                                    <div className="grid grid-cols-2 gap-4">
-                                                        <div className="space-y-2">
-                                                            <Label htmlFor="date-from" className="text-white">Data Inicial</Label>
-                                                            <Input
-                                                                id="date-from"
-                                                                type="date"
-                                                                value={dateFrom}
-                                                                onChange={(e) => setDateFrom(e.target.value)}
-                                                                className="bg-white/10 border-white/20 text-white"
-                                                            />
-                                                        </div>
-                                                        <div className="space-y-2">
-                                                            <Label htmlFor="date-to" className="text-white">Data Final</Label>
-                                                            <Input
-                                                                id="date-to"
-                                                                type="date"
-                                                                value={dateTo}
-                                                                onChange={(e) => setDateTo(e.target.value)}
-                                                                className="bg-white/10 border-white/20 text-white"
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                    
-                                                    <div className="space-y-2">
-                                                        <Label className="text-white">Formato de Exportação</Label>
-                                                        <Select value={exportFormat} onValueChange={setExportFormat}>
-                                                            <SelectTrigger className="bg-white/10 border-white/20 text-white">
-                                                                <SelectValue />
-                                                            </SelectTrigger>
-                                                            <SelectContent className="bg-violet-900/90 text-white border-violet-400/30">
-                                                                <SelectItem value="excel">Excel (.xlsx)</SelectItem>
-                                                                <SelectItem value="csv">CSV (.csv)</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </div>
-
-                                                    <div className="space-y-2">
-                                                        <Label htmlFor="whatsapp" className="text-white">WhatsApp (opcional)</Label>
-                                                        <Input
-                                                            id="whatsapp"
-                                                            placeholder="Ex: 67987654321"
-                                                            value={whatsappNumber}
-                                                            onChange={(e) => setWhatsappNumber(e.target.value)}
-                                                            className="bg-white/10 border-white/20 text-white placeholder-violet-200"
-                                                        />
-                                                        <p className="text-xs text-violet-300">
-                                                            Informe o número para receber notificação via WhatsApp
-                                                        </p>
-                                                    </div>
-
-                                                    <Button
-                                                        onClick={exportToExcel}
-                                                        disabled={!dateFrom || !dateTo || isExporting}
-                                                        className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
-                                                    >
-                                                        {isExporting ? (
-                                                            <>
-                                                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                                                                Exportando...
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <Download className="w-4 h-4 mr-2" />
-                                                                Exportar {exportFormat === 'excel' ? 'Excel' : 'CSV'}
-                                                            </>
-                                                        )}
-                                                    </Button>
-                                                </div>
-                                            </DialogContent>
-                                        </Dialog>
                                     </CardContent>
                                 </Card>
 
