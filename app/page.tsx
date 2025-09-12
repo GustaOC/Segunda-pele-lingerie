@@ -1,7 +1,7 @@
 "use client"
 import ShaderBackground from "@/components/shader-background"
 import { Button } from "@/components/ui/button"
-import { LogIn, MessageCircle, Loader2 } from "lucide-react"
+import { LogIn, MessageCircle, Loader2, CheckCircle } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { useState } from "react"
@@ -23,6 +23,7 @@ const poppins = Poppins({
 export default function HomePage() {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
+  const [isSuccess, setIsSuccess] = useState(false) // ✅ NOVO ESTADO
   const [formData, setFormData] = useState({
     nomeCompleto: "",
     cpf: "",
@@ -49,35 +50,51 @@ export default function HomePage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setIsSuccess(false)
 
     // Validação simples
     if (formData.cpf.replace(/\D/g, '').length !== 11) {
-        toast({ title: "Erro de Validação", description: "CPF deve ter exatamente 11 dígitos.", variant: "destructive" })
+        toast({ 
+            title: "❌ Erro de Validação", 
+            description: "CPF deve ter exatamente 11 dígitos.", 
+            variant: "destructive" 
+        })
         setIsLoading(false)
         return
     }
     if (formData.telefone.replace(/\D/g, '').length < 10) {
-        toast({ title: "Erro de Validação", description: "Telefone deve ter pelo menos 10 dígitos (DDD + número).", variant: "destructive"})
+        toast({ 
+            title: "❌ Erro de Validação", 
+            description: "Telefone deve ter pelo menos 10 dígitos (DDD + número).", 
+            variant: "destructive"
+        })
         setIsLoading(false)
         return
     }
 
     try {
+        console.log('📤 Enviando cadastro...', formData) // ✅ LOG PARA DEBUG
+        
         const response = await fetch('/api/leads/id', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData)
         })
 
-        const result = await response.json();
+        const result = await response.json()
+        
+        console.log('📥 Resposta da API:', result) // ✅ LOG PARA DEBUG
 
         if (!response.ok) {
-            throw new Error(result.error || 'Ocorreu um erro no servidor.');
+            throw new Error(result.error || 'Ocorreu um erro no servidor.')
         }
 
+        // ✅ SUCESSO - FEEDBACK MELHORADO
+        setIsSuccess(true)
         toast({
-            title: "Cadastro Enviado com Sucesso!",
-            description: "Seus dados foram recebidos. Entraremos em contato em breve.",
+            title: "✅ Cadastro Enviado com Sucesso!",
+            description: `Olá ${formData.nomeCompleto}! Seus dados foram recebidos. Nossa equipe entrará em contato em até 24 horas.`,
+            duration: 6000 // ✅ DURAÇÃO MAIOR
         })
         
         // Limpar formulário
@@ -86,11 +103,19 @@ export default function HomePage() {
             endereco: { rua: "", numero: "", bairro: "", cidade: "", uf: "MS", cep: "" }
         })
 
+        // ✅ RESETAR SUCESSO APÓS 5 SEGUNDOS
+        setTimeout(() => setIsSuccess(false), 5000)
+
     } catch (error: any) {
+        console.error('❌ Erro no cadastro:', error) // ✅ LOG PARA DEBUG
+        
         toast({
-            title: "Erro no Cadastro",
-            description: error.message === 'CPF já cadastrado' ? 'O CPF informado já está cadastrado em nosso sistema.' : 'Não foi possível concluir seu cadastro. Tente novamente.',
-            variant: "destructive"
+            title: "❌ Erro no Cadastro",
+            description: error.message === 'CPF já cadastrado' 
+                ? 'O CPF informado já está cadastrado em nosso sistema.' 
+                : 'Não foi possível concluir seu cadastro. Tente novamente em alguns minutos.',
+            variant: "destructive",
+            duration: 5000
         })
     } finally {
         setIsLoading(false)
@@ -172,8 +197,16 @@ export default function HomePage() {
           {/* Formulário */}
           <form 
             onSubmit={handleSubmit} 
-            className="w-full mx-auto p-6 md:p-8 rounded-xl bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg flex flex-col justify-center"
+            className="w-full mx-auto p-6 md:p-8 rounded-xl bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg flex flex-col justify-center relative"
           >
+            {/* ✅ INDICADOR DE SUCESSO */}
+            {isSuccess && (
+              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-4 py-2 rounded-full text-sm font-semibold shadow-lg flex items-center gap-2">
+                <CheckCircle className="w-4 h-4" />
+                Cadastro Enviado!
+              </div>
+            )}
+
             <h2 
               className="text-2xl md:text-3xl font-semibold text-center text-white mb-6"
               style={{ fontFamily: "var(--font-playfair)" }}
@@ -182,22 +215,99 @@ export default function HomePage() {
             </h2>
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input name="nomeCompleto" value={formData.nomeCompleto} onChange={handleChange} placeholder="Nome completo" required className="md:col-span-2 p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
-              <input name="cpf" value={formData.cpf} onChange={handleChange} placeholder="CPF" maxLength={14} required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
-              <input name="telefone" value={formData.telefone} onChange={handleChange} placeholder="Telefone com DDD" maxLength={15} required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
-              <input name="rua" value={formData.endereco.rua} onChange={handleChange} placeholder="Rua" required className="md:col-span-2 p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
-              <input name="numero" value={formData.endereco.numero} onChange={handleChange} placeholder="Número" required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
-              <input name="bairro" value={formData.endereco.bairro} onChange={handleChange} placeholder="Bairro" required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
-              <input name="cidade" value={formData.endereco.cidade} onChange={handleChange} placeholder="Cidade" required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
-               <input name="cep" value={formData.endereco.cep} onChange={handleChange} placeholder="CEP" maxLength={9} required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
+              <input 
+                name="nomeCompleto" 
+                value={formData.nomeCompleto} 
+                onChange={handleChange} 
+                placeholder="Nome completo" 
+                required 
+                disabled={isLoading}
+                className="md:col-span-2 p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300 disabled:opacity-50" 
+              />
+              <input 
+                name="cpf" 
+                value={formData.cpf} 
+                onChange={handleChange} 
+                placeholder="CPF" 
+                maxLength={14} 
+                required 
+                disabled={isLoading}
+                className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300 disabled:opacity-50" 
+              />
+              <input 
+                name="telefone" 
+                value={formData.telefone} 
+                onChange={handleChange} 
+                placeholder="Telefone com DDD" 
+                maxLength={15} 
+                required 
+                disabled={isLoading}
+                className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300 disabled:opacity-50" 
+              />
+              <input 
+                name="rua" 
+                value={formData.endereco.rua} 
+                onChange={handleChange} 
+                placeholder="Rua" 
+                required 
+                disabled={isLoading}
+                className="md:col-span-2 p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300 disabled:opacity-50" 
+              />
+              <input 
+                name="numero" 
+                value={formData.endereco.numero} 
+                onChange={handleChange} 
+                placeholder="Número" 
+                required 
+                disabled={isLoading}
+                className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300 disabled:opacity-50" 
+              />
+              <input 
+                name="bairro" 
+                value={formData.endereco.bairro} 
+                onChange={handleChange} 
+                placeholder="Bairro" 
+                required 
+                disabled={isLoading}
+                className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300 disabled:opacity-50" 
+              />
+              <input 
+                name="cidade" 
+                value={formData.endereco.cidade} 
+                onChange={handleChange} 
+                placeholder="Cidade" 
+                required 
+                disabled={isLoading}
+                className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300 disabled:opacity-50" 
+              />
+               <input 
+                name="cep" 
+                value={formData.endereco.cep} 
+                onChange={handleChange} 
+                placeholder="CEP" 
+                maxLength={9} 
+                required 
+                disabled={isLoading}
+                className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300 disabled:opacity-50" 
+              />
             </div>
             
             <Button 
               type="submit" 
-              className="w-full mt-6 bg-violet-500 hover:bg-violet-600 text-white font-semibold py-3 rounded-lg text-lg shadow-md"
+              className={`w-full mt-6 text-white font-semibold py-3 rounded-lg text-lg shadow-md transition-all ${
+                isSuccess 
+                  ? 'bg-green-500 hover:bg-green-600' 
+                  : 'bg-violet-500 hover:bg-violet-600'
+              }`}
               disabled={isLoading}
             >
-              {isLoading ? <Loader2 className="w-6 h-6 animate-spin" /> : "Concluir cadastro"}
+              {isLoading ? (
+                <><Loader2 className="w-6 h-6 animate-spin mr-2" /> Enviando cadastro...</>
+              ) : isSuccess ? (
+                <><CheckCircle className="w-6 h-6 mr-2" /> Cadastro enviado!</>
+              ) : (
+                "Concluir cadastro"
+              )}
             </Button>
           </form>
         </section>

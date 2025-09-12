@@ -1,3 +1,4 @@
+// app/api/leads/id/route.ts
 import { type NextRequest, NextResponse } from "next/server"
 import { supabaseAdmin } from "@/lib/supabase-server"
 
@@ -100,12 +101,14 @@ export async function GET(req: NextRequest) {
     const from = searchParams.get("from")
     const to = searchParams.get("to")
 
-    // Construir query
+    console.log('🔍 Buscando leads...') // ✅ LOG PARA DEBUG
+
+    // ✅ QUERY CORRIGIDA - usar nomes de colunas exatos do banco
     let query = supabaseAdmin
       .from('lead')
       .select(`
         *,
-        consultant (
+        consultant!inner (
           *,
           address (*)
         )
@@ -115,31 +118,20 @@ export async function GET(req: NextRequest) {
     if (status) query = query.eq('status', status)
     if (promotorId) query = query.eq('promotorId', promotorId)
     
-    if (from) query = query.gte('createdAt', new Date(String(from)).toISOString())
-    if (to) query = query.lte('createdAt', new Date(String(to)).toISOString())
-
-    // Filtro de cidade (precisa de join)
-    if (cidade) {
-      // Como Supabase não suporta filtros em relações aninhadas facilmente,
-      // você pode precisar fazer uma query separada ou ajustar a estrutura
-      // Por enquanto, vamos buscar todos e filtrar no código
-    }
-
-    // Busca por texto
-    if (q) {
-      const cpfLimpo = q.replace(/\D/g, "")
-      query = query.or(`consultant.nome.ilike.%${q}%,consultant.cpf.eq.${cpfLimpo},consultant.telefone.eq.${q}`)
-    }
+    if (from) query = query.gte('created_at', new Date(String(from)).toISOString())
+    if (to) query = query.lte('created_at', new Date(String(to)).toISOString())
 
     // Executar query
     const { data, error } = await query
-      .order('createdAt', { ascending: false })
+      .order('created_at', { ascending: false })
       .limit(100)
 
     if (error) {
-      console.error('Database error:', error)
+      console.error('❌ Database error:', error)
       return NextResponse.json({ data: [], error: "Database unavailable" })
     }
+
+    console.log(`✅ Encontrados ${data?.length || 0} leads`) // ✅ LOG PARA DEBUG
 
     // Filtrar por cidade se necessário (pós-processamento)
     let filteredData = data || []
@@ -149,9 +141,27 @@ export async function GET(req: NextRequest) {
       )
     }
 
+    // Busca por texto
+    if (q && filteredData.length > 0) {
+      const cpfLimpo = q.replace(/\D/g, "")
+      filteredData = filteredData.filter(lead => {
+        const consultant = lead.consultant
+        if (!consultant) return false
+        
+        return (
+          consultant.nome.toLowerCase().includes(q.toLowerCase()) ||
+          consultant.cpf.includes(cpfLimpo) ||
+          consultant.telefone.includes(q) ||
+          consultant.address?.cidade.toLowerCase().includes(q.toLowerCase())
+        )
+      })
+    }
+
+    console.log(`🎯 Retornando ${filteredData.length} leads filtrados`) // ✅ LOG PARA DEBUG
+
     return NextResponse.json({ data: filteredData })
   } catch (error) {
-    console.error("Database error:", error)
+    console.error("❌ Unexpected error:", error)
     return NextResponse.json({ data: [], error: "Database unavailable" })
   }
 }
