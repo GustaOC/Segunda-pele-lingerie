@@ -8,16 +8,13 @@ const createUserSchema = z.object({
   nome: z.string().min(3, "Nome é obrigatório."),
   email: z.string().email("Email inválido."),
   password: z.string().min(8, "Senha deve ter no mínimo 8 caracteres."),
-  role: z.enum(["ADMIN", "TRIAGEM", "PROMOTOR", "VISUALIZADOR"]),
+  role: z.enum(["ADMIN", "USER", "CONSULTANT"]),
   telefone: z.string().optional(),
 });
 
 // GET: Listar todos os usuários do sistema
 export async function GET(req: NextRequest) {
   try {
-    // É crucial proteger esta rota para que apenas admins possam listar usuários.
-    // O middleware já deve fazer isso, mas uma verificação dupla é uma boa prática.
-
     const { data: users, error } = await supabaseAdmin.auth.admin.listUsers();
 
     if (error) {
@@ -25,7 +22,6 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Falha ao buscar usuários." }, { status: 500 });
     }
 
-    // Para enriquecer os dados, buscamos os perfis correspondentes
     const { data: profiles, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('*');
@@ -34,14 +30,13 @@ export async function GET(req: NextRequest) {
         console.error('Erro ao buscar perfis:', profileError);
     }
 
-    // Combina dados de auth.users com a tabela profiles
     const combinedUsers = users.users.map(user => {
         const profile = profiles?.find(p => p.id === user.id);
         return {
             id: user.id,
             email: user.email,
             nome: profile?.nome || user.user_metadata?.nome || 'Não definido',
-            role: profile?.role || 'VISUALIZADOR',
+            role: profile?.role || 'USER',
             ativo: profile?.ativo ?? true,
             telefone: profile?.telefone,
             created_at: user.created_at,
@@ -67,10 +62,10 @@ export async function POST(req: NextRequest) {
     const { data: newUser, error } = await supabaseAdmin.auth.admin.createUser({
       email: validatedData.email,
       password: validatedData.password,
-      email_confirm: true, // Auto-confirma o email, já que é um admin criando
+      email_confirm: true,
       user_metadata: {
         nome: validatedData.nome,
-        role: validatedData.role, // Salva o role nos metadados do Supabase Auth
+        role: validatedData.role,
       },
     });
 
@@ -79,18 +74,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }
 
-    // Também insere na tabela 'profiles' para consistência
     const { error: profileError } = await supabaseAdmin.from('profiles').insert({
         id: newUser.user.id,
         nome: validatedData.nome,
         role: validatedData.role,
-        telefone: validatedData.telefone,
         ativo: true,
+        // O campo 'telefone' foi removido temporariamente para evitar o erro
     });
 
     if (profileError) {
         console.error('Erro ao criar perfil do usuário:', profileError);
-        // Aqui você pode querer deletar o usuário criado no auth para evitar inconsistência
         await supabaseAdmin.auth.admin.deleteUser(newUser.user.id);
         return NextResponse.json({ error: "Falha ao criar perfil do usuário." }, { status: 500 });
     }

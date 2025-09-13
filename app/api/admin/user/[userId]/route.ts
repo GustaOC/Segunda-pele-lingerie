@@ -5,7 +5,7 @@ import { z } from "zod";
 
 const updateUserSchema = z.object({
   nome: z.string().min(3),
-  role: z.enum(["ADMIN", "TRIAGEM", "PROMOTOR", "VISUALIZADOR"]),
+  role: z.enum(["ADMIN", "USER", "CONSULTANT"]),
   telefone: z.string().optional(),
 });
 
@@ -28,8 +28,8 @@ export async function PUT(req: NextRequest, { params }: { params: { userId: stri
       .update({
         nome: validatedData.nome,
         role: validatedData.role,
-        telefone: validatedData.telefone,
         updated_at: new Date().toISOString(),
+        // O campo 'telefone' foi removido temporariamente para evitar o erro
       })
       .eq('id', userId);
 

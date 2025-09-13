@@ -1,4 +1,4 @@
-// app/admin/(protected)/users/page.tsx
+// app/admin/(protected)/user/page.tsx
 "use client"
 
 import { useState, useMemo, useEffect } from "react"
@@ -159,8 +159,20 @@ export default function UserManagementPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
+    console.log('🚀 Iniciando envio do formulário');
+    console.log('📋 Dados do formulário:', {
+      nome: formData.nome,
+      email: formData.email,
+      role: formData.role,
+      telefone: formData.telefone,
+      password: formData.password ? '[OCULTADO]' : 'vazio',
+      confirmPassword: formData.confirmPassword ? '[OCULTADO]' : 'vazio',
+      isEditing: !!editingUser
+    });
+    
     // Validações
     if (!editingUser && formData.password !== formData.confirmPassword) {
+      console.error('❌ Senhas não coincidem');
       toast({
         title: "Erro",
         description: "As senhas não coincidem.",
@@ -170,6 +182,7 @@ export default function UserManagementPage() {
     }
     
     if (!editingUser && formData.password.length < 8) {
+      console.error('❌ Senha muito curta');
       toast({
         title: "Erro",
         description: "A senha deve ter pelo menos 8 caracteres.",
@@ -178,7 +191,19 @@ export default function UserManagementPage() {
       return
     }
     
+    // Validação de campos obrigatórios
+    if (!formData.nome || !formData.email || (!editingUser && !formData.password)) {
+      console.error('❌ Campos obrigatórios não preenchidos');
+      toast({
+        title: "Erro",
+        description: "Preencha todos os campos obrigatórios.",
+        variant: "destructive"
+      })
+      return
+    }
+    
     setIsLoading(true)
+    console.log('⏳ Loading iniciado...');
     
     try {
       const endpoint = editingUser 
@@ -187,17 +212,52 @@ export default function UserManagementPage() {
       
       const method = editingUser ? 'PUT' : 'POST'
       
+      console.log(`📤 Fazendo ${method} para ${endpoint}`);
+      
+      // Preparar dados para envio
+      const dataToSend = editingUser 
+        ? {
+            nome: formData.nome,
+            role: formData.role,
+            telefone: formData.telefone
+          }
+        : formData;
+      
+      console.log('📤 Dados sendo enviados:', {
+        ...dataToSend,
+        password: dataToSend.password ? '[OCULTADO]' : undefined,
+        confirmPassword: dataToSend.confirmPassword ? '[OCULTADO]' : undefined
+      });
+      
       const response = await fetch(endpoint, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(dataToSend)
       })
+      
+      console.log('📥 Resposta recebida:', {
+        status: response.status,
+        statusText: response.statusText,
+        ok: response.ok,
+        headers: {
+          'content-type': response.headers.get('content-type')
+        }
+      });
       
       const data = await response.json()
       
+      console.log('📥 Dados da resposta:', data);
+      
       if (!response.ok) {
-        throw new Error(data.error || 'Erro ao salvar usuário')
+        console.error('❌ Resposta não OK:', {
+          status: response.status,
+          error: data.error,
+          details: data.details
+        });
+        throw new Error(data.error || data.details || 'Erro ao salvar usuário')
       }
+      
+      console.log('✅ Usuário salvo com sucesso!');
       
       toast({
         title: "Sucesso!",
@@ -206,21 +266,64 @@ export default function UserManagementPage() {
           : "Usuário criado com sucesso.",
       })
       
+      console.log('🔄 Recarregando lista de usuários...');
       mutateUsers()
+      
+      console.log('🔒 Fechando modal...');
       setIsModalOpen(false)
       
+      // Limpar formulário se for criação
+      if (!editingUser) {
+        console.log('🧹 Limpando formulário...');
+        setFormData({
+          nome: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+          role: "TRIAGEM",
+          telefone: ""
+        })
+      }
+      
     } catch (error: any) {
+      console.error('❌ Erro completo:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name,
+        cause: error.cause
+      });
+      
+      // Mensagem de erro mais específica
+      let errorMessage = "Erro ao salvar usuário.";
+      
+      if (error.message?.includes('already registered') || 
+          error.message?.includes('duplicate') ||
+          error.message?.includes('já está cadastrado')) {
+        errorMessage = "Este email já está cadastrado no sistema.";
+      } else if (error.message?.includes('connection') || 
+                 error.message?.includes('network')) {
+        errorMessage = "Erro de conexão. Verifique sua internet.";
+      } else if (error.message?.includes('permission') || 
+                 error.message?.includes('unauthorized')) {
+        errorMessage = "Você não tem permissão para esta ação.";
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+      
       toast({
         title: "Erro",
-        description: error.message || "Erro ao salvar usuário.",
+        description: errorMessage,
         variant: "destructive"
       })
     } finally {
       setIsLoading(false)
+      console.log('⏹️ Loading finalizado');
     }
   }
   
   const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
+    console.log(`🔄 Alternando status do usuário ${userId} de ${currentStatus} para ${!currentStatus}`);
+    
     try {
       const response = await fetch(`/api/admin/user/${userId}/toggle-status`, {
         method: 'PATCH',
@@ -240,6 +343,7 @@ export default function UserManagementPage() {
       mutateUsers()
       
     } catch (error) {
+      console.error('❌ Erro ao alterar status:', error);
       toast({
         title: "Erro",
         description: "Não foi possível alterar o status.",
@@ -250,6 +354,8 @@ export default function UserManagementPage() {
   
   const handleResetPassword = async (userId: string, email: string) => {
     if (!confirm(`Deseja realmente resetar a senha de ${email}?`)) return
+    
+    console.log(`🔑 Resetando senha do usuário ${userId} (${email})`);
     
     try {
       const response = await fetch(`/api/admin/user/${userId}/reset-password`, {
@@ -267,6 +373,7 @@ export default function UserManagementPage() {
       })
       
     } catch (error) {
+      console.error('❌ Erro ao resetar senha:', error);
       toast({
         title: "Erro",
         description: "Não foi possível resetar a senha.",
@@ -293,6 +400,31 @@ export default function UserManagementPage() {
       </Badge>
     )
   }
+  
+  // Função para testar a conexão com Supabase
+  const testConnection = async () => {
+    console.log('🔌 Testando conexão com Supabase...');
+    try {
+      const response = await fetch('/api/test-supabase');
+      const data = await response.json();
+      console.log('📊 Resultado do teste:', data);
+      
+      if (!data.auth.canListUsers || !data.database.canAccessProfiles) {
+        toast({
+          title: "Aviso",
+          description: "Há problemas de conexão com o banco de dados.",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error('❌ Erro ao testar conexão:', error);
+    }
+  };
+  
+  // Testar conexão ao montar o componente
+  useEffect(() => {
+    testConnection();
+  }, []);
   
   if (!currentUser) {
     return (
@@ -581,7 +713,7 @@ export default function UserManagementPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="nome" className="text-violet-200">Nome Completo</Label>
+                  <Label htmlFor="nome" className="text-violet-200">Nome Completo *</Label>
                   <Input
                     id="nome"
                     value={formData.nome}
@@ -593,7 +725,7 @@ export default function UserManagementPage() {
                 </div>
                 
                 <div>
-                  <Label htmlFor="email" className="text-violet-200">Email</Label>
+                  <Label htmlFor="email" className="text-violet-200">Email *</Label>
                   <Input
                     id="email"
                     type="email"
@@ -618,7 +750,7 @@ export default function UserManagementPage() {
                 </div>
                 
                 <div>
-                  <Label htmlFor="role" className="text-violet-200">Cargo</Label>
+                  <Label htmlFor="role" className="text-violet-200">Cargo *</Label>
                   <Select value={formData.role} onValueChange={(v) => setFormData({...formData, role: v})}>
                     <SelectTrigger className="bg-white/10 border-white/20 text-white">
                       <SelectValue />
@@ -635,7 +767,7 @@ export default function UserManagementPage() {
                 {!editingUser && (
                   <>
                     <div>
-                      <Label htmlFor="password" className="text-violet-200">Senha</Label>
+                      <Label htmlFor="password" className="text-violet-200">Senha *</Label>
                       <div className="relative">
                         <Input
                           id="password"
@@ -659,7 +791,7 @@ export default function UserManagementPage() {
                     </div>
                     
                     <div>
-                      <Label htmlFor="confirmPassword" className="text-violet-200">Confirmar Senha</Label>
+                      <Label htmlFor="confirmPassword" className="text-violet-200">Confirmar Senha *</Label>
                       <Input
                         id="confirmPassword"
                         type="password"
@@ -715,6 +847,7 @@ export default function UserManagementPage() {
                   variant="outline"
                   onClick={() => setIsModalOpen(false)}
                   className="bg-white/10 text-white hover:bg-white/20"
+                  disabled={isLoading}
                 >
                   Cancelar
                 </Button>
