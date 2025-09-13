@@ -81,7 +81,7 @@ export default function UserManagementPage() {
   
   // Buscar usuários
   const { data: usersResponse, error: usersError, mutate: mutateUsers } = useSWR(
-    '/api/admin/users',
+    '/api/admin/user',
     fetcher,
     { refreshInterval: 10000 }
   )
@@ -97,20 +97,9 @@ export default function UserManagementPage() {
         return
       }
       setCurrentUser(user)
-      
-      // Verificar se é admin
-      const userRole = user.user_metadata?.role
-      if (userRole !== 'ADMIN') {
-        toast({
-          title: "Acesso Negado",
-          description: "Apenas administradores podem gerenciar usuários.",
-          variant: "destructive"
-        })
-        router.push("/admin/dashboard")
-      }
     }
     checkAuth()
-  }, [router, supabase.auth, toast])
+  }, [router, supabase.auth])
   
   // Filtrar usuários
   const filteredUsers = useMemo(() => {
@@ -193,8 +182,8 @@ export default function UserManagementPage() {
     
     try {
       const endpoint = editingUser 
-        ? `/api/admin/users/${editingUser.id}`
-        : '/api/admin/users'
+        ? `/api/admin/user/${editingUser.id}`
+        : '/api/admin/user'
       
       const method = editingUser ? 'PUT' : 'POST'
       
@@ -233,7 +222,7 @@ export default function UserManagementPage() {
   
   const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
     try {
-      const response = await fetch(`/api/admin/users/${userId}/toggle-status`, {
+      const response = await fetch(`/api/admin/user/${userId}/toggle-status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ativo: !currentStatus })
@@ -263,7 +252,7 @@ export default function UserManagementPage() {
     if (!confirm(`Deseja realmente resetar a senha de ${email}?`)) return
     
     try {
-      const response = await fetch(`/api/admin/users/${userId}/reset-password`, {
+      const response = await fetch(`/api/admin/user/${userId}/reset-password`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       })

@@ -10,6 +10,7 @@ export interface Database {
           ativo: boolean | null
           created_at: string | null
           updated_at: string | null
+          telefone: string | null
         }
         Insert: {
           id: string
@@ -18,6 +19,7 @@ export interface Database {
           ativo?: boolean | null
           created_at?: string | null
           updated_at?: string | null
+          telefone?: string | null
         }
         Update: {
           id?: string
@@ -26,6 +28,7 @@ export interface Database {
           ativo?: boolean | null
           created_at?: string | null
           updated_at?: string | null
+          telefone?: string | null
         }
       }
       users: {

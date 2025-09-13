@@ -466,6 +466,15 @@ export default function DashboardClient({ user }: { user: User }) {
                                     <RefreshCw className="w-4 h-4 mr-2" />
                                     Atualizar
                                 </Button>
+                                <Button
+                                    onClick={() => router.push('/admin/user')}
+                                    variant="outline"
+                                    size="sm"
+                                    className="bg-white/10 text-white hover:bg-white/20"
+                                >
+                                    <Users className="w-4 h-4 mr-2" />
+                                    Gerenciar Funcionários
+                                </Button>
                                 <div className="text-right">
                                     <p className="text-sm font-medium text-white">{user.email}</p>
                                     <p className="text-xs text-violet-200">Cargo: {userRole}</p>
