@@ -22,14 +22,14 @@ import {
   Users, UserCheck, Clock, MessageCircle, LogOut, BarChart3, FileText, TrendingUp,
   Calendar, Search, AlertCircle, Download, Eye, FileSpreadsheet, Send, CheckCircle,
   XCircle, Loader2, RefreshCw, Mail, MapPin, Target, Activity, Filter, ChevronDown,
-  ChevronRight, Plus, MoreHorizontal, ArrowUpRight, ArrowDownRight
+  ChevronRight, Plus, MoreHorizontal, ArrowUpRight, ArrowDownRight, Sparkles
 } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line
 } from "recharts";
 import ShaderBackground from "@/components/shader-background";
-import { Playfair_Display, Poppins } from "next/font/google";
+import { Playfair_Display, Inter } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
@@ -37,8 +37,17 @@ import { ptBR } from "date-fns/locale";
 import * as XLSX from 'xlsx';
 
 // Fontes
-const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" });
-const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-poppins" });
+const playfair = Playfair_Display({ 
+  subsets: ["latin"], 
+  weight: ["400", "500", "600", "700"], 
+  variable: "--font-playfair" 
+});
+
+const inter = Inter({ 
+  subsets: ["latin"], 
+  weight: ["300", "400", "500", "600", "700"], 
+  variable: "--font-inter" 
+});
 
 // Função fetcher para o SWR
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
@@ -408,16 +417,25 @@ export default function DashboardClient({ user }: { user: User }) {
 
     if (leadsError || whatsappError) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50">
-                <div className="text-center p-8 bg-white rounded-xl shadow-lg max-w-md">
+            <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-indigo-50/20 relative overflow-hidden">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
+                    <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-300/10 to-pink-300/10 rounded-full blur-3xl"></div>
+                </div>
+                
+                <div className="text-center p-8 bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 max-w-md z-10">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
                         <AlertCircle className="h-8 w-8 text-red-500" />
                     </div>
-                    <h2 className="text-xl font-bold text-gray-900 mb-2">Erro ao carregar dados</h2>
-                    <p className="text-gray-600 mb-4">Falha na conexão com o servidor</p>
+                    <h2 className="text-xl font-bold text-slate-800 mb-2" style={{ fontFamily: "var(--font-playfair)" }}>Erro ao carregar dados</h2>
+                    <p className="text-slate-600 mb-4">Falha na conexão com o servidor</p>
                     <Button 
                         onClick={() => window.location.reload()} 
-                        className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+                        className="text-white font-semibold py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-purple-500/20"
+                        style={{ 
+                            background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
+                        }}
                     >
                         <RefreshCw className="w-4 h-4 mr-2" />
                         Tentar Novamente
@@ -429,14 +447,20 @@ export default function DashboardClient({ user }: { user: User }) {
 
     if (!leadsResponse || !whatsappResponse) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-50 to-indigo-50">
-                <div className="text-center p-8 bg-white rounded-xl shadow-lg max-w-md">
+            <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-indigo-50/20 relative overflow-hidden">
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
+                    <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-300/10 to-pink-300/10 rounded-full blur-3xl"></div>
+                </div>
+                
+                <div className="text-center p-8 bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 max-w-md z-10">
                     <div className="inline-flex items-center justify-center mb-4">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: "#5D3A5B" }}></div>
                     </div>
-                    <h2 className="text-xl font-semibold text-gray-900 mb-2">Carregando dashboard</h2>
-                    <p className="text-gray-600">Conectando aos dados em tempo real</p>
-                    <p className="text-gray-500 text-sm mt-2">Isso pode levar alguns instantes</p>
+                    <h2 className="text-xl font-semibold text-slate-800 mb-2" style={{ fontFamily: "var(--font-playfair)" }}>Carregando dashboard</h2>
+                    <p className="text-slate-600">Conectando aos dados em tempo real</p>
+                    <p className="text-slate-500 text-sm mt-2">Isso pode levar alguns instantes</p>
                 </div>
             </div>
         );
@@ -445,18 +469,25 @@ export default function DashboardClient({ user }: { user: User }) {
     const userRole = user.user_metadata?.role || 'Admin';
 
     return (
-        <div className={`min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 ${poppins.variable} ${playfair.variable} font-sans`}>
+        <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-indigo-50/20 relative overflow-hidden ${inter.variable} ${playfair.variable} font-sans`}>
+            {/* Background decorativo */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
+                <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-300/10 to-pink-300/10 rounded-full blur-3xl"></div>
+            </div>
+
             {/* Header melhorado */}
-            <header className="bg-white shadow-sm border-b sticky top-0 z-40">
+            <header className="bg-white/80 backdrop-blur-md border-b border-white/50 sticky top-0 z-40">
                 <div className="container mx-auto px-4 py-3">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-3">
-                            <div className="p-2 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg">
+                            <div className="p-2 rounded-2xl" style={{ background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)" }}>
                                 <Image src="/logo2.png" alt="Segunda Pele Lingerie" width={40} height={40} className="filter brightness-0 invert" />
                             </div>
                             <div>
-                                <span className="text-xl font-bold text-gray-900" style={{ fontFamily: "var(--font-playfair)" }}>Segunda Pele Lingerie</span>
-                                <p className="text-sm text-gray-600" style={{ fontFamily: "var(--font-poppins)" }}>Dashboard Administrativo - MS</p>
+                                <span className="text-xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Segunda Pele Lingerie</span>
+                                <p className="text-sm text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Dashboard Administrativo - MS</p>
                             </div>
                         </div>
                         <div className="flex items-center space-x-3">
@@ -464,7 +495,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                 onClick={refreshData}
                                 variant="outline"
                                 size="sm"
-                                className="border-purple-200 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 shadow-sm"
+                                className="border-white/50 bg-white/50 text-slate-700 hover:bg-white hover:text-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
                             >
                                 <RefreshCw className="w-4 h-4 mr-2" />
                                 Atualizar
@@ -473,16 +504,21 @@ export default function DashboardClient({ user }: { user: User }) {
                                 onClick={() => router.push('/admin/user')}
                                 variant="outline"
                                 size="sm"
-                                className="border-purple-200 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 shadow-sm"
+                                className="border-white/50 bg-white/50 text-slate-700 hover:bg-white hover:text-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
                             >
                                 <Users className="w-4 h-4 mr-2" />
                                 Funcionários
                             </Button>
                             <div className="text-right hidden md:block">
-                                <p className="text-sm font-medium text-gray-900">{user.email}</p>
-                                <p className="text-xs text-gray-600">Cargo: {userRole}</p>
+                                <p className="text-sm font-medium text-slate-800">{user.email}</p>
+                                <p className="text-xs text-slate-600">Cargo: {userRole}</p>
                             </div>
-                            <Button onClick={handleLogout} variant="outline" size="sm" className="border-purple-200 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 shadow-sm">
+                            <Button 
+                                onClick={handleLogout} 
+                                variant="outline" 
+                                size="sm" 
+                                className="border-white/50 bg-white/50 text-slate-700 hover:bg-white hover:text-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
+                            >
                                 <LogOut className="w-4 h-4 mr-2" />Sair
                             </Button>
                         </div>
@@ -490,22 +526,22 @@ export default function DashboardClient({ user }: { user: User }) {
                 </div>
             </header>
 
-            <div className="container mx-auto px-4 py-6">
+            <div className="container mx-auto px-4 py-6 relative z-10">
                 {/* Título e controles */}
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6 gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900 mb-1" style={{ fontFamily: "var(--font-playfair)" }}>
+                        <h1 className="text-3xl font-bold text-slate-800 mb-1" style={{ fontFamily: "var(--font-playfair)" }}>
                             Dashboard Analytics - MS
                         </h1>
-                        <p className="text-gray-600">Métricas em tempo real de Mato Grosso do Sul</p>
-                        <p className="text-gray-500 text-sm mt-1">
+                        <p className="text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Métricas em tempo real de Mato Grosso do Sul</p>
+                        <p className="text-slate-500 text-sm mt-1" style={{ fontFamily: "var(--font-inter)" }}>
                             Última atualização: {format(new Date(), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
                         </p>
                     </div>
                     <div className="flex items-center gap-3 flex-wrap">
                         <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                            <SelectTrigger className="w-40 bg-white border-purple-200 focus:ring-purple-500 focus:border-purple-500">
-                                <Calendar className="w-4 h-4 mr-2 text-purple-500" />
+                            <SelectTrigger className="w-40 bg-white/80 backdrop-blur-sm border-white/50 focus:ring-purple-500 focus:border-purple-500 rounded-2xl shadow-lg">
+                                <Calendar className="w-4 h-4 mr-2" style={{ color: "#5D3A5B" }} />
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
@@ -515,12 +551,12 @@ export default function DashboardClient({ user }: { user: User }) {
                             </SelectContent>
                         </Select>
                         <div className="relative">
-                            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                             <Input
                                 placeholder="Buscar consultoras..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="pl-10 w-64 border-purple-200 focus:border-purple-500 focus:ring-purple-500"
+                                className="pl-10 w-64 border-white/50 focus:border-purple-500 focus:ring-purple-500 rounded-2xl bg-white/80 backdrop-blur-sm shadow-lg"
                             />
                         </div>
                     </div>
@@ -528,15 +564,15 @@ export default function DashboardClient({ user }: { user: User }) {
 
                 {/* Cards de métricas melhorados */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-purple-50">
+                    <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
                         <CardHeader className="flex-row items-center justify-between pb-3 space-y-0">
-                            <CardTitle className="text-sm font-medium text-gray-600">Total de Cadastros</CardTitle>
-                            <div className="p-2 bg-purple-100 rounded-lg">
-                                <Users className="h-4 w-4 text-purple-600" />
+                            <CardTitle className="text-sm font-medium text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Total de Cadastros</CardTitle>
+                            <div className="p-2 rounded-xl" style={{ background: "rgba(93, 58, 91, 0.1)" }}>
+                                <Users className="h-4 w-4" style={{ color: "#5D3A5B" }} />
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-gray-900 mb-1">{totalLeads}</div>
+                            <div className="text-2xl font-bold text-slate-800 mb-1" style={{ fontFamily: "var(--font-playfair)" }}>{totalLeads}</div>
                             <div className="flex items-center text-xs">
                                 {Number(growthRate) >= 0 ? (
                                     <ArrowUpRight className="w-3 h-3 mr-1 text-green-600" />
@@ -550,46 +586,46 @@ export default function DashboardClient({ user }: { user: User }) {
                         </CardContent>
                     </Card>
 
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-green-50">
+                    <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
                         <CardHeader className="flex-row items-center justify-between pb-3 space-y-0">
-                            <CardTitle className="text-sm font-medium text-gray-600">Taxa de Aprovação</CardTitle>
-                            <div className="p-2 bg-green-100 rounded-lg">
+                            <CardTitle className="text-sm font-medium text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Taxa de Aprovação</CardTitle>
+                            <div className="p-2 rounded-xl" style={{ background: "rgba(16, 185, 129, 0.1)" }}>
                                 <UserCheck className="h-4 w-4 text-green-600" />
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-gray-900 mb-1">{approvalRate}%</div>
-                            <div className="text-xs text-gray-600">
+                            <div className="text-2xl font-bold text-slate-800 mb-1" style={{ fontFamily: "var(--font-playfair)" }}>{approvalRate}%</div>
+                            <div className="text-xs text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>
                                 {approvedLeadsCount} de {totalLeads} cadastros
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-amber-50">
+                    <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
                         <CardHeader className="flex-row items-center justify-between pb-3 space-y-0">
-                            <CardTitle className="text-sm font-medium text-gray-600">Pendentes</CardTitle>
-                            <div className="p-2 bg-amber-100 rounded-lg">
+                            <CardTitle className="text-sm font-medium text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Pendentes</CardTitle>
+                            <div className="p-2 rounded-xl" style={{ background: "rgba(245, 158, 11, 0.1)" }}>
                                 <Clock className="h-4 w-4 text-amber-600" />
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-gray-900 mb-1">{pendingRegistrations.length}</div>
-                            <div className="text-xs text-amber-600">
+                            <div className="text-2xl font-bold text-slate-800 mb-1" style={{ fontFamily: "var(--font-playfair)" }}>{pendingRegistrations.length}</div>
+                            <div className="text-xs text-amber-600" style={{ fontFamily: "var(--font-inter)" }}>
                                 Tempo médio: {averageProcessingTime} dias
                             </div>
                         </CardContent>
                     </Card>
 
-                    <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-blue-50">
+                    <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
                         <CardHeader className="flex-row items-center justify-between pb-3 space-y-0">
-                            <CardTitle className="text-sm font-medium text-gray-600">Engajamento WhatsApp</CardTitle>
-                            <div className="p-2 bg-blue-100 rounded-lg">
+                            <CardTitle className="text-sm font-medium text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Engajamento WhatsApp</CardTitle>
+                            <div className="p-2 rounded-xl" style={{ background: "rgba(59, 130, 246, 0.1)" }}>
                                 <MessageCircle className="h-4 w-4 text-blue-600" />
                             </div>
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-gray-900 mb-1">{whatsappClicks}</div>
-                            <div className="text-xs text-blue-600">
+                            <div className="text-2xl font-bold text-slate-800 mb-1" style={{ fontFamily: "var(--font-playfair)" }}>{whatsappClicks}</div>
+                            <div className="text-xs text-blue-600" style={{ fontFamily: "var(--font-inter)" }}>
                                 Conversão: {conversionRate}%
                             </div>
                         </CardContent>
@@ -598,56 +634,80 @@ export default function DashboardClient({ user }: { user: User }) {
 
                 {/* Tabs melhoradas */}
                 <Tabs defaultValue="overview" className="space-y-6">
-                    <TabsList className="grid w-full grid-cols-4 bg-gray-100 p-1 rounded-lg">
-                        <TabsTrigger value="overview" className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-md py-2">Visão Geral</TabsTrigger>
-                        <TabsTrigger value="registrations" className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-md py-2">Cadastros</TabsTrigger>
-                        <TabsTrigger value="analytics" className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-md py-2">Analytics</TabsTrigger>
-                        <TabsTrigger value="geography" className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-md py-2">Geografia</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-4 bg-white/50 backdrop-blur-sm p-1 rounded-2xl border border-white/30">
+                        <TabsTrigger 
+                            value="overview" 
+                            className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-2xl py-2 transition-all duration-300"
+                            style={{ fontFamily: "var(--font-inter)" }}
+                        >
+                            Visão Geral
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="registrations" 
+                            className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-2xl py-2 transition-all duration-300"
+                            style={{ fontFamily: "var(--font-inter)" }}
+                        >
+                            Cadastros
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="analytics" 
+                            className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-2xl py-2 transition-all duration-300"
+                            style={{ fontFamily: "var(--font-inter)" }}
+                        >
+                            Analytics
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="geography" 
+                            className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-2xl py-2 transition-all duration-300"
+                            style={{ fontFamily: "var(--font-inter)" }}
+                        >
+                            Geografia
+                        </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="overview" className="space-y-6">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             {/* Navegação rápida melhorada */}
-                            <Card className="border-0 shadow-md">
+                            <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                                 <CardHeader className="pb-3">
-                                    <CardTitle className="flex items-center text-lg">
-                                        <BarChart3 className="w-5 h-5 mr-2 text-purple-600" />
+                                    <CardTitle className="flex items-center text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
+                                        <BarChart3 className="w-5 h-5 mr-2" style={{ color: "#5D3A5B" }} />
                                         Ações Rápidas
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
                                     <Link href="/admin/consultants">
-                                        <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-gray-100 rounded-lg">
-                                            <Users className="w-4 h-4 mr-3 text-purple-500" />
+                                        <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
+                                            <Users className="w-4 h-4 mr-3" style={{ color: "#5D3A5B" }} />
                                             <div className="text-left">
-                                                <div className="font-medium">Gerenciar Consultoras</div>
-                                                <div className="text-xs text-gray-500">{totalLeads} cadastradas</div>
+                                                <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>Gerenciar Consultoras</div>
+                                                <div className="text-xs text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>{totalLeads} cadastradas</div>
                                             </div>
                                         </Button>
                                     </Link>
                                     <Dialog open={showDetailedReportModal} onOpenChange={setShowDetailedReportModal}>
                                         <DialogTrigger asChild>
-                                            <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-gray-100 rounded-lg">
-                                                <FileText className="w-4 h-4 mr-3 text-purple-500" />
+                                            <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
+                                                <FileText className="w-4 h-4 mr-3" style={{ color: "#5D3A5B" }} />
                                                 <div className="text-left">
-                                                    <div className="font-medium">Relatórios Detalhados</div>
-                                                    <div className="text-xs text-gray-500">Análise completa</div>
+                                                    <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>Relatórios Detalhados</div>
+                                                    <div className="text-xs text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>Análise completa</div>
                                                 </div>
                                             </Button>
                                         </DialogTrigger>
-                                        <DialogContent className="max-w-md rounded-xl">
+                                        <DialogContent className="max-w-md rounded-3xl bg-white/95 backdrop-blur-lg border-white/50 shadow-2xl">
                                             <DialogHeader>
-                                                <DialogTitle className="text-xl flex items-center">
-                                                    <FileText className="w-5 h-5 mr-2 text-purple-600" />
+                                                <DialogTitle className="text-xl flex items-center text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
+                                                    <FileText className="w-5 h-5 mr-2" style={{ color: "#5D3A5B" }} />
                                                     Relatório Detalhado
                                                 </DialogTitle>
-                                                <DialogDescription>
+                                                <DialogDescription style={{ fontFamily: "var(--font-inter)" }}>
                                                     Selecione o período para o relatório.
                                                 </DialogDescription>
                                             </DialogHeader>
                                             <div className="mt-6 space-y-6">
                                                 <Select value={detailedReportPeriod} onValueChange={setDetailedReportPeriod}>
-                                                    <SelectTrigger className="w-full border-purple-200 focus:ring-purple-500 focus:border-purple-500">
+                                                    <SelectTrigger className="w-full border-white/50 bg-white/80 focus:ring-purple-500 focus:border-purple-500 rounded-2xl">
                                                         <SelectValue placeholder="Selecione o período" />
                                                     </SelectTrigger>
                                                     <SelectContent>
@@ -656,7 +716,13 @@ export default function DashboardClient({ user }: { user: User }) {
                                                         <SelectItem value="30">Últimos 30 dias</SelectItem>
                                                     </SelectContent>
                                                 </Select>
-                                                <Button onClick={handleViewDetailedReport} className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700">
+                                                <Button 
+                                                    onClick={handleViewDetailedReport} 
+                                                    className="w-full text-white font-semibold py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-purple-500/20"
+                                                    style={{ 
+                                                        background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
+                                                    }}
+                                                >
                                                     Visualizar Relatório
                                                 </Button>
                                             </div>
@@ -664,27 +730,27 @@ export default function DashboardClient({ user }: { user: User }) {
                                     </Dialog>
                                     <Dialog open={showPromoterReportModal} onOpenChange={setShowPromoterReportModal}>
                                         <DialogTrigger asChild>
-                                            <Button variant="ghost" className="w-full justify-start text-gray-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-gray-100 rounded-lg">
-                                                <FileSpreadsheet className="w-4 h-4 mr-3 text-purple-500" />
+                                            <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
+                                                <FileSpreadsheet className="w-4 h-4 mr-3" style={{ color: "#5D3A5B" }} />
                                                 <div className="text-left">
-                                                    <div className="font-medium">Relatório por Promotor</div>
-                                                    <div className="text-xs text-gray-500">Desempenho individual</div>
+                                                    <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>Relatório por Promotor</div>
+                                                    <div className="text-xs text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>Desempenho individual</div>
                                                 </div>
                                             </Button>
                                         </DialogTrigger>
-                                        <DialogContent className="max-w-md rounded-xl">
+                                        <DialogContent className="max-w-md rounded-3xl bg-white/95 backdrop-blur-lg border-white/50 shadow-2xl">
                                             <DialogHeader>
-                                                <DialogTitle className="text-xl flex items-center">
-                                                    <FileSpreadsheet className="w-5 h-5 mr-2 text-purple-600" />
+                                                <DialogTitle className="text-xl flex items-center text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
+                                                    <FileSpreadsheet className="w-5 h-5 mr-2" style={{ color: "#5D3A5B" }} />
                                                     Relatório por Promotor
                                                 </DialogTitle>
-                                                <DialogDescription>
+                                                <DialogDescription style={{ fontFamily: "var(--font-inter)" }}>
                                                     Selecione um promotor para ver os detalhes
                                                 </DialogDescription>
                                             </DialogHeader>
                                             <div className="mt-6 space-y-6">
                                                 <Select value={selectedPromoter} onValueChange={setSelectedPromoter}>
-                                                    <SelectTrigger className="w-full border-purple-200 focus:ring-purple-500 focus:border-purple-500">
+                                                    <SelectTrigger className="w-full border-white/50 bg-white/80 focus:ring-purple-500 focus:border-purple-500 rounded-2xl">
                                                         <SelectValue placeholder="Selecione um promotor" />
                                                     </SelectTrigger>
                                                     <SelectContent>
@@ -692,7 +758,13 @@ export default function DashboardClient({ user }: { user: User }) {
                                                         {promoters.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                                                     </SelectContent>
                                                 </Select>
-                                                <Button onClick={handleViewPromoterReport} className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700">
+                                                <Button 
+                                                    onClick={handleViewPromoterReport} 
+                                                    className="w-full text-white font-semibold py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-purple-500/20"
+                                                    style={{ 
+                                                        background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
+                                                    }}
+                                                >
                                                     Visualizar Relatório
                                                 </Button>
                                             </div>
@@ -702,30 +774,33 @@ export default function DashboardClient({ user }: { user: User }) {
                             </Card>
 
                             {/* Metas e performance */}
-                            <Card className="border-0 shadow-md">
+                            <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                                 <CardHeader className="pb-3">
-                                    <CardTitle className="flex items-center text-lg">
-                                        <Target className="w-5 h-5 mr-2 text-purple-600" />
+                                    <CardTitle className="flex items-center text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
+                                        <Target className="w-5 h-5 mr-2" style={{ color: "#5D3A5B" }} />
                                         Metas do Mês
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div>
-                                        <div className="flex justify-between items-center mb-2 text-sm">
-                                            <span className="text-gray-600">Meta:</span>
+                                        <div className="flex justify-between items-center mb-2 text-sm" style={{ fontFamily: "var(--font-inter)" }}>
+                                            <span className="text-slate-600">Meta:</span>
                                             <span className="font-bold">{generateDetailedReport.metaMensal}</span>
                                         </div>
-                                        <div className="flex justify-between items-center mb-2 text-sm">
-                                            <span className="text-gray-600">Atual:</span>
+                                        <div className="flex justify-between items-center mb-2 text-sm" style={{ fontFamily: "var(--font-inter)" }}>
+                                            <span className="text-slate-600">Atual:</span>
                                             <span className="font-bold">{totalLeads}</span>
                                         </div>
-                                        <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                                        <div className="w-full bg-slate-200 rounded-full h-2.5 mb-2">
                                             <div
-                                                className="bg-gradient-to-r from-purple-500 to-indigo-500 h-2.5 rounded-full transition-all duration-500"
-                                                style={{width: `${Math.min(Number(generateDetailedReport.percentualMeta), 100)}%`}}
+                                                className="h-2.5 rounded-full transition-all duration-500"
+                                                style={{
+                                                    width: `${Math.min(Number(generateDetailedReport.percentualMeta), 100)}%`,
+                                                    background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
+                                                }}
                                             ></div>
                                         </div>
-                                        <p className="text-xs text-gray-600 text-center">
+                                        <p className="text-xs text-slate-600 text-center" style={{ fontFamily: "var(--font-inter)" }}>
                                             {generateDetailedReport.percentualMeta}% da meta atingida
                                         </p>
                                     </div>
@@ -733,39 +808,39 @@ export default function DashboardClient({ user }: { user: User }) {
                             </Card>
 
                             {/* Alertas do sistema */}
-                            <Card className="border-0 shadow-md">
+                            <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                                 <CardHeader className="pb-3">
-                                    <CardTitle className="flex items-center text-lg">
-                                        <Activity className="w-5 h-5 mr-2 text-purple-600" />
+                                    <CardTitle className="flex items-center text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
+                                        <Activity className="w-5 h-5 mr-2" style={{ color: "#5D3A5B" }} />
                                         Status do Sistema
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
                                     {pendingRegistrations.length > 20 && (
-                                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start">
+                                        <div className="p-3 bg-red-50 border border-red-200 rounded-2xl flex items-start">
                                             <AlertCircle className="w-5 h-5 mr-3 text-red-500 mt-0.5 flex-shrink-0" />
                                             <div>
-                                                <div className="font-medium text-red-800">Cadastros Pendentes</div>
-                                                <div className="text-sm text-red-700">{pendingRegistrations.length} cadastros aguardando análise</div>
+                                                <div className="font-medium text-red-800" style={{ fontFamily: "var(--font-inter)" }}>Cadastros Pendentes</div>
+                                                <div className="text-sm text-red-700" style={{ fontFamily: "var(--font-inter)" }}>{pendingRegistrations.length} cadastros aguardando análise</div>
                                             </div>
                                         </div>
                                     )}
 
                                     {Number(generateDetailedReport.percentualMeta) >= 80 && (
-                                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg flex items-start">
+                                        <div className="p-3 bg-green-50 border border-green-200 rounded-2xl flex items-start">
                                             <Target className="w-5 h-5 mr-3 text-green-500 mt-0.5 flex-shrink-0" />
                                             <div>
-                                                <div className="font-medium text-green-800">Meta em Andamento</div>
-                                                <div className="text-sm text-green-700">{generateDetailedReport.percentualMeta}% da meta mensal</div>
+                                                <div className="font-medium text-green-800" style={{ fontFamily: "var(--font-inter)" }}>Meta em Andamento</div>
+                                                <div className="text-sm text-green-700" style={{ fontFamily: "var(--font-inter)" }}>{generateDetailedReport.percentualMeta}% da meta mensal</div>
                                             </div>
                                         </div>
                                     )}
 
-                                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-start">
+                                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-2xl flex items-start">
                                         <MessageCircle className="w-5 h-5 mr-3 text-blue-500 mt-0.5 flex-shrink-0" />
                                         <div>
-                                            <div className="font-medium text-blue-800">Engajamento WhatsApp</div>
-                                            <div className="text-sm text-blue-700">{whatsappClicks} cliques recebidos</div>
+                                            <div className="font-medium text-blue-800" style={{ fontFamily: "var(--font-inter)" }}>Engajamento WhatsApp</div>
+                                            <div className="text-sm text-blue-700" style={{ fontFamily: "var(--font-inter)" }}>{whatsappClicks} cliques recebidos</div>
                                         </div>
                                     </div>
                                 </CardContent>
@@ -774,10 +849,10 @@ export default function DashboardClient({ user }: { user: User }) {
 
                         {/* Gráficos principais */}
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <Card className="border-0 shadow-md">
+                            <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                                 <CardHeader className="pb-3">
-                                    <CardTitle className="text-lg">Cadastros (Últimos 7 dias)</CardTitle>
-                                    <CardDescription>Evolução diária dos cadastros</CardDescription>
+                                    <CardTitle className="text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Cadastros (Últimos 7 dias)</CardTitle>
+                                    <CardDescription style={{ fontFamily: "var(--font-inter)" }}>Evolução diária dos cadastros</CardDescription>
                                 </CardHeader>
                                 <CardContent className="pt-2">
                                     <ResponsiveContainer width="100%" height={300}>
@@ -817,10 +892,10 @@ export default function DashboardClient({ user }: { user: User }) {
                                 </CardContent>
                             </Card>
 
-                            <Card className="border-0 shadow-md">
+                            <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                                 <CardHeader className="pb-3">
-                                    <CardTitle className="text-lg">Status dos Cadastros</CardTitle>
-                                    <CardDescription>Distribuição atual por status</CardDescription>
+                                    <CardTitle className="text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Status dos Cadastros</CardTitle>
+                                    <CardDescription style={{ fontFamily: "var(--font-inter)" }}>Distribuição atual por status</CardDescription>
                                 </CardHeader>
                                 <CardContent className="pt-2">
                                     <ResponsiveContainer width="100%" height={300}>
@@ -852,7 +927,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                                 verticalAlign="middle" 
                                                 align="right"
                                                 formatter={(value, entry, index) => (
-                                                    <span className="text-gray-600 text-sm">
+                                                    <span className="text-slate-600 text-sm" style={{ fontFamily: "var(--font-inter)" }}>
                                                         {value}
                                                     </span>
                                                 )}
@@ -866,27 +941,32 @@ export default function DashboardClient({ user }: { user: User }) {
 
                     <TabsContent value="registrations" className="space-y-6">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <Card className="border-0 shadow-md">
+                            <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                                 <CardHeader>
-                                    <CardTitle className="text-lg">Ações de Cadastro</CardTitle>
-                                    <CardDescription>Gerencie cadastros pendentes e relatórios</CardDescription>
+                                    <CardTitle className="text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Ações de Cadastro</CardTitle>
+                                    <CardDescription style={{ fontFamily: "var(--font-inter)" }}>Gerencie cadastros pendentes e relatórios</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     {/* Modal Ver Cadastros Pendentes */}
                                     <Dialog open={showPendingModal} onOpenChange={setShowPendingModal}>
                                         <DialogTrigger asChild>
-                                            <Button className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white">
+                                            <Button 
+                                                className="w-full text-white font-semibold py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-purple-500/20"
+                                                style={{ 
+                                                    background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
+                                                }}
+                                            >
                                                 <Eye className="w-4 h-4 mr-2" />
                                                 Ver Pendentes ({pendingRegistrations.length})
                                             </Button>
                                         </DialogTrigger>
-                                        <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto rounded-xl">
+                                        <DialogContent className="max-w-6xl max-h-[80vh] overflow-y-auto rounded-3xl bg-white/95 backdrop-blur-lg border-white/50 shadow-2xl">
                                             <DialogHeader>
-                                                <DialogTitle className="text-xl flex items-center">
+                                                <DialogTitle className="text-xl flex items-center text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
                                                     <Clock className="w-5 h-5 mr-2 text-amber-500" />
                                                     Cadastros Pendentes de Análise
                                                 </DialogTitle>
-                                                <DialogDescription>
+                                                <DialogDescription style={{ fontFamily: "var(--font-inter)" }}>
                                                     {pendingRegistrations.length} cadastros aguardando aprovação
                                                 </DialogDescription>
                                             </DialogHeader>
@@ -894,30 +974,30 @@ export default function DashboardClient({ user }: { user: User }) {
                                                 <Table>
                                                     <TableHeader>
                                                         <TableRow>
-                                                            <TableHead>Nome</TableHead>
-                                                            <TableHead>CPF</TableHead>
-                                                            <TableHead>Telefone</TableHead>
-                                                            <TableHead>Cidade</TableHead>
-                                                            <TableHead>Data</TableHead>
-                                                            <TableHead className="text-right">Ações</TableHead>
+                                                            <TableHead style={{ fontFamily: "var(--font-inter)" }}>Nome</TableHead>
+                                                            <TableHead style={{ fontFamily: "var(--font-inter)" }}>CPF</TableHead>
+                                                            <TableHead style={{ fontFamily: "var(--font-inter)" }}>Telefone</TableHead>
+                                                            <TableHead style={{ fontFamily: "var(--font-inter)" }}>Cidade</TableHead>
+                                                            <TableHead style={{ fontFamily: "var(--font-inter)" }}>Data</TableHead>
+                                                            <TableHead className="text-right" style={{ fontFamily: "var(--font-inter)" }}>Ações</TableHead>
                                                         </TableRow>
                                                     </TableHeader>
                                                     <TableBody>
                                                         {pendingRegistrations.slice(0, 10).map((lead: any) => (
                                                             <TableRow key={lead.id}>
-                                                                <TableCell className="font-medium">
+                                                                <TableCell className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>
                                                                     {lead.consultant?.nome || 'N/A'}
                                                                 </TableCell>
-                                                                <TableCell>
+                                                                <TableCell style={{ fontFamily: "var(--font-inter)" }}>
                                                                     {lead.consultant?.cpf || 'N/A'}
                                                                 </TableCell>
-                                                                <TableCell>
+                                                                <TableCell style={{ fontFamily: "var(--font-inter)" }}>
                                                                     {lead.consultant?.telefone || 'N/A'}
                                                                 </TableCell>
-                                                                <TableCell>
+                                                                <TableCell style={{ fontFamily: "var(--font-inter)" }}>
                                                                     {lead.consultant?.address?.cidade || 'N/A'}
                                                                 </TableCell>
-                                                                <TableCell>
+                                                                <TableCell style={{ fontFamily: "var(--font-inter)" }}>
                                                                     {lead.createdAt ? format(new Date(lead.createdAt), 'dd/MM/yyyy HH:mm') : 'N/A'}
                                                                 </TableCell>
                                                                 <TableCell className="text-right">
@@ -925,7 +1005,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                                                         <Button 
                                                                             size="sm" 
                                                                             variant="outline"
-                                                                            className="h-8 w-8 p-0 border-green-200 text-green-700 hover:bg-green-50"
+                                                                            className="h-8 w-8 p-0 border-green-200 text-green-700 hover:bg-green-50 rounded-xl"
                                                                             onClick={() => handleApprove(lead.id)}
                                                                             disabled={isUpdating === lead.id}
                                                                         >
@@ -938,7 +1018,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                                                         <Button 
                                                                             size="sm" 
                                                                             variant="outline"
-                                                                            className="h-8 w-8 p-0 border-red-200 text-red-700 hover:bg-red-50"
+                                                                            className="h-8 w-8 p-0 border-red-200 text-red-700 hover:bg-red-50 rounded-xl"
                                                                             onClick={() => handleReject(lead.id)}
                                                                             disabled={isUpdating === lead.id}
                                                                         >
@@ -956,7 +1036,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                                 </Table>
                                                 {pendingRegistrations.length > 10 && (
                                                     <div className="text-center mt-4">
-                                                        <p className="text-gray-600 text-sm">
+                                                        <p className="text-slate-600 text-sm" style={{ fontFamily: "var(--font-inter)" }}>
                                                             Mostrando 10 de {pendingRegistrations.length} registros
                                                         </p>
                                                     </div>
@@ -968,58 +1048,61 @@ export default function DashboardClient({ user }: { user: User }) {
                                     {/* Modal Relatório Detalhado */}
                                     <Dialog>
                                         <DialogTrigger asChild>
-                                            <Button className="w-full border-purple-200 text-purple-700 hover:bg-purple-50" variant="outline">
+                                            <Button 
+                                                className="w-full border-white/50 bg-white/50 text-slate-700 hover:bg-white hover:text-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl" 
+                                                variant="outline"
+                                            >
                                                 <FileText className="w-4 h-4 mr-2" />
                                                 Relatório Mensal
                                             </Button>
                                         </DialogTrigger>
-                                        <DialogContent className="max-w-4xl rounded-xl">
+                                        <DialogContent className="max-w-4xl rounded-3xl bg-white/95 backdrop-blur-lg border-white/50 shadow-2xl">
                                             <DialogHeader>
-                                                <DialogTitle className="text-xl flex items-center">
-                                                    <FileText className="w-5 h-5 mr-2 text-purple-600" />
+                                                <DialogTitle className="text-xl flex items-center text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
+                                                    <FileText className="w-5 h-5 mr-2" style={{ color: "#5D3A5B" }} />
                                                     Relatório Detalhado
                                                 </DialogTitle>
-                                                <DialogDescription>
+                                                <DialogDescription style={{ fontFamily: "var(--font-inter)" }}>
                                                     Período: {generateDetailedReport.periodo}
                                                 </DialogDescription>
                                             </DialogHeader>
                                             <div className="mt-6 space-y-6">
                                                 {/* Cards de estatísticas */}
                                                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                                                    <Card className="border-0 shadow-sm">
+                                                    <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-sm rounded-2xl">
                                                         <CardContent className="p-4 text-center">
-                                                            <div className="text-2xl font-bold mb-1 text-purple-700">{generateDetailedReport.totalCadastros}</div>
-                                                            <div className="text-sm text-gray-600">Total Cadastros</div>
+                                                            <div className="text-2xl font-bold mb-1 text-purple-700" style={{ fontFamily: "var(--font-playfair)" }}>{generateDetailedReport.totalCadastros}</div>
+                                                            <div className="text-sm text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Total Cadastros</div>
                                                         </CardContent>
                                                     </Card>
-                                                    <Card className="border-0 shadow-sm bg-green-50 border-green-200">
+                                                    <Card className="border border-white/50 bg-green-50/70 backdrop-blur-lg shadow-sm rounded-2xl">
                                                         <CardContent className="p-4 text-center">
-                                                            <div className="text-2xl font-bold text-green-800 mb-1">{generateDetailedReport.aprovados}</div>
-                                                            <div className="text-sm text-green-600">Aprovados</div>
+                                                            <div className="text-2xl font-bold text-green-800 mb-1" style={{ fontFamily: "var(--font-playfair)" }}>{generateDetailedReport.aprovados}</div>
+                                                            <div className="text-sm text-green-600" style={{ fontFamily: "var(--font-inter)" }}>Aprovados</div>
                                                         </CardContent>
                                                     </Card>
-                                                    <Card className="border-0 shadow-sm bg-red-50 border-red-200">
+                                                    <Card className="border border-white/50 bg-red-50/70 backdrop-blur-lg shadow-sm rounded-2xl">
                                                         <CardContent className="p-4 text-center">
-                                                            <div className="text-2xl font-bold text-red-800 mb-1">{generateDetailedReport.reprovados}</div>
-                                                            <div className="text-sm text-red-600">Reprovados</div>
+                                                            <div className="text-2xl font-bold text-red-800 mb-1" style={{ fontFamily: "var(--font-playfair)" }}>{generateDetailedReport.reprovados}</div>
+                                                            <div className="text-sm text-red-600" style={{ fontFamily: "var(--font-inter)" }}>Reprovados</div>
                                                         </CardContent>
                                                     </Card>
-                                                    <Card className="border-0 shadow-sm bg-amber-50 border-amber-200">
+                                                    <Card className="border border-white/50 bg-amber-50/70 backdrop-blur-lg shadow-sm rounded-2xl">
                                                         <CardContent className="p-4 text-center">
-                                                            <div className="text-2xl font-bold text-amber-800 mb-1">{generateDetailedReport.pendentesAnalise}</div>
-                                                            <div className="text-sm text-amber-600">Em Análise</div>
+                                                            <div className="text-2xl font-bold text-amber-800 mb-1" style={{ fontFamily: "var(--font-playfair)" }}>{generateDetailedReport.pendentesAnalise}</div>
+                                                            <div className="text-sm text-amber-600" style={{ fontFamily: "var(--font-inter)" }}>Em Análise</div>
                                                         </CardContent>
                                                     </Card>
-                                                    <Card className="border-0 shadow-sm bg-blue-50 border-blue-200">
+                                                    <Card className="border border-white/50 bg-blue-50/70 backdrop-blur-lg shadow-sm rounded-2xl">
                                                         <CardContent className="p-4 text-center">
-                                                            <div className="text-2xl font-bold text-blue-800 mb-1">{generateDetailedReport.whatsappCliques}</div>
-                                                            <div className="text-sm text-blue-600">WhatsApp</div>
+                                                            <div className="text-2xl font-bold text-blue-800 mb-1" style={{ fontFamily: "var(--font-playfair)" }}>{generateDetailedReport.whatsappCliques}</div>
+                                                            <div className="text-sm text-blue-600" style={{ fontFamily: "var(--font-inter)" }}>WhatsApp</div>
                                                         </CardContent>
                                                     </Card>
-                                                    <Card className="border-0 shadow-sm bg-purple-50 border-purple-200">
+                                                    <Card className="border border-white/50 bg-purple-50/70 backdrop-blur-lg shadow-sm rounded-2xl">
                                                         <CardContent className="p-4 text-center">
-                                                            <div className="text-2xl font-bold text-purple-800 mb-1">{generateDetailedReport.conversaoWhatsapp}</div>
-                                                            <div className="text-sm text-purple-600">Conversão</div>
+                                                            <div className="text-2xl font-bold text-purple-800 mb-1" style={{ fontFamily: "var(--font-playfair)" }}>{generateDetailedReport.conversaoWhatsapp}</div>
+                                                            <div className="text-sm text-purple-600" style={{ fontFamily: "var(--font-inter)" }}>Conversão</div>
                                                         </CardContent>
                                                     </Card>
                                                 </div>
@@ -1027,35 +1110,35 @@ export default function DashboardClient({ user }: { user: User }) {
                                                 {/* Métricas adicionais */}
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                                     <div className="space-y-3">
-                                                        <h4 className="text-lg font-semibold">Performance</h4>
+                                                        <h4 className="text-lg font-semibold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Performance</h4>
                                                         <div className="space-y-2">
-                                                            <div className="flex justify-between">
-                                                                <span className="text-gray-600">Taxa de Aprovação:</span>
+                                                            <div className="flex justify-between" style={{ fontFamily: "var(--font-inter)" }}>
+                                                                <span className="text-slate-600">Taxa de Aprovação:</span>
                                                                 <span className="font-medium">{generateDetailedReport.taxaAprovacao}</span>
                                                             </div>
-                                                            <div className="flex justify-between">
-                                                                <span className="text-gray-600">Crescimento:</span>
+                                                            <div className="flex justify-between" style={{ fontFamily: "var(--font-inter)" }}>
+                                                                <span className="text-slate-600">Crescimento:</span>
                                                                 <span className="font-medium">{generateDetailedReport.taxaCrescimento}</span>
                                                             </div>
-                                                            <div className="flex justify-between">
-                                                                <span className="text-gray-600">Tempo Médio:</span>
+                                                            <div className="flex justify-between" style={{ fontFamily: "var(--font-inter)" }}>
+                                                                <span className="text-slate-600">Tempo Médio:</span>
                                                                 <span className="font-medium">{generateDetailedReport.tempoMedioAnalise}</span>
                                                             </div>
                                                         </div>
                                                     </div>
                                                     <div className="space-y-3">
-                                                        <h4 className="text-lg font-semibold">Metas</h4>
+                                                        <h4 className="text-lg font-semibold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Metas</h4>
                                                         <div className="space-y-2">
-                                                            <div className="flex justify-between">
-                                                                <span className="text-gray-600">Meta Mensal:</span>
+                                                            <div className="flex justify-between" style={{ fontFamily: "var(--font-inter)" }}>
+                                                                <span className="text-slate-600">Meta Mensal:</span>
                                                                 <span className="font-medium">{generateDetailedReport.metaMensal}</span>
                                                             </div>
-                                                            <div className="flex justify-between">
-                                                                <span className="text-gray-600">Atingido:</span>
+                                                            <div className="flex justify-between" style={{ fontFamily: "var(--font-inter)" }}>
+                                                                <span className="text-slate-600">Atingido:</span>
                                                                 <span className="font-medium">{generateDetailedReport.percentualMeta}%</span>
                                                             </div>
-                                                            <div className="flex justify-between">
-                                                                <span className="text-gray-600">Restante:</span>
+                                                            <div className="flex justify-between" style={{ fontFamily: "var(--font-inter)" }}>
+                                                                <span className="text-slate-600">Restante:</span>
                                                                 <span className="font-medium">{generateDetailedReport.metaMensal - generateDetailedReport.totalCadastros}</span>
                                                             </div>
                                                         </div>
@@ -1063,11 +1146,16 @@ export default function DashboardClient({ user }: { user: User }) {
                                                 </div>
 
                                                 {/* Botões de ação */}
-                                                <div className="flex justify-between items-center pt-4 border-t">
-                                                    <div className="text-sm text-gray-600">
+                                                <div className="flex justify-between items-center pt-4 border-t border-slate-200">
+                                                    <div className="text-sm text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>
                                                         Última atualização: {format(new Date(), 'dd/MM/yyyy HH:mm')}
                                                     </div>
-                                                    <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700">
+                                                    <Button 
+                                                        className="text-white font-semibold py-2 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-purple-500/20"
+                                                        style={{ 
+                                                            background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
+                                                        }}
+                                                    >
                                                         <Download className="w-4 h-4 mr-2" />
                                                         Baixar PDF
                                                     </Button>
@@ -1080,36 +1168,36 @@ export default function DashboardClient({ user }: { user: User }) {
                             </Card>
 
                             {/* Resumo de Performance */}
-                            <Card className="border-0 shadow-md">
+                            <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                                 <CardHeader>
-                                    <CardTitle className="flex items-center text-lg">
-                                        <Activity className="w-5 h-5 mr-2 text-purple-600" />
+                                    <CardTitle className="flex items-center text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
+                                        <Activity className="w-5 h-5 mr-2" style={{ color: "#5D3A5B" }} />
                                         Performance do Sistema
                                     </CardTitle>
-                                    <CardDescription>Métricas operacionais</CardDescription>
+                                    <CardDescription style={{ fontFamily: "var(--font-inter)" }}>Métricas operacionais</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="grid grid-cols-2 gap-4">
-                                        <div className="text-center p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                            <div className="text-xl font-bold">{averageProcessingTime}</div>
-                                            <div className="text-xs text-gray-600">Dias médios</div>
+                                        <div className="text-center p-3 bg-slate-50/70 backdrop-blur-sm rounded-2xl border border-white/30">
+                                            <div className="text-xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>{averageProcessingTime}</div>
+                                            <div className="text-xs text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Dias médios</div>
                                         </div>
-                                        <div className="text-center p-3 bg-gray-50 rounded-lg border border-gray-200">
-                                            <div className="text-xl font-bold">{conversionRate}%</div>
-                                            <div className="text-xs text-gray-600">Conversão WA</div>
+                                        <div className="text-center p-3 bg-slate-50/70 backdrop-blur-sm rounded-2xl border border-white/30">
+                                            <div className="text-xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>{conversionRate}%</div>
+                                            <div className="text-xs text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Conversão WA</div>
                                         </div>
                                     </div>
                                     
                                     <div className="space-y-2">
                                         <div className="flex justify-between items-center">
-                                            <span className="text-gray-600 text-sm">Eficiência do processo:</span>
-                                            <Badge className={`${Number(approvalRate) >= 70 ? 'bg-green-100 text-green-800 border-green-200' : 'bg-amber-100 text-amber-800 border-amber-200'}`} variant="outline">
+                                            <span className="text-slate-600 text-sm" style={{ fontFamily: "var(--font-inter)" }}>Eficiência do processo:</span>
+                                            <Badge className={`${Number(approvalRate) >= 70 ? 'bg-green-100 text-green-800 border-green-200' : 'bg-amber-100 text-amber-800 border-amber-200'} rounded-lg`} variant="outline">
                                                 {Number(approvalRate) >= 70 ? 'Alta' : 'Média'}
                                             </Badge>
                                         </div>
                                         <div className="flex justify-between items-center">
-                                            <span className="text-gray-600 text-sm">Status do mês:</span>
-                                            <Badge className={`${Number(generateDetailedReport.percentualMeta) >= 80 ? 'bg-green-100 text-green-800 border-green-200' : Number(generateDetailedReport.percentualMeta) >= 60 ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-red-100 text-red-800 border-red-200'}`} variant="outline">
+                                            <span className="text-slate-600 text-sm" style={{ fontFamily: "var(--font-inter)" }}>Status do mês:</span>
+                                            <Badge className={`${Number(generateDetailedReport.percentualMeta) >= 80 ? 'bg-green-100 text-green-800 border-green-200' : Number(generateDetailedReport.percentualMeta) >= 60 ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-red-100 text-red-800 border-red-200'} rounded-lg`} variant="outline">
                                                 {Number(generateDetailedReport.percentualMeta) >= 80 ? 'No alvo' : Number(generateDetailedReport.percentualMeta) >= 60 ? 'Atenção' : 'Crítico'}
                                             </Badge>
                                         </div>
@@ -1119,10 +1207,10 @@ export default function DashboardClient({ user }: { user: User }) {
                         </div>
 
                         {/* Gráfico de evolução mensal */}
-                        <Card className="border-0 shadow-md">
+                        <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                             <CardHeader>
-                                <CardTitle className="text-lg">Evolução dos Cadastros</CardTitle>
-                                <CardDescription>Histórico mensal detalhado</CardDescription>
+                                <CardTitle className="text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Evolução dos Cadastros</CardTitle>
+                                <CardDescription style={{ fontFamily: "var(--font-inter)" }}>Histórico mensal detalhado</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <ResponsiveContainer width="100%" height={400}>
@@ -1149,70 +1237,70 @@ export default function DashboardClient({ user }: { user: User }) {
 
                     <TabsContent value="analytics" className="space-y-6">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            <Card className="border-0 shadow-md">
+                            <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                                 <CardHeader>
-                                    <CardTitle className="text-lg">Link WhatsApp</CardTitle>
-                                    <CardDescription>Performance do canal</CardDescription>
+                                    <CardTitle className="text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Link WhatsApp</CardTitle>
+                                    <CardDescription style={{ fontFamily: "var(--font-inter)" }}>Performance do canal</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="text-center">
-                                        <div className="text-3xl font-bold mb-2">{whatsappClicks}</div>
-                                        <p className="text-gray-600 text-sm">Cliques hoje</p>
+                                        <div className="text-3xl font-bold mb-2 text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>{whatsappClicks}</div>
+                                        <p className="text-slate-600 text-sm" style={{ fontFamily: "var(--font-inter)" }}>Cliques hoje</p>
                                     </div>
                                     <div className="space-y-2">
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-600 text-sm">Taxa de conversão:</span>
+                                        <div className="flex justify-between" style={{ fontFamily: "var(--font-inter)" }}>
+                                            <span className="text-slate-600 text-sm">Taxa de conversão:</span>
                                             <span className="text-sm font-medium">{conversionRate}%</span>
                                         </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-600 text-sm">Crescimento:</span>
+                                        <div className="flex justify-between" style={{ fontFamily: "var(--font-inter)" }}>
+                                            <span className="text-slate-600 text-sm">Crescimento:</span>
                                             <span className="text-green-600 text-sm font-medium">+{growthRate}%</span>
                                         </div>
                                     </div>
                                 </CardContent>
                             </Card>
 
-                            <Card className="border-0 shadow-md">
+                            <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                                 <CardHeader>
-                                    <CardTitle className="text-lg">Engajamento</CardTitle>
-                                    <CardDescription>Métricas de interação</CardDescription>
+                                    <CardTitle className="text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Engajamento</CardTitle>
+                                    <CardDescription style={{ fontFamily: "var(--font-inter)" }}>Métricas de interação</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="grid grid-cols-2 gap-2">
-                                        <div className="text-center p-2 bg-gray-50 rounded border border-gray-200">
-                                            <div className="text-lg font-bold">{whatsappClicks}</div>
-                                            <div className="text-xs text-gray-600">WhatsApp</div>
+                                        <div className="text-center p-2 bg-slate-50/70 backdrop-blur-sm rounded-xl border border-white/30">
+                                            <div className="text-lg font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>{whatsappClicks}</div>
+                                            <div className="text-xs text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>WhatsApp</div>
                                         </div>
-                                        <div className="text-center p-2 bg-gray-50 rounded border border-gray-200">
-                                            <div className="text-lg font-bold">{Math.floor(whatsappClicks * 0.3)}</div>
-                                            <div className="text-xs text-gray-600">Email</div>
+                                        <div className="text-center p-2 bg-slate-50/70 backdrop-blur-sm rounded-xl border border-white/30">
+                                            <div className="text-lg font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>{Math.floor(whatsappClicks * 0.3)}</div>
+                                            <div className="text-xs text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Email</div>
                                         </div>
                                     </div>
                                     <div className="text-center">
-                                        <div className="text-sm text-gray-600">Taxa de engajamento geral</div>
-                                        <div className="text-2xl font-bold">{(Number(conversionRate) * 1.5).toFixed(1)}%</div>
+                                        <div className="text-sm text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Taxa de engajamento geral</div>
+                                        <div className="text-2xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>{(Number(conversionRate) * 1.5).toFixed(1)}%</div>
                                     </div>
                                 </CardContent>
                             </Card>
 
-                            <Card className="border-0 shadow-md">
+                            <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                                 <CardHeader>
-                                    <CardTitle className="text-lg">Tempo de Resposta</CardTitle>
-                                    <CardDescription>Performance operacional</CardDescription>
+                                    <CardTitle className="text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Tempo de Resposta</CardTitle>
+                                    <CardDescription style={{ fontFamily: "var(--font-inter)" }}>Performance operacional</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     <div className="text-center">
-                                        <div className="text-3xl font-bold mb-2">{averageProcessingTime}</div>
-                                        <p className="text-gray-600 text-sm">Dias médios de análise</p>
+                                        <div className="text-3xl font-bold mb-2 text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>{averageProcessingTime}</div>
+                                        <p className="text-slate-600 text-sm" style={{ fontFamily: "var(--font-inter)" }}>Dias médios de análise</p>
                                     </div>
                                     <div className="space-y-2">
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-600 text-sm">Meta:</span>
+                                        <div className="flex justify-between" style={{ fontFamily: "var(--font-inter)" }}>
+                                            <span className="text-slate-600 text-sm">Meta:</span>
                                             <span className="text-sm">≤ 3 dias</span>
                                         </div>
-                                        <div className="flex justify-between">
-                                            <span className="text-gray-600 text-sm">Status:</span>
-                                            <Badge className={`${Number(averageProcessingTime) <= 3 ? 'bg-green-100 text-green-800 border-green-200' : 'bg-amber-100 text-amber-800 border-amber-200'} text-xs`} variant="outline">
+                                        <div className="flex justify-between" style={{ fontFamily: "var(--font-inter)" }}>
+                                            <span className="text-slate-600 text-sm">Status:</span>
+                                            <Badge className={`${Number(averageProcessingTime) <= 3 ? 'bg-green-100 text-green-800 border-green-200' : 'bg-amber-100 text-amber-800 border-amber-200'} text-xs rounded-lg`} variant="outline">
                                                 {Number(averageProcessingTime) <= 3 ? 'No prazo' : 'Atenção'}
                                             </Badge>
                                         </div>
@@ -1222,10 +1310,10 @@ export default function DashboardClient({ user }: { user: User }) {
                         </div>
 
                         {/* Gráfico de horários de pico */}
-                        <Card className="border-0 shadow-md">
+                        <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                             <CardHeader>
-                                <CardTitle className="text-lg">Horários de Pico - WhatsApp</CardTitle>
-                                <CardDescription>Cliques por horário do dia</CardDescription>
+                                <CardTitle className="text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Horários de Pico - WhatsApp</CardTitle>
+                                <CardDescription style={{ fontFamily: "var(--font-inter)" }}>Cliques por horário do dia</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <ResponsiveContainer width="100%" height={400}>
@@ -1250,34 +1338,34 @@ export default function DashboardClient({ user }: { user: User }) {
 
                     <TabsContent value="geography" className="space-y-6">
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            <Card className="border-0 shadow-md">
+                            <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                                 <CardHeader>
-                                    <CardTitle className="flex items-center text-lg">
-                                        <MapPin className="w-5 h-5 mr-2 text-purple-600" />
+                                    <CardTitle className="flex items-center text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
+                                        <MapPin className="w-5 h-5 mr-2" style={{ color: "#5D3A5B" }} />
                                         Distribuição por Cidades - MS
                                     </CardTitle>
-                                    <CardDescription>
+                                    <CardDescription style={{ fontFamily: "var(--font-inter)" }}>
                                         Top cidades de Mato Grosso do Sul
                                     </CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-4">
                                         {cityData.map((city, index) => (
-                                            <div key={city.cidade} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                                            <div key={city.cidade} className="flex items-center justify-between p-3 bg-slate-50/70 backdrop-blur-sm rounded-2xl border border-white/30">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-8 h-8 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                                    <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold" style={{ background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)" }}>
                                                         {index + 1}
                                                     </div>
                                                     <div>
-                                                        <div className="font-medium">{city.cidade}</div>
-                                                        <div className="text-sm text-gray-600">{city.cadastros} consultoras</div>
+                                                        <div className="font-medium text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>{city.cidade}</div>
+                                                        <div className="text-sm text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>{city.cadastros} consultoras</div>
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <div className="font-medium">
+                                                    <div className="font-medium text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>
                                                         R$ {(city.vendas / 1000).toFixed(0)}k
                                                     </div>
-                                                    <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200">
+                                                    <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200 rounded-lg">
                                                         {((city.cadastros / cityData.reduce((a, b) => a + b.cadastros, 0)) * 100).toFixed(1)}%
                                                     </Badge>
                                                 </div>
@@ -1287,34 +1375,34 @@ export default function DashboardClient({ user }: { user: User }) {
                                 </CardContent>
                             </Card>
 
-                            <Card className="border-0 shadow-md">
+                            <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                                 <CardHeader>
-                                    <CardTitle className="text-lg">Oportunidades de Crescimento</CardTitle>
-                                    <CardDescription>Análise de mercado</CardDescription>
+                                    <CardTitle className="text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Oportunidades de Crescimento</CardTitle>
+                                    <CardDescription style={{ fontFamily: "var(--font-inter)" }}>Análise de mercado</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-4">
-                                    <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-                                        <h4 className="font-semibold mb-2 text-green-800">Campo Grande</h4>
-                                        <p className="text-sm text-green-700">Mercado principal consolidado. Potencial para expansão em bairros periféricos.</p>
+                                    <div className="p-4 bg-green-50/70 backdrop-blur-sm rounded-2xl border border-green-200">
+                                        <h4 className="font-semibold mb-2 text-green-800" style={{ fontFamily: "var(--font-inter)" }}>Campo Grande</h4>
+                                        <p className="text-sm text-green-700" style={{ fontFamily: "var(--font-inter)" }}>Mercado principal consolidado. Potencial para expansão em bairros periféricos.</p>
                                     </div>
                                     
-                                    <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                                        <h4 className="font-semibold mb-2 text-blue-800">Interior do Estado</h4>
-                                        <p className="text-sm text-blue-700">Cidades como Naviraí e Maracaju mostram potencial de crescimento.</p>
+                                    <div className="p-4 bg-blue-50/70 backdrop-blur-sm rounded-2xl border border-blue-200">
+                                        <h4 className="font-semibold mb-2 text-blue-800" style={{ fontFamily: "var(--font-inter)" }}>Interior do Estado</h4>
+                                        <p className="text-sm text-blue-700" style={{ fontFamily: "var(--font-inter)" }}>Cidades como Naviraí e Maracaju mostram potencial de crescimento.</p>
                                     </div>
                                     
-                                    <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
-                                        <h4 className="font-semibold mb-2 text-purple-800">Região Pantanal</h4>
-                                        <p className="text-sm text-purple-700">Mercado em expansão com alta demanda por produtos premium.</p>
+                                    <div className="p-4 bg-purple-50/70 backdrop-blur-sm rounded-2xl border border-purple-200">
+                                        <h4 className="font-semibold mb-2 text-purple-800" style={{ fontFamily: "var(--font-inter)" }}>Região Pantanal</h4>
+                                        <p className="text-sm text-purple-700" style={{ fontFamily: "var(--font-inter)" }}>Mercado em expansão com alta demanda por produtos premium.</p>
                                     </div>
                                 </CardContent>
                             </Card>
                         </div>
 
-                        <Card className="border-0 shadow-md">
+                        <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                             <CardHeader>
-                                <CardTitle className="text-lg">Performance por Cidade</CardTitle>
-                                <CardDescription>Cadastros vs Vendas</CardDescription>
+                                <CardTitle className="text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Performance por Cidade</CardTitle>
+                                <CardDescription style={{ fontFamily: "var(--font-inter)" }}>Cadastros vs Vendas</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <ResponsiveContainer width="100%" height={400}>
