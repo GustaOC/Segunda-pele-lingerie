@@ -11,11 +11,13 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { ArrowLeft, RefreshCw, Users, Mail, PlayCircle, BarChart, PlusCircle, Loader2 } from "lucide-react";
+import { ArrowLeft, RefreshCw, Users, Mail, PlayCircle, BarChart, PlusCircle, Loader2, Send, Check, CheckCheck, XCircle, Inbox } from "lucide-react";
 import { Playfair_Display, Poppins } from "next/font/google";
 import Image from "next/image";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" });
 const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-poppins" });
@@ -32,6 +34,13 @@ type Campaign = {
     status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed';
     messages: WhatsappMessage[];
 };
+type WhatsappIncomingMessage = {
+    id: string;
+    from_number: string;
+    message_body: string;
+    received_at: string;
+};
+
 
 export default function CampaignDetailPage() {
   const router = useRouter();
@@ -41,8 +50,11 @@ export default function CampaignDetailPage() {
 
   const { data: campaignResponse, error, isLoading, mutate: mutateCampaign } = useSWR(`/api/whatsapp/campaigns/${campaignId}`, fetcher, { revalidateOnFocus: false });
   const { data: leadsResponse } = useSWR('/api/leads/id?status=APROVADO', fetcher, { revalidateOnFocus: false });
+  const { data: incomingMessagesResponse } = useSWR(`/api/whatsapp/incoming-messages?campaignId=${campaignId}`, fetcher);
   
   const campaign: Campaign | undefined = campaignResponse?.data;
+  const incomingMessages: WhatsappIncomingMessage[] = incomingMessagesResponse?.data || [];
+
   const approvedConsultants: Consultant[] = useMemo(() => {
     if (!leadsResponse?.data) return [];
     return leadsResponse.data.map((lead: any) => ({
@@ -56,6 +68,22 @@ export default function CampaignDetailPage() {
   const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
   const [isImporting, setIsImporting] = useState(false);
   const [isSending, setIsSending] = useState(false);
+
+  // Calcula as estatísticas da campanha
+  const stats = useMemo(() => {
+    if (!campaign?.messages) return { sent: 0, delivered: 0, read: 0, failed: 0, deliveryRate: 0, readRate: 0 };
+    const messages = campaign.messages;
+    const sent = messages.filter(m => m.status !== 'pending' && m.status !== 'draft').length;
+    const delivered = messages.filter(m => m.status === 'delivered' || m.status === 'read').length;
+    const read = messages.filter(m => m.status === 'read').length;
+    const failed = messages.filter(m => m.status === 'failed').length;
+    
+    const deliveryRate = sent > 0 ? (delivered / sent) * 100 : 0;
+    const readRate = delivered > 0 ? (read / delivered) * 100 : 0;
+
+    return { sent, delivered, read, failed, deliveryRate, readRate };
+  }, [campaign]);
+
 
   const handleToggleContact = (contactId: string) => {
     setSelectedContacts(prev =>
@@ -116,10 +144,20 @@ export default function CampaignDetailPage() {
     const variants: Record<string, string> = {
         draft: "bg-gray-100 text-gray-800 border-gray-200",
         pending: "bg-amber-100 text-amber-800 border-amber-200",
-        sent: "bg-green-100 text-green-800 border-green-200",
+        sent: "bg-blue-100 text-blue-800 border-blue-200",
+        delivered: "bg-green-100 text-green-800 border-green-200",
+        read: "bg-purple-100 text-purple-800 border-purple-200",
         failed: "bg-red-100 text-red-800 border-red-200",
     };
-    return <Badge className={variants[status] || "bg-blue-100 text-blue-800 border-blue-200"}>{status.charAt(0).toUpperCase() + status.slice(1)}</Badge>;
+    const statusText: Record<string, string> = {
+        draft: "Rascunho",
+        pending: "Pendente",
+        sent: "Enviada",
+        delivered: "Entregue",
+        read: "Lida",
+        failed: "Falhou",
+    }
+    return <Badge className={variants[status] || "bg-gray-100 text-gray-800"}>{statusText[status] || status}</Badge>;
   };
 
   if (isLoading) {
@@ -185,11 +223,11 @@ export default function CampaignDetailPage() {
                     </CardHeader>
                     <CardContent className="space-y-4">
                         <div>
-                            <Label>Nome</Label>
-                            <p className="text-sm font-medium">{campaign.name}</p>
+                            <p className="text-sm font-medium text-gray-500">Nome</p>
+                            <p className="font-semibold">{campaign.name}</p>
                         </div>
                         <div>
-                            <Label>Mensagem</Label>
+                            <p className="text-sm font-medium text-gray-500">Mensagem</p>
                             <p className="text-sm p-3 bg-gray-50 rounded-md border">{campaign.message_template}</p>
                         </div>
                         <AlertDialog>
@@ -215,49 +253,109 @@ export default function CampaignDetailPage() {
 
                     </CardContent>
                 </Card>
-            </div>
-            <div className="lg:col-span-2">
                 <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <div>
-                            <CardTitle>Destinatários</CardTitle>
-                            <CardDescription>{campaign.messages.length} contatos nesta campanha.</CardDescription>
-                        </div>
-                        <Button onClick={() => setIsImportModalOpen(true)} disabled={campaign.status !== 'draft'}>
-                            <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Contatos
-                        </Button>
+                    <CardHeader>
+                        <CardTitle>Estatísticas</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                        {campaign.messages.length === 0 ? (
-                            <div className="p-8 text-center border-2 border-dashed border-gray-200 rounded-lg">
-                                <Users className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                                <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum destinatário</h3>
-                                <p className="text-gray-600">Adicione contatos para iniciar o envio da campanha.</p>
-                            </div>
-                        ) : (
-                            <div className="max-h-96 overflow-y-auto">
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Nome</TableHead>
-                                            <TableHead>Número</TableHead>
-                                            <TableHead>Status</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {campaign.messages.map(msg => (
-                                            <TableRow key={msg.id}>
-                                                <TableCell>{msg.recipient_name}</TableCell>
-                                                <TableCell>{msg.recipient_number}</TableCell>
-                                                <TableCell>{getStatusBadge(msg.status)}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </div>
-                        )}
+                    <CardContent className="grid grid-cols-2 gap-4">
+                        <div className="p-3 bg-blue-50 rounded-md text-center">
+                            <p className="text-xl font-bold text-blue-800">{stats.sent}</p>
+                            <p className="text-xs text-blue-700">Enviadas</p>
+                        </div>
+                        <div className="p-3 bg-green-50 rounded-md text-center">
+                            <p className="text-xl font-bold text-green-800">{stats.delivered}</p>
+                            <p className="text-xs text-green-700">Entregues ({stats.deliveryRate.toFixed(1)}%)</p>
+                        </div>
+                        <div className="p-3 bg-purple-50 rounded-md text-center">
+                            <p className="text-xl font-bold text-purple-800">{stats.read}</p>
+                            <p className="text-xs text-purple-700">Lidas ({stats.readRate.toFixed(1)}%)</p>
+                        </div>
+                        <div className="p-3 bg-red-50 rounded-md text-center">
+                            <p className="text-xl font-bold text-red-800">{stats.failed}</p>
+                            <p className="text-xs text-red-700">Falhas</p>
+                        </div>
                     </CardContent>
                 </Card>
+            </div>
+            <div className="lg:col-span-2">
+                <Tabs defaultValue="recipients">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="recipients">Destinatários</TabsTrigger>
+                        <TabsTrigger value="responses">Respostas</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="recipients">
+                        <Card>
+                            <CardHeader className="flex flex-row items-center justify-between">
+                                <div>
+                                    <CardTitle>Destinatários</CardTitle>
+                                    <CardDescription>{campaign.messages.length} contatos nesta campanha.</CardDescription>
+                                </div>
+                                <Button onClick={() => setIsImportModalOpen(true)} disabled={campaign.status !== 'draft'}>
+                                    <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Contatos
+                                </Button>
+                            </CardHeader>
+                            <CardContent>
+                                {campaign.messages.length === 0 ? (
+                                    <div className="p-8 text-center border-2 border-dashed border-gray-200 rounded-lg">
+                                        <Users className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                                        <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhum destinatário</h3>
+                                        <p className="text-gray-600">Adicione contatos para iniciar o envio da campanha.</p>
+                                    </div>
+                                ) : (
+                                    <div className="max-h-96 overflow-y-auto">
+                                        <Table>
+                                            <TableHeader>
+                                                <TableRow>
+                                                    <TableHead>Nome</TableHead>
+                                                    <TableHead>Número</TableHead>
+                                                    <TableHead>Status</TableHead>
+                                                </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                                {campaign.messages.map(msg => (
+                                                    <TableRow key={msg.id}>
+                                                        <TableCell>{msg.recipient_name}</TableCell>
+                                                        <TableCell>{msg.recipient_number}</TableCell>
+                                                        <TableCell>{getStatusBadge(msg.status)}</TableCell>
+                                                    </TableRow>
+                                                ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
+                    </TabsContent>
+                    <TabsContent value="responses">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Respostas Recebidas</CardTitle>
+                            <CardDescription>Mensagens enviadas pelas consultoras.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                        {incomingMessages.length === 0 ? (
+                                <div className="p-8 text-center border-2 border-dashed border-gray-200 rounded-lg">
+                                    <Inbox className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+                                    <h3 className="text-lg font-medium text-gray-900 mb-2">Nenhuma resposta</h3>
+                                    <p className="text-gray-600">As respostas recebidas aparecerão aqui.</p>
+                                </div>
+                            ) : (
+                                <div className="max-h-96 overflow-y-auto space-y-4">
+                                    {incomingMessages.map(msg => (
+                                        <div key={msg.id} className="p-3 bg-gray-50 rounded-lg border">
+                                            <div className="flex justify-between items-center mb-1">
+                                                <p className="font-semibold text-sm">{msg.from_number}</p>
+                                                <p className="text-xs text-gray-500">{format(new Date(msg.received_at), 'dd/MM/yy HH:mm', { locale: ptBR })}</p>
+                                            </div>
+                                            <p className="text-sm">{msg.message_body}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                    </TabsContent>
+                </Tabs>
             </div>
         </div>
       </div>

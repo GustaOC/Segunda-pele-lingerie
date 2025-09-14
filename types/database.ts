@@ -120,6 +120,28 @@ export interface Database {
           read_at?: string | null
           error_message?: string | null
         }
+      },
+      whatsapp_incoming_messages: {
+        Row: {
+            id: string;
+            from_number: string;
+            message_body: string;
+            received_at: string;
+            consultant_id: string | null;
+            campaign_id: string | null;
+        };
+        Insert: {
+            id?: string;
+            from_number: string;
+            message_body: string;
+            received_at?: string;
+            consultant_id?: string | null;
+            campaign_id?: string | null;
+        };
+        Update: {
+            consultant_id?: string | null;
+            campaign_id?: string | null;
+        };
       }
     }
     Views: {
@@ -145,6 +167,8 @@ export type User = Tables<'users'>
 export type UserRole = Database['public']['Enums']['user_role']
 export type WhatsappCampaign = Tables<'whatsapp_campaigns'>
 export type WhatsappMessage = Tables<'whatsapp_messages'>
+export type WhatsappIncomingMessage = Tables<'whatsapp_incoming_messages'>;
+
 
 // Tipos de autenticação
 export interface AuthResponse {

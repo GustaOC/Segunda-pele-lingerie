@@ -9,38 +9,57 @@ export async function POST(
   try {
     const { campaignId } = params;
 
-    // ** Lógica de integração real com a API do WhatsApp viria aqui **
-    // Para cada mensagem, você faria uma chamada para o provedor de API.
-    // Como estamos simulando, vamos apenas atualizar os status no nosso banco.
-
-    // 1. Atualiza o status de todas as mensagens pendentes da campanha para "sent"
-    const { error: messagesError } = await supabaseAdmin
+    // Busca as mensagens pendentes da campanha
+    const { data: pendingMessages, error: fetchError } = await supabaseAdmin
       .from('whatsapp_messages')
-      .update({
-        status: 'sent',
-        sent_at: new Date().toISOString()
-      })
+      .select('id')
       .eq('campaign_id', campaignId)
       .eq('status', 'pending');
 
-    if (messagesError) {
-      console.error('Erro ao atualizar mensagens:', messagesError);
-      return NextResponse.json({ error: "Falha ao atualizar o status das mensagens." }, { status: 500 });
+    if (fetchError || !pendingMessages) {
+      console.error('Erro ao buscar mensagens pendentes:', fetchError);
+      return NextResponse.json({ error: "Nenhuma mensagem pendente para enviar." }, { status: 404 });
     }
+    
+    // ** SIMULAÇÃO DE ENVIO COM DIFERENTES STATUS **
+    const updates = pendingMessages.map(msg => {
+        const random = Math.random();
+        let status: 'sent' | 'delivered' | 'read' | 'failed' = 'sent';
+        let errorMessage: string | null = null;
 
-    // 2. Atualiza o status da campanha principal para "sent"
-    const { error: campaignError } = await supabaseAdmin
+        if (random < 0.1) { // 10% falham
+            status = 'failed';
+            errorMessage = 'Número inválido';
+        } else if (random < 0.3) { // 20% são lidas
+            status = 'read';
+        } else if (random < 0.7) { // 40% são entregues
+            status = 'delivered';
+        }
+        // 30% permanecem como 'sent'
+
+        return supabaseAdmin
+            .from('whatsapp_messages')
+            .update({ 
+                status: status, 
+                sent_at: new Date().toISOString(),
+                delivered_at: status === 'delivered' || status === 'read' ? new Date().toISOString() : null,
+                read_at: status === 'read' ? new Date().toISOString() : null,
+                error_message: errorMessage
+            })
+            .eq('id', msg.id);
+    });
+    
+    // Executa todas as atualizações
+    await Promise.all(updates);
+
+    // Atualiza o status da campanha principal para "sent"
+    await supabaseAdmin
       .from('whatsapp_campaigns')
       .update({
         status: 'sent',
         sent_at: new Date().toISOString()
       })
       .eq('id', campaignId);
-
-    if (campaignError) {
-        console.error('Erro ao atualizar campanha:', campaignError);
-        // Mesmo que isso falhe, as mensagens foram marcadas, então não retornamos um erro fatal.
-    }
 
     return NextResponse.json({ message: "Campanha enviada com sucesso!" }, { status: 200 });
 
