@@ -22,7 +22,7 @@ import {
   Users, UserCheck, Clock, MessageCircle, LogOut, BarChart3, FileText, TrendingUp,
   Calendar, Search, AlertCircle, Download, Eye, FileSpreadsheet, Send, CheckCircle,
   XCircle, Loader2, RefreshCw, Mail, MapPin, Target, Activity, Filter, ChevronDown,
-  ChevronRight, Plus, MoreHorizontal, ArrowUpRight, ArrowDownRight, Sparkles
+  ChevronRight, Plus, MoreHorizontal, ArrowUpRight, ArrowDownRight, Sparkles, MessageSquare, Bot
 } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell,
@@ -37,16 +37,16 @@ import { ptBR } from "date-fns/locale";
 import * as XLSX from 'xlsx';
 
 // Fontes
-const playfair = Playfair_Display({ 
-  subsets: ["latin"], 
-  weight: ["400", "500", "600", "700"], 
-  variable: "--font-playfair" 
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-playfair"
 });
 
-const inter = Inter({ 
-  subsets: ["latin"], 
-  weight: ["300", "400", "500", "600", "700"], 
-  variable: "--font-inter" 
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-inter"
 });
 
 // Função fetcher para o SWR
@@ -181,7 +181,7 @@ export default function DashboardClient({ user }: { user: User }) {
             averageProcessingTime: avgTime
         };
     }, [leadsResponse, whatsappResponse]);
-    
+
     const getStatusBadge = (status: string) => {
         switch (status) {
           case "EM_ANALISE":
@@ -423,17 +423,17 @@ export default function DashboardClient({ user }: { user: User }) {
                     <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-300/10 to-pink-300/10 rounded-full blur-3xl"></div>
                 </div>
-                
+
                 <div className="text-center p-8 bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 max-w-md z-10">
                     <div className="inline-flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4">
                         <AlertCircle className="h-8 w-8 text-red-500" />
                     </div>
                     <h2 className="text-xl font-bold text-slate-800 mb-2" style={{ fontFamily: "var(--font-playfair)" }}>Erro ao carregar dados</h2>
                     <p className="text-slate-600 mb-4">Falha na conexão com o servidor</p>
-                    <Button 
-                        onClick={() => window.location.reload()} 
+                    <Button
+                        onClick={() => window.location.reload()}
                         className="text-white font-semibold py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-purple-500/20"
-                        style={{ 
+                        style={{
                             background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
                         }}
                     >
@@ -453,7 +453,7 @@ export default function DashboardClient({ user }: { user: User }) {
                     <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
                     <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-300/10 to-pink-300/10 rounded-full blur-3xl"></div>
                 </div>
-                
+
                 <div className="text-center p-8 bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 max-w-md z-10">
                     <div className="inline-flex items-center justify-center mb-4">
                         <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: "#5D3A5B" }}></div>
@@ -513,10 +513,10 @@ export default function DashboardClient({ user }: { user: User }) {
                                 <p className="text-sm font-medium text-slate-800">{user.email}</p>
                                 <p className="text-xs text-slate-600">Cargo: {userRole}</p>
                             </div>
-                            <Button 
-                                onClick={handleLogout} 
-                                variant="outline" 
-                                size="sm" 
+                            <Button
+                                onClick={handleLogout}
+                                variant="outline"
+                                size="sm"
                                 className="border-white/50 bg-white/50 text-slate-700 hover:bg-white hover:text-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
                             >
                                 <LogOut className="w-4 h-4 mr-2" />Sair
@@ -635,29 +635,29 @@ export default function DashboardClient({ user }: { user: User }) {
                 {/* Tabs melhoradas */}
                 <Tabs defaultValue="overview" className="space-y-6">
                     <TabsList className="grid w-full grid-cols-4 bg-white/50 backdrop-blur-sm p-1 rounded-2xl border border-white/30">
-                        <TabsTrigger 
-                            value="overview" 
+                        <TabsTrigger
+                            value="overview"
                             className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-2xl py-2 transition-all duration-300"
                             style={{ fontFamily: "var(--font-inter)" }}
                         >
                             Visão Geral
                         </TabsTrigger>
-                        <TabsTrigger 
-                            value="registrations" 
+                        <TabsTrigger
+                            value="registrations"
                             className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-2xl py-2 transition-all duration-300"
                             style={{ fontFamily: "var(--font-inter)" }}
                         >
                             Cadastros
                         </TabsTrigger>
-                        <TabsTrigger 
-                            value="analytics" 
+                        <TabsTrigger
+                            value="analytics"
                             className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-2xl py-2 transition-all duration-300"
                             style={{ fontFamily: "var(--font-inter)" }}
                         >
                             Analytics
                         </TabsTrigger>
-                        <TabsTrigger 
-                            value="geography" 
+                        <TabsTrigger
+                            value="geography"
                             className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-2xl py-2 transition-all duration-300"
                             style={{ fontFamily: "var(--font-inter)" }}
                         >
@@ -716,10 +716,10 @@ export default function DashboardClient({ user }: { user: User }) {
                                                         <SelectItem value="30">Últimos 30 dias</SelectItem>
                                                     </SelectContent>
                                                 </Select>
-                                                <Button 
-                                                    onClick={handleViewDetailedReport} 
+                                                <Button
+                                                    onClick={handleViewDetailedReport}
                                                     className="w-full text-white font-semibold py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-purple-500/20"
-                                                    style={{ 
+                                                    style={{
                                                         background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
                                                     }}
                                                 >
@@ -758,10 +758,10 @@ export default function DashboardClient({ user }: { user: User }) {
                                                         {promoters.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                                                     </SelectContent>
                                                 </Select>
-                                                <Button 
-                                                    onClick={handleViewPromoterReport} 
+                                                <Button
+                                                    onClick={handleViewPromoterReport}
                                                     className="w-full text-white font-semibold py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-purple-500/20"
-                                                    style={{ 
+                                                    style={{
                                                         background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
                                                     }}
                                                 >
@@ -807,42 +807,30 @@ export default function DashboardClient({ user }: { user: User }) {
                                 </CardContent>
                             </Card>
 
-                            {/* Alertas do sistema */}
+                            {/* Gerenciador WhatsApp */}
                             <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                                 <CardHeader className="pb-3">
                                     <CardTitle className="flex items-center text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
-                                        <Activity className="w-5 h-5 mr-2" style={{ color: "#5D3A5B" }} />
-                                        Status do Sistema
+                                        <MessageSquare className="w-5 h-5 mr-2" style={{ color: "#5D3A5B" }} />
+                                        Gerenciador WhatsApp
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
-                                    {pendingRegistrations.length > 20 && (
-                                        <div className="p-3 bg-red-50 border border-red-200 rounded-2xl flex items-start">
-                                            <AlertCircle className="w-5 h-5 mr-3 text-red-500 mt-0.5 flex-shrink-0" />
-                                            <div>
-                                                <div className="font-medium text-red-800" style={{ fontFamily: "var(--font-inter)" }}>Cadastros Pendentes</div>
-                                                <div className="text-sm text-red-700" style={{ fontFamily: "var(--font-inter)" }}>{pendingRegistrations.length} cadastros aguardando análise</div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    {Number(generateDetailedReport.percentualMeta) >= 80 && (
-                                        <div className="p-3 bg-green-50 border border-green-200 rounded-2xl flex items-start">
-                                            <Target className="w-5 h-5 mr-3 text-green-500 mt-0.5 flex-shrink-0" />
-                                            <div>
-                                                <div className="font-medium text-green-800" style={{ fontFamily: "var(--font-inter)" }}>Meta em Andamento</div>
-                                                <div className="text-sm text-green-700" style={{ fontFamily: "var(--font-inter)" }}>{generateDetailedReport.percentualMeta}% da meta mensal</div>
-                                            </div>
-                                        </div>
-                                    )}
-
                                     <div className="p-3 bg-blue-50 border border-blue-200 rounded-2xl flex items-start">
-                                        <MessageCircle className="w-5 h-5 mr-3 text-blue-500 mt-0.5 flex-shrink-0" />
+                                        <Bot className="w-5 h-5 mr-3 text-blue-500 mt-0.5 flex-shrink-0" />
                                         <div>
-                                            <div className="font-medium text-blue-800" style={{ fontFamily: "var(--font-inter)" }}>Engajamento WhatsApp</div>
-                                            <div className="text-sm text-blue-700" style={{ fontFamily: "var(--font-inter)" }}>{whatsappClicks} cliques recebidos</div>
+                                            <div className="font-medium text-blue-800" style={{ fontFamily: "var(--font-inter)" }}>Automação & Campanhas</div>
+                                            <div className="text-sm text-blue-700" style={{ fontFamily: "var(--font-inter)" }}>Acesse para enviar mensagens e gerenciar campanhas.</div>
                                         </div>
                                     </div>
+                                    <Link href="/admin/whatsapp">
+                                        <Button variant="ghost" className="w-full justify-center text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
+                                            <div className="text-center">
+                                                <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>Acessar Ferramenta</div>
+                                                <div className="text-xs text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>Clique aqui para começar</div>
+                                            </div>
+                                        </Button>
+                                    </Link>
                                 </CardContent>
                             </Card>
                         </div>
@@ -860,30 +848,30 @@ export default function DashboardClient({ user }: { user: User }) {
                                             <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
                                             <XAxis dataKey="date" stroke="#6b7280" />
                                             <YAxis stroke="#6b7280" />
-                                            <Tooltip 
+                                            <Tooltip
                                                 contentStyle={{
-                                                    backgroundColor: "white", 
-                                                    border: "1px solid #e5e7eb", 
+                                                    backgroundColor: "white",
+                                                    border: "1px solid #e5e7eb",
                                                     borderRadius: "8px",
                                                     boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)"
-                                                }} 
+                                                }}
                                             />
                                             <Legend />
-                                            <Line 
-                                                type="monotone" 
-                                                dataKey="cadastros" 
-                                                stroke="#8b5cf6" 
-                                                strokeWidth={3} 
-                                                name="Total" 
+                                            <Line
+                                                type="monotone"
+                                                dataKey="cadastros"
+                                                stroke="#8b5cf6"
+                                                strokeWidth={3}
+                                                name="Total"
                                                 dot={{ r: 4, fill: "#8b5cf6" }}
                                                 activeDot={{ r: 6, fill: "#7c3aed" }}
                                             />
-                                            <Line 
-                                                type="monotone" 
-                                                dataKey="aprovados" 
-                                                stroke="#10b981" 
-                                                strokeWidth={3} 
-                                                name="Aprovados" 
+                                            <Line
+                                                type="monotone"
+                                                dataKey="aprovados"
+                                                stroke="#10b981"
+                                                strokeWidth={3}
+                                                name="Aprovados"
                                                 dot={{ r: 4, fill: "#10b981" }}
                                                 activeDot={{ r: 6, fill: "#059669" }}
                                             />
@@ -914,17 +902,17 @@ export default function DashboardClient({ user }: { user: User }) {
                                                     <Cell key={`cell-${index}`} fill={entry.color} />
                                                 ))}
                                             </Pie>
-                                            <Tooltip 
+                                            <Tooltip
                                                 contentStyle={{
-                                                    backgroundColor: "white", 
-                                                    border: "1px solid #e5e7eb", 
+                                                    backgroundColor: "white",
+                                                    border: "1px solid #e5e7eb",
                                                     borderRadius: "8px",
                                                     boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)"
-                                                }} 
+                                                }}
                                             />
-                                            <Legend 
-                                                layout="vertical" 
-                                                verticalAlign="middle" 
+                                            <Legend
+                                                layout="vertical"
+                                                verticalAlign="middle"
                                                 align="right"
                                                 formatter={(value, entry, index) => (
                                                     <span className="text-slate-600 text-sm" style={{ fontFamily: "var(--font-inter)" }}>
@@ -950,9 +938,9 @@ export default function DashboardClient({ user }: { user: User }) {
                                     {/* Modal Ver Cadastros Pendentes */}
                                     <Dialog open={showPendingModal} onOpenChange={setShowPendingModal}>
                                         <DialogTrigger asChild>
-                                            <Button 
+                                            <Button
                                                 className="w-full text-white font-semibold py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-purple-500/20"
-                                                style={{ 
+                                                style={{
                                                     background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
                                                 }}
                                             >
@@ -1002,8 +990,8 @@ export default function DashboardClient({ user }: { user: User }) {
                                                                 </TableCell>
                                                                 <TableCell className="text-right">
                                                                     <div className="flex gap-2 justify-end">
-                                                                        <Button 
-                                                                            size="sm" 
+                                                                        <Button
+                                                                            size="sm"
                                                                             variant="outline"
                                                                             className="h-8 w-8 p-0 border-green-200 text-green-700 hover:bg-green-50 rounded-xl"
                                                                             onClick={() => handleApprove(lead.id)}
@@ -1015,8 +1003,8 @@ export default function DashboardClient({ user }: { user: User }) {
                                                                                 <CheckCircle className="h-4 w-4" />
                                                                             )}
                                                                         </Button>
-                                                                        <Button 
-                                                                            size="sm" 
+                                                                        <Button
+                                                                            size="sm"
                                                                             variant="outline"
                                                                             className="h-8 w-8 p-0 border-red-200 text-red-700 hover:bg-red-50 rounded-xl"
                                                                             onClick={() => handleReject(lead.id)}
@@ -1048,8 +1036,8 @@ export default function DashboardClient({ user }: { user: User }) {
                                     {/* Modal Relatório Detalhado */}
                                     <Dialog>
                                         <DialogTrigger asChild>
-                                            <Button 
-                                                className="w-full border-white/50 bg-white/50 text-slate-700 hover:bg-white hover:text-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl" 
+                                            <Button
+                                                className="w-full border-white/50 bg-white/50 text-slate-700 hover:bg-white hover:text-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
                                                 variant="outline"
                                             >
                                                 <FileText className="w-4 h-4 mr-2" />
@@ -1150,9 +1138,9 @@ export default function DashboardClient({ user }: { user: User }) {
                                                     <div className="text-sm text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>
                                                         Última atualização: {format(new Date(), 'dd/MM/yyyy HH:mm')}
                                                     </div>
-                                                    <Button 
+                                                    <Button
                                                         className="text-white font-semibold py-2 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-purple-500/20"
-                                                        style={{ 
+                                                        style={{
                                                             background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
                                                         }}
                                                     >
@@ -1187,7 +1175,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                             <div className="text-xs text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Conversão WA</div>
                                         </div>
                                     </div>
-                                    
+
                                     <div className="space-y-2">
                                         <div className="flex justify-between items-center">
                                             <span className="text-slate-600 text-sm" style={{ fontFamily: "var(--font-inter)" }}>Eficiência do processo:</span>
@@ -1218,13 +1206,13 @@ export default function DashboardClient({ user }: { user: User }) {
                                         <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
                                         <XAxis dataKey="mes" stroke="#6b7280" />
                                         <YAxis stroke="#6b7280" />
-                                        <Tooltip 
+                                        <Tooltip
                                             contentStyle={{
-                                                backgroundColor: "white", 
-                                                border: "1px solid #e5e7eb", 
+                                                backgroundColor: "white",
+                                                border: "1px solid #e5e7eb",
                                                 borderRadius: "8px",
                                                 boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)"
-                                            }} 
+                                            }}
                                         />
                                         <Legend />
                                         <Area type="monotone" dataKey="cadastros" stackId="1" stroke="#8b5cf6" fill="#8b5cf6" fillOpacity={0.6} name="Total de Cadastros" />
@@ -1321,13 +1309,13 @@ export default function DashboardClient({ user }: { user: User }) {
                                         <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
                                         <XAxis dataKey="hora" stroke="#6b7280" />
                                         <YAxis stroke="#6b7280" />
-                                        <Tooltip 
+                                        <Tooltip
                                             contentStyle={{
-                                                backgroundColor: "white", 
-                                                border: "1px solid #e5e7eb", 
+                                                backgroundColor: "white",
+                                                border: "1px solid #e5e7eb",
                                                 borderRadius: "8px",
                                                 boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)"
-                                            }} 
+                                            }}
                                         />
                                         <Bar dataKey="cliques" fill="#10b981" radius={[4, 4, 0, 0]} />
                                     </BarChart>
@@ -1385,12 +1373,12 @@ export default function DashboardClient({ user }: { user: User }) {
                                         <h4 className="font-semibold mb-2 text-green-800" style={{ fontFamily: "var(--font-inter)" }}>Campo Grande</h4>
                                         <p className="text-sm text-green-700" style={{ fontFamily: "var(--font-inter)" }}>Mercado principal consolidado. Potencial para expansão em bairros periféricos.</p>
                                     </div>
-                                    
+
                                     <div className="p-4 bg-blue-50/70 backdrop-blur-sm rounded-2xl border border-blue-200">
                                         <h4 className="font-semibold mb-2 text-blue-800" style={{ fontFamily: "var(--font-inter)" }}>Interior do Estado</h4>
                                         <p className="text-sm text-blue-700" style={{ fontFamily: "var(--font-inter)" }}>Cidades como Naviraí e Maracaju mostram potencial de crescimento.</p>
                                     </div>
-                                    
+
                                     <div className="p-4 bg-purple-50/70 backdrop-blur-sm rounded-2xl border border-purple-200">
                                         <h4 className="font-semibold mb-2 text-purple-800" style={{ fontFamily: "var(--font-inter)" }}>Região Pantanal</h4>
                                         <p className="text-sm text-purple-700" style={{ fontFamily: "var(--font-inter)" }}>Mercado em expansão com alta demanda por produtos premium.</p>
@@ -1408,21 +1396,21 @@ export default function DashboardClient({ user }: { user: User }) {
                                 <ResponsiveContainer width="100%" height={400}>
                                     <BarChart data={cityData}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                                        <XAxis 
-                                            dataKey="cidade" 
-                                            stroke="#6b7280" 
+                                        <XAxis
+                                            dataKey="cidade"
+                                            stroke="#6b7280"
                                             angle={-45}
                                             textAnchor="end"
                                             height={80}
                                         />
                                         <YAxis stroke="#6b7280" />
-                                        <Tooltip 
+                                        <Tooltip
                                             contentStyle={{
-                                                backgroundColor: "white", 
-                                                border: "1px solid #e5e7eb", 
+                                                backgroundColor: "white",
+                                                border: "1px solid #e5e7eb",
                                                 borderRadius: "8px",
                                                 boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)"
-                                            }} 
+                                            }}
                                         />
                                         <Legend />
                                         <Bar dataKey="cadastros" fill="#8b5cf6" name="Cadastros" radius={[4, 4, 0, 0]} />

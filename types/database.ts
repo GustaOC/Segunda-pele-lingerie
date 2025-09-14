@@ -63,6 +63,64 @@ export interface Database {
           updatedAt?: string
         }
       }
+      // Novas tabelas do WhatsApp
+      whatsapp_campaigns: {
+        Row: {
+          id: string
+          name: string
+          message_template: string
+          status: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed'
+          scheduled_for: string | null
+          sent_at: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          name: string
+          message_template: string
+          status?: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed'
+          scheduled_for?: string | null
+        }
+        Update: {
+          name?: string
+          message_template?: string
+          status?: 'draft' | 'scheduled' | 'sending' | 'sent' | 'failed'
+          scheduled_for?: string | null
+          sent_at?: string | null
+        }
+      }
+      whatsapp_messages: {
+        Row: {
+          id: string
+          campaign_id: string | null
+          recipient_number: string
+          recipient_name: string | null
+          message_body: string
+          status: 'pending' | 'sent' | 'delivered' | 'read' | 'failed'
+          sent_at: string | null
+          delivered_at: string | null
+          read_at: string | null
+          error_message: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          campaign_id?: string | null
+          recipient_number: string
+          recipient_name?: string | null
+          message_body: string
+          status?: 'pending' | 'sent' | 'delivered' | 'read' | 'failed'
+        }
+        Update: {
+          status?: 'pending' | 'sent' | 'delivered' | 'read' | 'failed'
+          sent_at?: string | null
+          delivered_at?: string | null
+          read_at?: string | null
+          error_message?: string | null
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -85,6 +143,8 @@ export type TablesUpdate<T extends keyof Database['public']['Tables']> = Databas
 export type Profile = Tables<'profiles'>
 export type User = Tables<'users'>
 export type UserRole = Database['public']['Enums']['user_role']
+export type WhatsappCampaign = Tables<'whatsapp_campaigns'>
+export type WhatsappMessage = Tables<'whatsapp_messages'>
 
 // Tipos de autenticação
 export interface AuthResponse {
