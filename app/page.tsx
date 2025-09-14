@@ -2,22 +2,22 @@
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import ShaderBackground from "@/components/shader-background"
-import { LogIn, MessageCircle, Loader2, PartyPopper } from "lucide-react"
+import { LogIn, MessageCircle, Loader2, PartyPopper, Instagram, Star, CheckCircle, Sparkles } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
-import { Playfair_Display, Poppins } from "next/font/google"
+import { Playfair_Display, Inter } from "next/font/google"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-playfair",
 })
 
-const poppins = Poppins({
+const inter = Inter({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-poppins",
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-inter",
 })
 
 // Tipos para os dados do IBGE
@@ -28,7 +28,7 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState("")
   const [messageType, setMessageType] = useState<"success" | "error" | "">("")
-  const [showSuccessModal, setShowSuccessModal] = useState(false) // Novo estado para o modal
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [formData, setFormData] = useState({
     nomeCompleto: "",
     cpf: "",
@@ -136,7 +136,7 @@ export default function HomePage() {
             throw new Error(result.error || 'Ocorreu um erro no servidor.');
         }
 
-        setShowSuccessModal(true); // Abre o modal de sucesso
+        setShowSuccessModal(true);
         
         // Limpar formulário
         setFormData({
@@ -155,78 +155,101 @@ export default function HomePage() {
   }
 
   return (
-    <ShaderBackground>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-indigo-50/20 relative overflow-hidden">
+      {/* Background decorativo */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-300/10 to-pink-300/10 rounded-full blur-3xl"></div>
+      </div>
+
       {/* Botão Admin */}
-      <div className="absolute top-4 right-4 z-30">
+      <div className="absolute top-6 right-6 z-30">
         <Link href="/admin/login">
           <Button
             variant="outline"
             size="sm"
-            className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 hover:border-white/30 text-sm"
+            className="bg-white/80 backdrop-blur-md border-purple-200/50 text-slate-700 hover:bg-white hover:border-purple-300 text-sm shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
           >
-            <LogIn className="w-3 h-3 mr-1" />
+            <LogIn className="w-3 h-3 mr-2" />
             Área Administrativa
           </Button>
         </Link>
       </div>
 
-      {/* Mensagem de Erro (o de sucesso agora é o modal) */}
+      {/* Mensagem de Erro */}
       {message && messageType === 'error' && (
-        <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-lg shadow-lg bg-red-500 text-white">
-          {message}
+        <div className="fixed top-6 left-1/2 transform -translate-x-1/2 z-50 px-6 py-4 rounded-2xl shadow-2xl bg-gradient-to-r from-red-500 to-red-600 text-white backdrop-blur-sm border border-red-400/20">
+          <div className="flex items-center">
+            <div className="w-2 h-2 bg-white rounded-full mr-3 animate-pulse"></div>
+            {message}
+          </div>
         </div>
       )}
 
       {/* Conteúdo principal */}
-      <div className={`relative z-20 flex flex-col items-center px-4 py-8 space-y-12 ${poppins.variable} ${playfair.variable} font-sans`}>
+      <div className={`relative z-20 flex flex-col items-center px-6 py-12 space-y-16 ${inter.variable} ${playfair.variable} font-sans`}>
         
-        {/* Logo + título */}
-        <div className="flex flex-col items-center text-center space-y-4">
-          <Image 
-            src="/logo.png" 
-            alt="Segunda Pele Lingerie" 
-            width={300} 
-            height={300} 
-            className="drop-shadow-lg" 
-          />
-          <h1 
-            className="text-5xl md:text-6xl font-bold text-white drop-shadow-2xl leading-tight"
-            style={{ fontFamily: "var(--font-playfair)" }}
-          >
-            Seja uma de nossas consultoras
-          </h1>
-          <p 
-            className="text-lg md:text-xl text-violet-200 italic"
-            style={{ fontFamily: "var(--font-poppins)" }}
-          >
-            Para você usar, ousar e lucrar!
-          </p>
+        {/* Cabeçalho */}
+        <div className="flex flex-col items-center text-center space-y-8 mt-12">
+          <div className="relative group">
+            <Image 
+              src="/logoinicial.png" 
+              alt="Segunda Pele Lingerie" 
+              width={320} 
+              height={140} 
+              className="drop-shadow-2xl group-hover:scale-105 transition-transform duration-500" 
+            />
+          </div>
+          
+          <div className="space-y-6">
+            <h1 
+              className="text-5xl md:text-7xl font-bold text-slate-800 leading-tight px-4"
+              style={{ fontFamily: "var(--font-playfair)" }}
+            >
+              Seja uma de nossas consultoras
+            </h1>
+            <div className="flex justify-center">
+              <p 
+                className="text-xl md:text-2xl font-medium max-w-2xl text-center"
+                style={{ fontFamily: "var(--font-inter)", color: "#5D3A5B" }}
+              >
+                Para você usar, ousar e lucrar!
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Banner + Cadastro */}
-        <section className="w-full max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-stretch">
+        <section className="w-full max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 items-stretch">
           
           {/* Banner */}
-          <div className="relative w-full h-[550px] lg:h-auto mx-auto rounded-2xl overflow-hidden border border-white/20 shadow-xl">
+          <div className="relative w-full h-[600px] lg:h-auto mx-auto rounded-3xl overflow-hidden shadow-2xl group">
             <Image 
-              src="imagem1.jpeg" 
+              src="imagem0.jpeg" 
               alt="Coleção Segunda Pele" 
               fill 
-              className="object-cover" 
+              className="object-contain group-hover:scale-110 transition-transform duration-700" 
               priority 
               sizes="(max-width: 768px) 100vw, 50vw"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-            <div className="absolute bottom-6 left-4 right-4 text-center">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
+            
+            <div className="absolute bottom-8 left-8 right-8 text-left space-y-4">
+              <div className="flex items-center mb-3">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-6 h-6 fill-yellow-400 text-yellow-400 mr-1 animate-pulse" style={{animationDelay: `${i * 0.1}s`}} />
+                ))}
+              </div>
               <h2 
-                className="text-white text-xl md:text-2xl font-bold drop-shadow-lg"
+                className="text-white text-3xl md:text-4xl font-bold drop-shadow-2xl mb-3"
                 style={{ fontFamily: "var(--font-playfair)" }}
               >
                 Sofisticação que se sente na pele
               </h2>
               <p 
-                className="text-violet-100 text-base md:text-lg drop-shadow-md"
-                style={{ fontFamily: "var(--font-poppins)" }}
+                className="text-white/90 text-lg md:text-xl drop-shadow-lg font-medium"
+                style={{ fontFamily: "var(--font-inter)" }}
               >
                 Segunda Pele Lingerie — Para você usar, ousar e lucrar!
               </p>
@@ -234,121 +257,203 @@ export default function HomePage() {
           </div>
 
           {/* Formulário */}
-          <form 
-            onSubmit={handleSubmit} 
-            className="w-full mx-auto p-6 md:p-8 rounded-xl bg-white/10 backdrop-blur-lg border border-white/20 shadow-lg flex flex-col justify-center"
-          >
-            <h2 
-              className="text-2xl md:text-3xl font-semibold text-center text-white mb-6"
-              style={{ fontFamily: "var(--font-playfair)" }}
-            >
-              Faça agora mesmo seu cadastro
-            </h2>
+          <div className="w-full mx-auto p-10 rounded-3xl bg-white/70 backdrop-blur-lg shadow-2xl border border-white/20 flex flex-col justify-center relative overflow-hidden">
+            {/* Background pattern */}
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-pink-50/50 rounded-3xl"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-200/30 to-transparent rounded-bl-3xl"></div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input name="nomeCompleto" value={formData.nomeCompleto} onChange={handleChange} placeholder="Nome completo" required className="md:col-span-2 p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
-              <input name="cpf" value={formData.cpf} onChange={handleChange} placeholder="CPF" required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
-              <input name="telefone" value={formData.telefone} onChange={handleChange} placeholder="Telefone com DDD" required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
-              <input name="rua" value={formData.endereco.rua} onChange={handleChange} placeholder="Rua" required className="md:col-span-2 p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
-              <input name="numero" value={formData.endereco.numero} onChange={handleChange} placeholder="Número" required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
-              <input name="bairro" value={formData.endereco.bairro} onChange={handleChange} placeholder="Bairro" required className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300" />
-              
-              <div className="relative">
-                <input
-                  name="cidade"
-                  value={formData.endereco.cidade}
-                  onChange={handleChange}
-                  placeholder="Cidade"
-                  required
-                  list="cities-list"
-                  className="w-full p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white placeholder-violet-200 focus:outline-none focus:ring-2 focus:ring-violet-300"
-                />
-                <datalist id="cities-list">
-                  {cities.map((city) => (
-                    <option key={city.id} value={city.nome} />
-                  ))}
-                </datalist>
-              </div>
-
-              <select
-                name="uf"
-                value={selectedUf}
-                onChange={handleChange}
-                required
-                className="p-3 rounded-lg bg-violet-900/40 border border-violet-400 text-white focus:outline-none focus:ring-2 focus:ring-violet-300 appearance-none"
+            <div className="relative z-10">
+              <h2 
+                className="text-3xl md:text-4xl font-bold text-center text-slate-800 mb-3"
+                style={{ fontFamily: "var(--font-playfair)" }}
               >
-                <option value="" disabled>UF</option>
-                {ufs.map((uf) => (
-                  <option key={uf.id} value={uf.sigla}>
-                    {uf.sigla}
-                  </option>
-                ))}
-              </select>
+                Faça agora mesmo seu cadastro
+              </h2>
+              <p className="text-center text-slate-600 mb-8 font-medium">Junte-se à nossa equipe de consultoras</p>
+              
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <input 
+                    name="nomeCompleto" 
+                    value={formData.nomeCompleto} 
+                    onChange={handleChange} 
+                    placeholder="Nome completo" 
+                    required 
+                    className="md:col-span-2 p-4 rounded-2xl bg-white/80 backdrop-blur-sm border border-white/50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300 shadow-lg hover:shadow-xl transition-all duration-300 focus:bg-white" 
+                  />
+                  <input 
+                    name="cpf" 
+                    value={formData.cpf} 
+                    onChange={handleChange} 
+                    placeholder="CPF" 
+                    required 
+                    className="p-4 rounded-2xl bg-white/80 backdrop-blur-sm border border-white/50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300 shadow-lg hover:shadow-xl transition-all duration-300 focus:bg-white" 
+                  />
+                  <input 
+                    name="telefone" 
+                    value={formData.telefone} 
+                    onChange={handleChange} 
+                    placeholder="Telefone com DDD" 
+                    required 
+                    className="p-4 rounded-2xl bg-white/80 backdrop-blur-sm border border-white/50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300 shadow-lg hover:shadow-xl transition-all duration-300 focus:bg-white" 
+                  />
+                  <input 
+                    name="rua" 
+                    value={formData.endereco.rua} 
+                    onChange={handleChange} 
+                    placeholder="Rua" 
+                    required 
+                    className="md:col-span-2 p-4 rounded-2xl bg-white/80 backdrop-blur-sm border border-white/50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300 shadow-lg hover:shadow-xl transition-all duration-300 focus:bg-white" 
+                  />
+                  <input 
+                    name="numero" 
+                    value={formData.endereco.numero} 
+                    onChange={handleChange} 
+                    placeholder="Número" 
+                    required 
+                    className="p-4 rounded-2xl bg-white/80 backdrop-blur-sm border border-white/50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300 shadow-lg hover:shadow-xl transition-all duration-300 focus:bg-white" 
+                  />
+                  <input 
+                    name="bairro" 
+                    value={formData.endereco.bairro} 
+                    onChange={handleChange} 
+                    placeholder="Bairro" 
+                    required 
+                    className="p-4 rounded-2xl bg-white/80 backdrop-blur-sm border border-white/50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300 shadow-lg hover:shadow-xl transition-all duration-300 focus:bg-white" 
+                  />
+                  
+                  <div className="relative">
+                    <input
+                      name="cidade"
+                      value={formData.endereco.cidade}
+                      onChange={handleChange}
+                      placeholder="Cidade"
+                      required
+                      list="cities-list"
+                      className="w-full p-4 rounded-2xl bg-white/80 backdrop-blur-sm border border-white/50 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300 shadow-lg hover:shadow-xl transition-all duration-300 focus:bg-white"
+                    />
+                    <datalist id="cities-list">
+                      {cities.map((city) => (
+                        <option key={city.id} value={city.nome} />
+                      ))}
+                    </datalist>
+                  </div>
+
+                  <select
+                    name="uf"
+                    value={selectedUf}
+                    onChange={handleChange}
+                    required
+                    className="p-4 rounded-2xl bg-white/80 backdrop-blur-sm border border-white/50 text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-400/50 focus:border-purple-300 appearance-none shadow-lg hover:shadow-xl transition-all duration-300 focus:bg-white"
+                  >
+                    <option value="" disabled>UF</option>
+                    {ufs.map((uf) => (
+                      <option key={uf.id} value={uf.sigla}>
+                        {uf.sigla}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <Button 
+                  type="submit" 
+                  className="w-full mt-8 text-white font-semibold py-4 rounded-2xl text-lg shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] border border-purple-500/20"
+                  style={{ 
+                    background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)",
+                    hover: { background: "linear-gradient(to right, #4A2E49, #3B2338, #2C1B29)" }
+                  }}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-6 h-6 animate-spin mr-3" /> 
+                      Enviando...
+                    </>
+                  ) : (
+                    <>
+                      Concluir cadastro
+                      <Sparkles className="w-5 h-5 ml-2" />
+                    </>
+                  )}
+                </Button>
+              </form>
             </div>
-            
-            <Button 
-              type="submit" 
-              className="w-full mt-6 bg-violet-500 hover:bg-violet-600 text-white font-semibold py-3 rounded-lg text-lg shadow-md"
-              disabled={isLoading}
-            >
-              {isLoading ? <><Loader2 className="w-6 h-6 animate-spin mr-2" /> Enviando...</> : "Concluir cadastro"}
-            </Button>
-          </form>
+          </div>
         </section>
 
-        {/* Frase abaixo do formulário */}
-        <section className="max-w-3xl w-full text-center mt-8">
+        {/* Frase de destaque */}
+        <section className="max-w-5xl w-full text-center mt-16 px-6">
           <h3 
-            className="text-2xl md:text-3xl font-medium text-white opacity-90"
+            className="text-3xl md:text-4xl font-bold text-slate-800 mb-8"
             style={{ fontFamily: "var(--font-playfair)" }}
           >
-            A maior empresa de lingerie do estado de Mato Grosso do Sul
+            A maior empresa de lingerie do estado de <br />
+            <span style={{ color: "#5D3A5B" }}>Mato Grosso do Sul</span>
           </h3>
-        </section>
-
-        {/* Benefícios */}
-        <section className="max-w-4xl w-full text-center">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-12">
             {[
-              "Comissão de até 40%",
-              "Produtos totalmente em consignação",
-              "Prazo de 45 dias para pagar",
-              "Pague somente o que vender",
+              { text: "Comissão de até 40%" },
+              { text: "Produtos totalmente em consignação" },
+              { text: "Prazo de 45 dias para pagar" },
+              { text: "Pague somente o que vender" },
             ].map((benefit, i) => (
               <div 
                 key={i}
-                className="p-4 rounded-lg bg-violet-900/40 border border-violet-400 text-white text-base text-center shadow-md"
-                style={{ fontFamily: "var(--font-poppins)" }}
+                className="group p-8 rounded-3xl bg-white/60 backdrop-blur-lg border border-white/30 shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:bg-white/80 relative overflow-hidden"
               >
-                {benefit}
+                <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-pink-50/50 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl"></div>
+                <div className="relative z-10 flex items-center justify-center flex-col space-y-4">
+                  <CheckCircle className="w-8 h-8 transition-colors duration-300" style={{ color: "#5D3A5B" }} />
+                  <p 
+                    className="text-slate-700 text-lg font-medium text-center leading-relaxed"
+                    style={{ fontFamily: "var(--font-inter)" }}
+                  >
+                    {benefit.text}
+                  </p>
+                </div>
               </div>
             ))}
           </div>
         </section>
 
         {/* Rodapé */}
-        <footer className="flex flex-col items-center text-white text-sm opacity-90 space-y-3 mt-10">
-          <Image 
-            src="/logo2.png" 
-            alt="Segunda Pele Lingerie" 
-            width={150} 
-            height={150} 
-          />
+        <footer className="flex flex-col items-center text-slate-700 space-y-8 mt-20 pb-12 px-6">
+          <div className="relative group">
+            <Image 
+              src="/logodebaixo.png" 
+              alt="Segunda Pele Lingerie" 
+              width={180} 
+              height={180}
+              className="group-hover:scale-110 transition-transform duration-500" 
+            />
+          </div>
+          
           <p 
-            className="italic text-lg"
-            style={{ fontFamily: "var(--font-playfair)" }}
+            className="text-xl font-medium"
+            style={{ fontFamily: "var(--font-playfair)", color: "#5D3A5B" }}
           >
             Para você usar, ousar e lucrar!
           </p>
-          <div className="mt-2">
+          
+          <div className="mt-4">
             <Link 
               href="https://www.instagram.com/segundapelemslingerie?igsh=MTMxZGJmczBsdGNraA%3D%3D&utm_source=qr" 
               target="_blank"
-              className="px-4 py-2 rounded-full bg-pink-600 hover:bg-pink-700 text-white font-semibold shadow-md transition text-sm"
+              className="group px-8 py-4 rounded-full text-white font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center text-base hover:scale-105 border border-purple-500/20"
+              style={{ 
+                background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
+              }}
             >
-              Instagram
+              <Instagram className="w-5 h-5 mr-3 group-hover:rotate-12 transition-transform duration-300" />
+              Siga-nos no Instagram
+              <Sparkles className="w-4 h-4 ml-2 group-hover:animate-pulse" />
             </Link>
           </div>
+          
+          <p className="text-sm text-slate-500 text-center mt-8 font-medium">
+            © {new Date().getFullYear()} Segunda Pele Lingerie. Todos os direitos reservados.
+          </p>
         </footer>
       </div>
 
@@ -356,40 +461,53 @@ export default function HomePage() {
       <Link 
         href="https://api.whatsapp.com/send?phone=5567992149878&text=Olá%20gostaria%20de%20fazer%20o%20meu%20cadastro!%20" 
         target="_blank"
-        className="fixed bottom-4 right-4 z-50 flex items-center justify-center bg-green-500 hover:bg-green-600 text-white w-14 h-14 rounded-full shadow-lg animate-pulse"
+        className="fixed bottom-8 right-8 z-50 group flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white w-16 h-16 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 border border-green-400/20"
         aria-label="Fale conosco no WhatsApp"
       >
-        <MessageCircle className="w-6 h-6" />
+        <MessageCircle className="w-7 h-7 group-hover:animate-bounce" />
+        <div className="absolute -inset-1 bg-green-400/30 rounded-2xl blur-lg animate-pulse"></div>
       </Link>
 
       {/* Modal de Sucesso */}
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
-        <DialogContent className="sm:max-w-lg bg-white/10 backdrop-blur-lg border-white/20 text-white">
+        <DialogContent className="sm:max-w-2xl bg-white/95 backdrop-blur-lg border-purple-200/50 text-slate-800 rounded-3xl shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl text-center font-bold" style={{ fontFamily: "var(--font-playfair)" }}>
-               Cadastro Concluído com Sucesso! 
+            <div className="flex justify-center mb-6">
+              <div className="relative">
+                <div className="w-20 h-20 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 flex items-center justify-center">
+                  <PartyPopper className="w-10 h-10" style={{ color: "#5D3A5B" }} />
+                </div>
+              </div>
+            </div>
+            <DialogTitle 
+              className="text-3xl text-center font-bold text-slate-800 mb-4" 
+              style={{ fontFamily: "var(--font-playfair)" }}
+            >
+              Cadastro Concluído com Sucesso! 
             </DialogTitle>
           </DialogHeader>
-          <div className="p-6 text-center space-y-4">
-                        <p className="text-lg">Bem-vinda à família Segunda Pele Lingerie 💕</p>
-            <p className="text-sm text-violet-200">
+          <div className="p-8 text-center space-y-6 text-slate-600">
+            <p className="text-xl font-semibold" style={{ color: "#5D3A5B" }}>Bem-vinda à família Segunda Pele Lingerie 💕</p>
+            <p className="text-base leading-relaxed">
               Agora você faz parte de um time de consultoras que valorizam beleza, confiança e independência.
             </p>
-            <p className="text-sm text-violet-200">
-               Em breve, caso seu cadastro seja aprovado, um de nossos representantes entrará em contato para compartilhar todas as informações e ajudar você a iniciar essa nova jornada.
+            <p className="text-base leading-relaxed">
+              Em breve, caso seu cadastro seja aprovado, um de nossos representantes entrará em contato para compartilhar todas as informações e ajudar você a iniciar essa nova jornada.
             </p>
-            <p className="text-sm text-violet-200">
+            <p className="text-base leading-relaxed">
               Enquanto isso, siga nossas redes sociais e fique por dentro das novidades!
             </p>
-            <p className="text-md font-semibold text-pink-300 italic mt-4">
-               Estamos muito felizes em ter você conosco!
-            </p>
-            <p className="text-xs text-violet-whith-500">
-                Segunda Pele Lingerie – para você usar, ousar e lucrar!
+            <div className="py-4">
+              <p className="text-lg font-bold italic" style={{ color: "#5D3A5B" }}>
+                Estamos muito felizes em ter você conosco!
+              </p>
+            </div>
+            <p className="text-sm text-slate-500 pt-4 border-t border-slate-200">
+              Segunda Pele Lingerie – para você usar, ousar e lucrar!
             </p>
           </div>
         </DialogContent>
       </Dialog>
-    </ShaderBackground>
+    </div>
   )
 }

@@ -37,6 +37,15 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  
+  /* Cores personalizadas para o tema Segunda Pele */
+  --sp-primary: 139 92 246;
+  --sp-primary-foreground: 255 255 255;
+  --sp-secondary: 199 210 254;
+  --sp-accent: 249 168 212;
+  --sp-muted: 241 245 249;
+  --sp-border: 226 232 240;
+  --sp-ring: 139 92 246;
 }
 
 .dark {
@@ -126,4 +135,25 @@
 
 body {
   font-family: var(--font-figtree), sans-serif;
+}
+
+/* Estilos personalizados para o tema Segunda Pele */
+.bg-sp-primary {
+  background-color: rgb(var(--sp-primary));
+}
+
+.text-sp-primary {
+  color: rgb(var(--sp-primary));
+}
+
+.border-sp-primary {
+  border-color: rgb(var(--sp-primary));
+}
+
+.bg-gradient-sp {
+  background: linear-gradient(135deg, rgb(var(--sp-primary)) 0%, rgb(168, 85, 247) 100%);
+}
+
+.hover\:bg-sp-primary:hover {
+  background-color: rgb(var(--sp-primary));
 }

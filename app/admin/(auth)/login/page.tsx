@@ -1,7 +1,6 @@
 // app/admin/(auth)/login/page.tsx
 
 import { Suspense } from "react"
-import ShaderBackground from "@/components/shader-background"
 import { Playfair_Display, Poppins } from "next/font/google"
 import { cn } from "@/lib/utils"
 import LoginForm from "./LoginForm"
@@ -22,26 +21,28 @@ const poppins = Poppins({
 // Componente de fallback para o Suspense
 function LoadingFallback() {
   return (
-    <div className="w-full max-w-md text-center text-white">
-      <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-      <p>Carregando...</p>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 flex items-center justify-center">
+      <div className="text-center p-8 bg-white rounded-xl shadow-lg max-w-md">
+        <div className="inline-flex items-center justify-center mb-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+        </div>
+        <h2 className="text-xl font-semibold text-gray-900 mb-2">Carregando</h2>
+        <p className="text-gray-600">Aguarde um momento...</p>
+      </div>
     </div>
   )
 }
 
 export default function AdminLoginPage() {
   return (
-    <ShaderBackground>
-      <div className={cn(
-        "min-h-screen flex items-center justify-center p-4",
-        poppins.variable,
-        playfair.variable,
-        "font-sans"
-      )}>
-        <Suspense fallback={<LoadingFallback />}>
-          <LoginForm />
-        </Suspense>
-      </div>
-    </ShaderBackground>
+    <div className={cn(
+      poppins.variable,
+      playfair.variable,
+      "font-sans"
+    )}>
+      <Suspense fallback={<LoadingFallback />}>
+        <LoginForm />
+      </Suspense>
+    </div>
   )
 }

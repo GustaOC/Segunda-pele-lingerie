@@ -30,12 +30,19 @@ import {
   ChevronLeft,
   ChevronRight,
   MoreHorizontal,
-  Loader2
+  Loader2,
+  Users,
+  UserCheck,
+  Clock,
+  RefreshCw
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import ShaderBackground from "@/components/shader-background"
+import { Playfair_Display, Poppins } from "next/font/google"
 import Image from "next/image"
 import { format } from "date-fns"
+
+const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" });
+const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-poppins" });
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -90,14 +97,24 @@ export default function ConsultantManagement() {
   const startIndex = (currentPage - 1) * itemsPerPage
   const paginatedConsultants = filteredConsultants.slice(startIndex, startIndex + itemsPerPage)
 
+  // Estatísticas
+  const stats = useMemo(() => {
+    return {
+      total: consultants.length,
+      approved: consultants.filter((c: any) => c.status === 'APROVADO').length,
+      pending: consultants.filter((c: any) => c.status === 'EM_ANALISE').length,
+      rejected: consultants.filter((c: any) => c.status === 'REPROVADO').length
+    }
+  }, [consultants])
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "EM_ANALISE":
-        return <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">Em Análise</Badge>
+        return <Badge className="bg-amber-100 text-amber-800 border-amber-200">Em Análise</Badge>
       case "APROVADO":
-        return <Badge className="bg-green-500/20 text-green-300 border-green-500/30">Aprovado</Badge>
+        return <Badge className="bg-green-100 text-green-800 border-green-200">Aprovado</Badge>
       case "REPROVADO":
-        return <Badge className="bg-red-500/20 text-red-300 border-red-500/30">Reprovado</Badge>
+        return <Badge className="bg-red-100 text-red-800 border-red-200">Reprovado</Badge>
       default:
         return <Badge variant="outline">{status}</Badge>
     }
@@ -176,252 +193,334 @@ Por favor, entre em contato para os próximos passos.
     setIsConfirmWhatsappOpen(false);
   };
 
+  const refreshData = () => {
+    mutate('/api/leads/id');
+    mutate('/api/promoters');
+    toast({
+      title: "Dados atualizados!",
+      description: "Os dados foram recarregados com sucesso.",
+      duration: 2000
+    });
+  };
+
   if (leadsLoading || promotersLoading) {
     return (
-        <ShaderBackground>
-            <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-violet-400" />
-            </div>
-        </ShaderBackground>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 flex items-center justify-center">
+        <div className="text-center p-8 bg-white rounded-xl shadow-lg max-w-md">
+          <div className="inline-flex items-center justify-center mb-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+          </div>
+          <h2 className="text-xl font-semibold text-gray-900 mb-2">Carregando dados</h2>
+          <p className="text-gray-600">Aguarde um momento...</p>
+        </div>
+      </div>
     );
   }
 
   return (
-    <ShaderBackground>
-        <header className="bg-white/10 backdrop-blur-lg border-b border-white/20">
-            <div className="container mx-auto px-4 py-4">
-                <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                        <Image src="/logo2.png" alt="Segunda Pele Lingerie" width={50} height={50} className="drop-shadow-lg" />
-                        <div>
-                            <span className="text-xl font-bold text-white">Segunda Pele Lingerie</span>
-                            <p className="text-sm text-violet-200">Gerenciamento de Consultoras</p>
-                        </div>
-                    </div>
-                    <div className="flex items-center space-x-4">
-                         <Button variant="outline" size="sm" onClick={() => router.push('/admin/promoters')} className="bg-white/10 text-white hover:bg-white/20">
-                            Gerenciar Promotores
-                        </Button>
-                        <Button variant="outline" size="sm" onClick={() => router.push('/admin/dashboard')} className="bg-white/10 text-white hover:bg-white/20">
-                            ← Dashboard
-                        </Button>
-                    </div>
-                </div>
+    <div className={`min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 ${poppins.variable} ${playfair.variable} font-sans`}>
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b sticky top-0 z-40">
+        <div className="container mx-auto px-4 py-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="p-2 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg">
+                <Image src="/logo2.png" alt="Segunda Pele Lingerie" width={40} height={40} className="filter brightness-0 invert" />
+              </div>
+              <div>
+                <span className="text-xl font-bold text-gray-900" style={{ fontFamily: "var(--font-playfair)" }}>Segunda Pele Lingerie</span>
+                <p className="text-sm text-gray-600" style={{ fontFamily: "var(--font-poppins)" }}>Gerenciamento de Consultoras</p>
+              </div>
             </div>
-        </header>
+            <div className="flex items-center space-x-3">
+              <Button
+                onClick={refreshData}
+                variant="outline"
+                size="sm"
+                className="border-purple-200 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 shadow-sm"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Atualizar
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => router.push('/admin/promoters')} className="border-purple-200 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 shadow-sm">
+                Gerenciar Promotores
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => router.push('/admin/dashboard')} className="border-purple-200 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 shadow-sm">
+                ← Dashboard
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
 
-        <div className="container mx-auto px-4 py-8 text-white">
-            <div className="mb-6">
-            <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+      <div className="container mx-auto px-4 py-6">
+        {/* Título e estatísticas */}
+        <div className="mb-6">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 mb-1" style={{ fontFamily: "var(--font-playfair)" }}>
+                Gerenciar Consultoras
+              </h1>
+              <p className="text-gray-600">{filteredConsultants.length} consultora(s) encontrada(s)</p>
+            </div>
+          </div>
+
+          {/* Cards de estatísticas */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-purple-50">
+              <CardContent className="p-6 flex items-center justify-between">
                 <div>
-                <h1 className="text-3xl font-bold mb-2">Gerenciar Consultoras</h1>
-                <p className="text-violet-200">{filteredConsultants.length} consultora(s) encontrada(s)</p>
+                  <p className="text-sm text-gray-600 mb-1">Total</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
                 </div>
+                <Users className="h-8 w-8 text-purple-600" />
+              </CardContent>
+            </Card>
 
-                <div className="flex flex-wrap gap-4">
+            <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-green-50">
+              <CardContent className="p-6 flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Aprovadas</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.approved}</p>
+                </div>
+                <UserCheck className="h-8 w-8 text-green-600" />
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-amber-50">
+              <CardContent className="p-6 flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Em Análise</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
+                </div>
+                <Clock className="h-8 w-8 text-amber-600" />
+              </CardContent>
+            </Card>
+
+            <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-red-50">
+              <CardContent className="p-6 flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Reprovadas</p>
+                  <p className="text-2xl font-bold text-gray-900">{stats.rejected}</p>
+                </div>
+                <X className="h-8 w-8 text-red-600" />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Filtros */}
+        <Card className="border-0 shadow-md mb-6">
+          <CardContent className="p-4">
+            <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
+              <div className="flex flex-wrap gap-4 w-full lg:w-auto">
                 <div className="relative">
-                    <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-violet-300" />
-                    <Input
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <Input
                     placeholder="Buscar por nome, CPF, telefone ou cidade..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-80 bg-white/10 border-white/20 text-white placeholder-violet-200"
-                    />
+                    className="pl-10 w-80 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
+                  />
                 </div>
 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="w-40 bg-white/10 border-white/20 text-white">
+                  <SelectTrigger className="w-40 border-gray-200 focus:border-purple-500 focus:ring-purple-500">
                     <Filter className="w-4 h-4 mr-2" />
                     <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-violet-900/90 text-white border-violet-400/30">
+                  </SelectTrigger>
+                  <SelectContent>
                     <SelectItem value="all">Todos Status</SelectItem>
                     <SelectItem value="EM_ANALISE">Em Análise</SelectItem>
                     <SelectItem value="APROVADO">Aprovados</SelectItem>
                     <SelectItem value="REPROVADO">Reprovados</SelectItem>
-                    </SelectContent>
+                  </SelectContent>
                 </Select>
 
                 <Select value={cityFilter} onValueChange={setCityFilter}>
-                    <SelectTrigger className="w-40 bg-white/10 border-white/20 text-white">
+                  <SelectTrigger className="w-40 border-gray-200 focus:border-purple-500 focus:ring-purple-500">
                     <MapPin className="w-4 h-4 mr-2" />
                     <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent className="bg-violet-900/90 text-white border-violet-400/30">
+                  </SelectTrigger>
+                  <SelectContent>
                     <SelectItem value="all">Todas Cidades</SelectItem>
                     {[...new Set(consultants.map((c: any) => c.consultant?.address?.cidade).filter(Boolean))]
                       .map((city: any) => <SelectItem key={city} value={city}>{city}</SelectItem>)}
-                    </SelectContent>
+                  </SelectContent>
                 </Select>
-                </div>
+              </div>
             </div>
-            </div>
+          </CardContent>
+        </Card>
 
-            <Card className="bg-white/10 backdrop-blur-lg border-white/20">
-            <CardContent className="p-0">
-                <Table>
-                <TableHeader>
-                    <TableRow className="border-b border-white/20">
-                    <TableHead className="text-violet-200">Consultora</TableHead>
-                    <TableHead className="text-violet-200">CPF</TableHead>
-                    <TableHead className="text-violet-200">Contato</TableHead>
-                    <TableHead className="text-violet-200">Localização</TableHead>
-                    <TableHead className="text-violet-200">Status</TableHead>
-                    <TableHead className="text-violet-200">Data Cadastro</TableHead>
-                    <TableHead className="text-violet-200">Promotor</TableHead>
-                    <TableHead className="text-right text-violet-200">Ações</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {paginatedConsultants.map((lead) => (
-                    <TableRow key={lead.id} className="border-b border-white/20 hover:bg-white/5">
-                        <TableCell>
-                          <div className="font-medium text-white">{lead.consultant?.nome}</div>
-                        </TableCell>
-                        <TableCell>
-                          <div 
-                              className="text-sm text-violet-300 flex items-center gap-2 cursor-pointer"
-                              onClick={() => copyToClipboard(lead.consultant?.cpf, 'CPF')}
-                          >
-                              {lead.consultant?.cpf} <Copy className="w-3 h-3"/>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                        <div>
-                            <div className="flex items-center gap-1 text-sm text-white">
-                            <Phone className="w-3 h-3" />
-                            {lead.consultant?.telefone}
-                            </div>
-                            <div className="flex items-center gap-1 text-sm text-violet-300">
-                            <Mail className="w-3 h-3" />
-                            {lead.consultant?.email || 'N/A'}
-                            </div>
+        {/* Tabela */}
+        <Card className="border-0 shadow-md">
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-b border-gray-200">
+                  <TableHead className="text-gray-600 font-medium">Consultora</TableHead>
+                  <TableHead className="text-gray-600 font-medium">CPF</TableHead>
+                  <TableHead className="text-gray-600 font-medium">Contato</TableHead>
+                  <TableHead className="text-gray-600 font-medium">Localização</TableHead>
+                  <TableHead className="text-gray-600 font-medium">Status</TableHead>
+                  <TableHead className="text-gray-600 font-medium">Data Cadastro</TableHead>
+                  <TableHead className="text-gray-600 font-medium">Promotor</TableHead>
+                  <TableHead className="text-right text-gray-600 font-medium">Ações</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {paginatedConsultants.map((lead) => (
+                  <TableRow key={lead.id} className="border-b border-gray-100 hover:bg-gray-50">
+                    <TableCell>
+                      <div className="font-medium text-gray-900">{lead.consultant?.nome}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div 
+                          className="text-sm text-gray-600 flex items-center gap-2 cursor-pointer hover:text-purple-600"
+                          onClick={() => copyToClipboard(lead.consultant?.cpf, 'CPF')}
+                      >
+                          {lead.consultant?.cpf} <Copy className="w-3 h-3"/>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <div className="flex items-center gap-1 text-sm text-gray-900">
+                          <Phone className="w-3 h-3" />
+                          {lead.consultant?.telefone}
                         </div>
-                        </TableCell>
-                        <TableCell>
-                        <div className="flex items-center gap-1 text-white">
-                            <MapPin className="w-3 h-3" />
-                            {lead.consultant?.address?.cidade}, {lead.consultant?.address?.uf}
+                        <div className="flex items-center gap-1 text-sm text-gray-500">
+                          <Mail className="w-3 h-3" />
+                          {lead.consultant?.email || 'N/A'}
                         </div>
-                        </TableCell>
-                        <TableCell>{getStatusBadge(lead.status)}</TableCell>
-                        <TableCell>
-                        <div className="flex items-center gap-1 text-sm text-white">
-                            <Calendar className="w-3 h-3" />
-                            {new Date(lead.createdAt).toLocaleDateString("pt-BR")}
-                        </div>
-                        </TableCell>
-                        <TableCell>
-                        {lead.promotorId ? (
-                            <Badge variant="outline" className="text-white border-white/20">{lead.promotorId}</Badge>
-                        ) : (
-                            <span className="text-violet-300 text-sm">Não atribuído</span>
-                        )}
-                        </TableCell>
-                        <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                            <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                                setSelectedConsultant(lead)
-                                setIsDetailModalOpen(true)
-                            }}
-                            className="bg-white/10 text-white hover:bg-white/20"
-                            >
-                            <Eye className="w-4 h-4" />
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-gray-900">
+                        <MapPin className="w-3 h-3" />
+                        {lead.consultant?.address?.cidade}, {lead.consultant?.address?.uf}
+                      </div>
+                    </TableCell>
+                    <TableCell>{getStatusBadge(lead.status)}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-1 text-sm text-gray-900">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(lead.createdAt).toLocaleDateString("pt-BR")}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      {lead.promotorId ? (
+                        <Badge variant="outline" className="text-gray-700 border-gray-200">{lead.promotorId}</Badge>
+                      ) : (
+                        <span className="text-gray-400 text-sm">Não atribuído</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedConsultant(lead)
+                            setIsDetailModalOpen(true)
+                          }}
+                          className="bg-white border-purple-200 text-purple-700 hover:bg-purple-50"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm" className="bg-white border-gray-200 text-gray-700 hover:bg-gray-50">
+                              <MoreHorizontal className="w-4 h-4" />
                             </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => copyToClipboard(lead, 'Dados Completos')}>
+                              <Copy className="w-4 h-4 mr-2" />
+                              Copiar Dados
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
 
-                            <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" className="bg-white/10 text-white hover:bg-white/20">
-                                <MoreHorizontal className="w-4 h-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-violet-900/90 text-white border-violet-400/30">
-                                <DropdownMenuItem onClick={() => copyToClipboard(lead, 'Dados Completos')} className="hover:bg-violet-500/20">
-                                <Copy className="w-4 h-4 mr-2" />
-                                Copiar Dados
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
-                        </TableCell>
-                    </TableRow>
-                    ))}
-                </TableBody>
-                </Table>
-            </CardContent>
-            </Card>
+        {/* Paginação */}
+        <div className="flex items-center justify-between mt-6">
+          <p className="text-sm text-gray-600">
+            Mostrando {startIndex + 1} a {Math.min(startIndex + itemsPerPage, filteredConsultants.length)} de{" "}
+            {filteredConsultants.length} resultados
+          </p>
 
-            <div className="flex items-center justify-between mt-6">
-            <p className="text-sm text-violet-200">
-                Mostrando {startIndex + 1} a {Math.min(startIndex + itemsPerPage, filteredConsultants.length)} de{" "}
-                {filteredConsultants.length} resultados
-            </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
 
-            <div className="flex items-center gap-2">
-                <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-                disabled={currentPage === 1}
-                className="bg-white/10 text-white hover:bg-white/20"
-                >
-                <ChevronLeft className="w-4 h-4" />
-                </Button>
+            <span className="text-sm text-gray-900">
+              Página {currentPage} de {totalPages}
+            </span>
 
-                <span className="text-sm text-white">
-                Página {currentPage} de {totalPages}
-                </span>
-
-                <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
-                disabled={currentPage === totalPages}
-                 className="bg-white/10 text-white hover:bg-white/20"
-                >
-                <ChevronRight className="w-4 h-4" />
-                </Button>
-            </div>
-            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
+      </div>
 
-        <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-violet-900/95 text-white border-violet-400/30">
-            <DialogHeader>
-                <DialogTitle>Detalhes da Consultora</DialogTitle>
-                <DialogDescription>Visualize e gerencie as informações da consultora</DialogDescription>
-            </DialogHeader>
+      {/* Modals */}
+      <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white border-gray-200">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">Detalhes da Consultora</DialogTitle>
+            <DialogDescription className="text-gray-600">Visualize e gerencie as informações da consultora</DialogDescription>
+          </DialogHeader>
 
-            {selectedConsultant && (
-                <ConsultantDetailForm
-                lead={selectedConsultant}
-                onStatusChange={handleStatusChange}
-                promoters={promoters}
-                rejectionReasons={rejectionReasons}
-                />
-            )}
-            </DialogContent>
-        </Dialog>
-        
-        {/* WhatsApp Confirmation Modal */}
-        <Dialog open={isConfirmWhatsappOpen} onOpenChange={setIsConfirmWhatsappOpen}>
-            <DialogContent className="bg-violet-900/95 text-white border-violet-400/30">
-                <DialogHeader>
-                    <DialogTitle>Enviar para o Promotor?</DialogTitle>
-                    <DialogDescription>
-                        Deseja enviar os dados desta consultora para o WhatsApp de {whatsappData?.promoter?.name}?
-                    </DialogDescription>
-                </DialogHeader>
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setIsConfirmWhatsappOpen(false)}>Não</Button>
-                    <Button onClick={handleSendToWhatsapp}>Sim, Enviar</Button>
-                </DialogFooter>
-            </DialogContent>
-        </Dialog>
-    </ShaderBackground>
+          {selectedConsultant && (
+            <ConsultantDetailForm
+              lead={selectedConsultant}
+              onStatusChange={handleStatusChange}
+              promoters={promoters}
+              rejectionReasons={rejectionReasons}
+            />
+          )}
+        </DialogContent>
+      </Dialog>
+      
+      {/* WhatsApp Confirmation Modal */}
+      <Dialog open={isConfirmWhatsappOpen} onOpenChange={setIsConfirmWhatsappOpen}>
+        <DialogContent className="bg-white border-gray-200">
+          <DialogHeader>
+            <DialogTitle className="text-gray-900">Enviar para o Promotor?</DialogTitle>
+            <DialogDescription className="text-gray-600">
+              Deseja enviar os dados desta consultora para o WhatsApp de {whatsappData?.promoter?.name}?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsConfirmWhatsappOpen(false)}>Não</Button>
+            <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700" onClick={handleSendToWhatsapp}>Sim, Enviar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
   )
 }
 
@@ -462,39 +561,39 @@ function ConsultantDetailForm({
   
     return (
       <Tabs defaultValue="info" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="info">Informações</TabsTrigger>
-          <TabsTrigger value="actions">Ações</TabsTrigger>
-          <TabsTrigger value="history">Histórico</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 bg-gray-100">
+          <TabsTrigger value="info" className="data-[state=active]:bg-white">Informações</TabsTrigger>
+          <TabsTrigger value="actions" className="data-[state=active]:bg-white">Ações</TabsTrigger>
+          <TabsTrigger value="history" className="data-[state=active]:bg-white">Histórico</TabsTrigger>
         </TabsList>
   
         <TabsContent value="info" className="space-y-4 pt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><Label>Nome Completo</Label><Input value={consultant.nome} readOnly className="bg-white/10"/></div>
-            <div><Label>CPF</Label><Input value={consultant.cpf} readOnly className="bg-white/10"/></div>
-            <div><Label>Telefone</Label><Input value={consultant.telefone} readOnly className="bg-white/10"/></div>
-            <div><Label>Email</Label><Input value={consultant.email || 'N/A'} readOnly className="bg-white/10"/></div>
-            <div className="md:col-span-2"><Label>Endereço</Label><Input value={`${address.rua}, ${address.numero}, ${address.bairro}`} readOnly className="bg-white/10"/></div>
-            <div><Label>Cidade</Label><Input value={address.cidade} readOnly className="bg-white/10"/></div>
-            <div><Label>CEP</Label><Input value={address.cep} readOnly className="bg-white/10"/></div>
+            <div><Label className="text-gray-700">Nome Completo</Label><Input value={consultant.nome} readOnly className="bg-gray-50"/></div>
+            <div><Label className="text-gray-700">CPF</Label><Input value={consultant.cpf} readOnly className="bg-gray-50"/></div>
+            <div><Label className="text-gray-700">Telefone</Label><Input value={consultant.telefone} readOnly className="bg-gray-50"/></div>
+            <div><Label className="text-gray-700">Email</Label><Input value={consultant.email || 'N/A'} readOnly className="bg-gray-50"/></div>
+            <div className="md:col-span-2"><Label className="text-gray-700">Endereço</Label><Input value={`${address.rua}, ${address.numero}, ${address.bairro}`} readOnly className="bg-gray-50"/></div>
+            <div><Label className="text-gray-700">Cidade</Label><Input value={address.cidade} readOnly className="bg-gray-50"/></div>
+            <div><Label className="text-gray-700">CEP</Label><Input value={address.cep} readOnly className="bg-gray-50"/></div>
           </div>
         </TabsContent>
   
         <TabsContent value="actions" className="space-y-4 pt-4">
             {lead.status === "EM_ANALISE" && (
                 <>
-                <div><Label htmlFor="promoter">Selecionar Promotor (para aprovação)</Label><Select value={selectedPromoter} onValueChange={setSelectedPromoter}><SelectTrigger className="bg-white/10"><SelectValue placeholder="Escolha um promotor" /></SelectTrigger><SelectContent className="bg-violet-800">{promoters.map((p) => (<SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>))}</SelectContent></Select></div>
-                <div><Label htmlFor="rejectionReason">Motivo da Reprovação (se aplicável)</Label><Select value={rejectionReason} onValueChange={setRejectionReason}><SelectTrigger className="bg-white/10"><SelectValue placeholder="Selecione um motivo" /></SelectTrigger><SelectContent className="bg-violet-800">{rejectionReasons.map((r) => (<SelectItem key={r} value={r}>{r}</SelectItem>))}</SelectContent></Select></div>
-                {rejectionReason === "Outros" && (<div><Label htmlFor="customReason">Motivo Personalizado</Label><Input id="customReason" value={customReason} onChange={(e) => setCustomReason(e.target.value)} placeholder="Digite o motivo da reprovação" className="bg-white/10" /></div>)}
-                <div className="flex gap-4 pt-4"><Button onClick={handleApprove} className="flex-1"><Check className="w-4 h-4 mr-2" />Aprovar</Button><Button onClick={handleReject} variant="destructive" className="flex-1"><X className="w-4 h-4 mr-2" />Reprovar</Button></div>
+                <div><Label htmlFor="promoter" className="text-gray-700">Selecionar Promotor (para aprovação)</Label><Select value={selectedPromoter} onValueChange={setSelectedPromoter}><SelectTrigger className="bg-white border-gray-200"><SelectValue placeholder="Escolha um promotor" /></SelectTrigger><SelectContent>{promoters.map((p) => (<SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>))}</SelectContent></Select></div>
+                <div><Label htmlFor="rejectionReason" className="text-gray-700">Motivo da Reprovação (se aplicável)</Label><Select value={rejectionReason} onValueChange={setRejectionReason}><SelectTrigger className="bg-white border-gray-200"><SelectValue placeholder="Selecione um motivo" /></SelectTrigger><SelectContent>{rejectionReasons.map((r) => (<SelectItem key={r} value={r}>{r}</SelectItem>))}</SelectContent></Select></div>
+                {rejectionReason === "Outros" && (<div><Label htmlFor="customReason" className="text-gray-700">Motivo Personalizado</Label><Input id="customReason" value={customReason} onChange={(e) => setCustomReason(e.target.value)} placeholder="Digite o motivo da reprovação" className="bg-white border-gray-200" /></div>)}
+                <div className="flex gap-4 pt-4"><Button onClick={handleApprove} className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"><Check className="w-4 h-4 mr-2" />Aprovar</Button><Button onClick={handleReject} className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"><X className="w-4 h-4 mr-2" />Reprovar</Button></div>
                 </>
             )}
-             {lead.status === "APROVADO" && <p className="text-green-400 p-4 bg-green-500/10 rounded-md">Cadastro aprovado e encaminhado para o promotor: {lead.promotorId}.</p>}
-             {lead.status === "REPROVADO" && <p className="text-red-400 p-4 bg-red-500/10 rounded-md">Cadastro reprovado. Motivo: {lead.motivoReprovacao}.</p>}
+             {lead.status === "APROVADO" && <p className="text-green-700 p-4 bg-green-50 rounded-md border border-green-200">Cadastro aprovado e encaminhado para o promotor: {lead.promotorId}.</p>}
+             {lead.status === "REPROVADO" && <p className="text-red-700 p-4 bg-red-50 rounded-md border border-red-200">Cadastro reprovado. Motivo: {lead.motivoReprovacao}.</p>}
         </TabsContent>
   
         <TabsContent value="history" className="space-y-4 pt-4">
-          <p>O histórico de alterações do lead aparecerá aqui.</p>
+          <p className="text-gray-600">O histórico de alterações do lead aparecerá aqui.</p>
         </TabsContent>
       </Tabs>
     )
