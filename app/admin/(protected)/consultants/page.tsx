@@ -37,12 +37,12 @@ import {
   RefreshCw
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Playfair_Display, Poppins } from "next/font/google"
+import { Playfair_Display, Inter } from "next/font/google"
 import Image from "next/image"
 import { format } from "date-fns"
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" });
-const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-poppins" });
+const inter = Inter({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"], variable: "--font-inter" });
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -205,31 +205,44 @@ Por favor, entre em contato para os próximos passos.
 
   if (leadsLoading || promotersLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center p-8 bg-white rounded-xl shadow-lg max-w-md">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-indigo-50/20 flex items-center justify-center relative overflow-hidden">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-300/10 to-pink-300/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div className="text-center p-8 bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 max-w-md z-10">
           <div className="inline-flex items-center justify-center mb-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: "#5D3A5B" }}></div>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Carregando dados</h2>
-          <p className="text-gray-600">Aguarde um momento...</p>
+          <h2 className="text-xl font-semibold text-slate-800 mb-2" style={{ fontFamily: "var(--font-playfair)" }}>Carregando dados</h2>
+          <p className="text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Aguarde um momento...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 ${poppins.variable} ${playfair.variable} font-sans`}>
+    <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-indigo-50/20 ${inter.variable} ${playfair.variable} font-sans relative overflow-hidden`}>
+      {/* Background decorativo */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-300/10 to-pink-300/10 rounded-full blur-3xl"></div>
+      </div>
+
       {/* Header */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-40">
+      <header className="bg-white/80 backdrop-blur-md border-b border-white/50 sticky top-0 z-40">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg">
+              <div className="p-2 rounded-2xl" style={{ background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)" }}>
                 <Image src="/logo2.png" alt="Segunda Pele Lingerie" width={40} height={40} className="filter brightness-0 invert" />
               </div>
               <div>
-                <span className="text-xl font-bold text-gray-900" style={{ fontFamily: "var(--font-playfair)" }}>Segunda Pele Lingerie</span>
-                <p className="text-sm text-gray-600" style={{ fontFamily: "var(--font-poppins)" }}>Gerenciamento de Consultoras</p>
+                <span className="text-xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Segunda Pele Lingerie</span>
+                <p className="text-sm text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Gerenciamento de Consultoras</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
@@ -237,15 +250,15 @@ Por favor, entre em contato para os próximos passos.
                 onClick={refreshData}
                 variant="outline"
                 size="sm"
-                className="border-purple-200 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 shadow-sm"
+                className="border-white/50 bg-white/50 text-slate-700 hover:bg-white hover:text-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Atualizar
               </Button>
-              <Button variant="outline" size="sm" onClick={() => router.push('/admin/promoters')} className="border-purple-200 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 shadow-sm">
+              <Button variant="outline" size="sm" onClick={() => router.push('/admin/promoters')} className="border-white/50 bg-white/50 text-slate-700 hover:bg-white hover:text-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl">
                 Gerenciar Promotores
               </Button>
-              <Button variant="outline" size="sm" onClick={() => router.push('/admin/dashboard')} className="border-purple-200 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 shadow-sm">
+              <Button variant="outline" size="sm" onClick={() => router.push('/admin/dashboard')} className="border-white/50 bg-white/50 text-slate-700 hover:bg-white hover:text-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl">
                 ← Dashboard
               </Button>
             </div>
@@ -253,55 +266,55 @@ Por favor, entre em contato para os próximos passos.
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-6 relative z-10">
         {/* Título e estatísticas */}
         <div className="mb-6">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-1" style={{ fontFamily: "var(--font-playfair)" }}>
+              <h1 className="text-3xl font-bold text-slate-800 mb-1" style={{ fontFamily: "var(--font-playfair)" }}>
                 Gerenciar Consultoras
               </h1>
-              <p className="text-gray-600">{filteredConsultants.length} consultora(s) encontrada(s)</p>
+              <p className="text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>{filteredConsultants.length} consultora(s) encontrada(s)</p>
             </div>
           </div>
 
           {/* Cards de estatísticas */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-purple-50">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-6">
+            <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
               <CardContent className="p-6 flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Total</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                  <p className="text-sm text-slate-600 mb-1" style={{ fontFamily: "var(--font-inter)" }}>Total</p>
+                  <p className="text-2xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>{stats.total}</p>
                 </div>
-                <Users className="h-8 w-8 text-purple-600" />
+                <Users className="h-8 w-8" style={{ color: "#5D3A5B" }} />
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-green-50">
+            <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
               <CardContent className="p-6 flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Aprovadas</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.approved}</p>
+                  <p className="text-sm text-slate-600 mb-1" style={{ fontFamily: "var(--font-inter)" }}>Aprovadas</p>
+                  <p className="text-2xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>{stats.approved}</p>
                 </div>
                 <UserCheck className="h-8 w-8 text-green-600" />
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-amber-50">
+            <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
               <CardContent className="p-6 flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Em Análise</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.pending}</p>
+                  <p className="text-sm text-slate-600 mb-1" style={{ fontFamily: "var(--font-inter)" }}>Em Análise</p>
+                  <p className="text-2xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>{stats.pending}</p>
                 </div>
                 <Clock className="h-8 w-8 text-amber-600" />
               </CardContent>
             </Card>
 
-            <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-red-50">
+            <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
               <CardContent className="p-6 flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600 mb-1">Reprovadas</p>
-                  <p className="text-2xl font-bold text-gray-900">{stats.rejected}</p>
+                  <p className="text-sm text-slate-600 mb-1" style={{ fontFamily: "var(--font-inter)" }}>Reprovadas</p>
+                  <p className="text-2xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>{stats.rejected}</p>
                 </div>
                 <X className="h-8 w-8 text-red-600" />
               </CardContent>
@@ -310,22 +323,22 @@ Por favor, entre em contato para os próximos passos.
         </div>
 
         {/* Filtros */}
-        <Card className="border-0 shadow-md mb-6">
+        <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl mb-6">
           <CardContent className="p-4">
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
               <div className="flex flex-wrap gap-4 w-full lg:w-auto">
                 <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                   <Input
                     placeholder="Buscar por nome, CPF, telefone ou cidade..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 w-80 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
+                    className="pl-10 w-80 border-white/50 focus:border-purple-500 focus:ring-purple-500 bg-white/80 backdrop-blur-sm rounded-2xl"
                   />
                 </div>
 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-40 border-gray-200 focus:border-purple-500 focus:ring-purple-500">
+                  <SelectTrigger className="w-40 border-white/50 focus:border-purple-500 focus:ring-purple-500 bg-white/80 backdrop-blur-sm rounded-2xl">
                     <Filter className="w-4 h-4 mr-2" />
                     <SelectValue />
                   </SelectTrigger>
@@ -338,7 +351,7 @@ Por favor, entre em contato para os próximos passos.
                 </Select>
 
                 <Select value={cityFilter} onValueChange={setCityFilter}>
-                  <SelectTrigger className="w-40 border-gray-200 focus:border-purple-500 focus:ring-purple-500">
+                  <SelectTrigger className="w-40 border-white/50 focus:border-purple-500 focus:ring-purple-500 bg-white/80 backdrop-blur-sm rounded-2xl">
                     <MapPin className="w-4 h-4 mr-2" />
                     <SelectValue />
                   </SelectTrigger>
@@ -354,30 +367,30 @@ Por favor, entre em contato para os próximos passos.
         </Card>
 
         {/* Tabela */}
-        <Card className="border-0 shadow-md">
+        <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
           <CardContent className="p-0">
             <Table>
               <TableHeader>
-                <TableRow className="border-b border-gray-200">
-                  <TableHead className="text-gray-600 font-medium">Consultora</TableHead>
-                  <TableHead className="text-gray-600 font-medium">CPF</TableHead>
-                  <TableHead className="text-gray-600 font-medium">Contato</TableHead>
-                  <TableHead className="text-gray-600 font-medium">Localização</TableHead>
-                  <TableHead className="text-gray-600 font-medium">Status</TableHead>
-                  <TableHead className="text-gray-600 font-medium">Data Cadastro</TableHead>
-                  <TableHead className="text-gray-600 font-medium">Promotor</TableHead>
-                  <TableHead className="text-right text-gray-600 font-medium">Ações</TableHead>
+                <TableRow className="border-b border-white/30">
+                  <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Consultora</TableHead>
+                  <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>CPF</TableHead>
+                  <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Contato</TableHead>
+                  <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Localização</TableHead>
+                  <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Status</TableHead>
+                  <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Data Cadastro</TableHead>
+                  <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Promotor</TableHead>
+                  <TableHead className="text-right text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {paginatedConsultants.map((lead) => (
-                  <TableRow key={lead.id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <TableRow key={lead.id} className="border-b border-white/30 hover:bg-white/50">
                     <TableCell>
-                      <div className="font-medium text-gray-900">{lead.consultant?.nome}</div>
+                      <div className="font-medium text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>{lead.consultant?.nome}</div>
                     </TableCell>
                     <TableCell>
                       <div 
-                          className="text-sm text-gray-600 flex items-center gap-2 cursor-pointer hover:text-purple-600"
+                          className="text-sm text-slate-600 flex items-center gap-2 cursor-pointer hover:text-purple-600"
                           onClick={() => copyToClipboard(lead.consultant?.cpf, 'CPF')}
                       >
                           {lead.consultant?.cpf} <Copy className="w-3 h-3"/>
@@ -385,34 +398,34 @@ Por favor, entre em contato para os próximos passos.
                     </TableCell>
                     <TableCell>
                       <div>
-                        <div className="flex items-center gap-1 text-sm text-gray-900">
+                        <div className="flex items-center gap-1 text-sm text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>
                           <Phone className="w-3 h-3" />
                           {lead.consultant?.telefone}
                         </div>
-                        <div className="flex items-center gap-1 text-sm text-gray-500">
+                        <div className="flex items-center gap-1 text-sm text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>
                           <Mail className="w-3 h-3" />
                           {lead.consultant?.email || 'N/A'}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1 text-gray-900">
+                      <div className="flex items-center gap-1 text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>
                         <MapPin className="w-3 h-3" />
                         {lead.consultant?.address?.cidade}, {lead.consultant?.address?.uf}
                       </div>
                     </TableCell>
                     <TableCell>{getStatusBadge(lead.status)}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-1 text-sm text-gray-900">
+                      <div className="flex items-center gap-1 text-sm text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>
                         <Calendar className="w-3 h-3" />
                         {new Date(lead.createdAt).toLocaleDateString("pt-BR")}
                       </div>
                     </TableCell>
                     <TableCell>
                       {lead.promotorId ? (
-                        <Badge variant="outline" className="text-gray-700 border-gray-200">{lead.promotorId}</Badge>
+                        <Badge variant="outline" className="text-slate-700 border-slate-200" style={{ fontFamily: "var(--font-inter)" }}>{lead.promotorId}</Badge>
                       ) : (
-                        <span className="text-gray-400 text-sm">Não atribuído</span>
+                        <span className="text-slate-400 text-sm" style={{ fontFamily: "var(--font-inter)" }}>Não atribuído</span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
@@ -424,19 +437,19 @@ Por favor, entre em contato para os próximos passos.
                             setSelectedConsultant(lead)
                             setIsDetailModalOpen(true)
                           }}
-                          className="bg-white border-purple-200 text-purple-700 hover:bg-purple-50"
+                          className="bg-white/80 backdrop-blur-sm border-white/50 text-slate-700 hover:bg-white hover:text-slate-800 rounded-2xl"
                         >
                           <Eye className="w-4 h-4" />
                         </Button>
 
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="bg-white border-gray-200 text-gray-700 hover:bg-gray-50">
+                            <Button variant="outline" size="sm" className="bg-white/80 backdrop-blur-sm border-white/50 text-slate-700 hover:bg-white hover:text-slate-800 rounded-2xl">
                               <MoreHorizontal className="w-4 h-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => copyToClipboard(lead, 'Dados Completos')}>
+                          <DropdownMenuContent align="end" className="bg-white/95 backdrop-blur-lg border-white/50 rounded-2xl">
+                            <DropdownMenuItem onClick={() => copyToClipboard(lead, 'Dados Completos')} className="rounded-xl">
                               <Copy className="w-4 h-4 mr-2" />
                               Copiar Dados
                             </DropdownMenuItem>
@@ -453,7 +466,7 @@ Por favor, entre em contato para os próximos passos.
 
         {/* Paginação */}
         <div className="flex items-center justify-between mt-6">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>
             Mostrando {startIndex + 1} a {Math.min(startIndex + itemsPerPage, filteredConsultants.length)} de{" "}
             {filteredConsultants.length} resultados
           </p>
@@ -464,12 +477,12 @@ Por favor, entre em contato para os próximos passos.
               size="sm"
               onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               disabled={currentPage === 1}
-              className="bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+              className="bg-white/80 backdrop-blur-sm border-white/50 text-slate-700 hover:bg-white hover:text-slate-800 rounded-2xl"
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
 
-            <span className="text-sm text-gray-900">
+            <span className="text-sm text-slate-900" style={{ fontFamily: "var(--font-inter)" }}>
               Página {currentPage} de {totalPages}
             </span>
 
@@ -478,7 +491,7 @@ Por favor, entre em contato para os próximos passos.
               size="sm"
               onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
               disabled={currentPage === totalPages}
-              className="bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+              className="bg-white/80 backdrop-blur-sm border-white/50 text-slate-700 hover:bg-white hover:text-slate-800 rounded-2xl"
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
@@ -488,10 +501,10 @@ Por favor, entre em contato para os próximos passos.
 
       {/* Modals */}
       <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white border-gray-200">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white/95 backdrop-blur-lg border-white/50 shadow-2xl rounded-3xl">
           <DialogHeader>
-            <DialogTitle className="text-gray-900">Detalhes da Consultora</DialogTitle>
-            <DialogDescription className="text-gray-600">Visualize e gerencie as informações da consultora</DialogDescription>
+            <DialogTitle className="text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Detalhes da Consultora</DialogTitle>
+            <DialogDescription className="text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Visualize e gerencie as informações da consultora</DialogDescription>
           </DialogHeader>
 
           {selectedConsultant && (
@@ -507,16 +520,24 @@ Por favor, entre em contato para os próximos passos.
       
       {/* WhatsApp Confirmation Modal */}
       <Dialog open={isConfirmWhatsappOpen} onOpenChange={setIsConfirmWhatsappOpen}>
-        <DialogContent className="bg-white border-gray-200">
+        <DialogContent className="bg-white/95 backdrop-blur-lg border-white/50 shadow-2xl rounded-3xl">
           <DialogHeader>
-            <DialogTitle className="text-gray-900">Enviar para o Promotor?</DialogTitle>
-            <DialogDescription className="text-gray-600">
+            <DialogTitle className="text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Enviar para o Promotor?</DialogTitle>
+            <DialogDescription className="text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>
               Deseja enviar os dados desta consultora para o WhatsApp de {whatsappData?.promoter?.name}?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsConfirmWhatsappOpen(false)}>Não</Button>
-            <Button className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700" onClick={handleSendToWhatsapp}>Sim, Enviar</Button>
+            <Button variant="outline" onClick={() => setIsConfirmWhatsappOpen(false)} className="rounded-2xl">Não</Button>
+            <Button 
+              className="text-white font-semibold py-2 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-purple-500/20"
+              style={{
+                background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
+              }}
+              onClick={handleSendToWhatsapp}
+            >
+              Sim, Enviar
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -561,39 +582,39 @@ function ConsultantDetailForm({
   
     return (
       <Tabs defaultValue="info" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-gray-100">
-          <TabsTrigger value="info" className="data-[state=active]:bg-white">Informações</TabsTrigger>
-          <TabsTrigger value="actions" className="data-[state=active]:bg-white">Ações</TabsTrigger>
-          <TabsTrigger value="history" className="data-[state=active]:bg-white">Histórico</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 bg-slate-100/70 backdrop-blur-sm p-1 rounded-2xl border border-white/30">
+          <TabsTrigger value="info" className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-2xl py-2 transition-all duration-300" style={{ fontFamily: "var(--font-inter)" }}>Informações</TabsTrigger>
+          <TabsTrigger value="actions" className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-2xl py-2 transition-all duration-300" style={{ fontFamily: "var(--font-inter)" }}>Ações</TabsTrigger>
+          <TabsTrigger value="history" className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-2xl py-2 transition-all duration-300" style={{ fontFamily: "var(--font-inter)" }}>Histórico</TabsTrigger>
         </TabsList>
   
         <TabsContent value="info" className="space-y-4 pt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div><Label className="text-gray-700">Nome Completo</Label><Input value={consultant.nome} readOnly className="bg-gray-50"/></div>
-            <div><Label className="text-gray-700">CPF</Label><Input value={consultant.cpf} readOnly className="bg-gray-50"/></div>
-            <div><Label className="text-gray-700">Telefone</Label><Input value={consultant.telefone} readOnly className="bg-gray-50"/></div>
-            <div><Label className="text-gray-700">Email</Label><Input value={consultant.email || 'N/A'} readOnly className="bg-gray-50"/></div>
-            <div className="md:col-span-2"><Label className="text-gray-700">Endereço</Label><Input value={`${address.rua}, ${address.numero}, ${address.bairro}`} readOnly className="bg-gray-50"/></div>
-            <div><Label className="text-gray-700">Cidade</Label><Input value={address.cidade} readOnly className="bg-gray-50"/></div>
-            <div><Label className="text-gray-700">CEP</Label><Input value={address.cep} readOnly className="bg-gray-50"/></div>
+            <div><Label className="text-slate-700" style={{ fontFamily: "var(--font-inter)" }}>Nome Completo</Label><Input value={consultant.nome} readOnly className="bg-slate-50/70 backdrop-blur-sm rounded-2xl border-white/50"/></div>
+            <div><Label className="text-slate-700" style={{ fontFamily: "var(--font-inter)" }}>CPF</Label><Input value={consultant.cpf} readOnly className="bg-slate-50/70 backdrop-blur-sm rounded-2xl border-white/50"/></div>
+            <div><Label className="text-slate-700" style={{ fontFamily: "var(--font-inter)" }}>Telefone</Label><Input value={consultant.telefone} readOnly className="bg-slate-50/70 backdrop-blur-sm rounded-2xl border-white/50"/></div>
+            <div><Label className="text-slate-700" style={{ fontFamily: "var(--font-inter)" }}>Email</Label><Input value={consultant.email || 'N/A'} readOnly className="bg-slate-50/70 backdrop-blur-sm rounded-2xl border-white/50"/></div>
+            <div className="md:col-span-2"><Label className="text-slate-700" style={{ fontFamily: "var(--font-inter)" }}>Endereço</Label><Input value={`${address.rua}, ${address.numero}, ${address.bairro}`} readOnly className="bg-slate-50/70 backdrop-blur-sm rounded-2xl border-white/50"/></div>
+            <div><Label className="text-slate-700" style={{ fontFamily: "var(--font-inter)" }}>Cidade</Label><Input value={address.cidade} readOnly className="bg-slate-50/70 backdrop-blur-sm rounded-2xl border-white/50"/></div>
+            <div><Label className="text-slate-700" style={{ fontFamily: "var(--font-inter)" }}>CEP</Label><Input value={address.cep} readOnly className="bg-slate-50/70 backdrop-blur-sm rounded-2xl border-white/50"/></div>
           </div>
         </TabsContent>
   
         <TabsContent value="actions" className="space-y-4 pt-4">
             {lead.status === "EM_ANALISE" && (
                 <>
-                <div><Label htmlFor="promoter" className="text-gray-700">Selecionar Promotor (para aprovação)</Label><Select value={selectedPromoter} onValueChange={setSelectedPromoter}><SelectTrigger className="bg-white border-gray-200"><SelectValue placeholder="Escolha um promotor" /></SelectTrigger><SelectContent>{promoters.map((p) => (<SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>))}</SelectContent></Select></div>
-                <div><Label htmlFor="rejectionReason" className="text-gray-700">Motivo da Reprovação (se aplicável)</Label><Select value={rejectionReason} onValueChange={setRejectionReason}><SelectTrigger className="bg-white border-gray-200"><SelectValue placeholder="Selecione um motivo" /></SelectTrigger><SelectContent>{rejectionReasons.map((r) => (<SelectItem key={r} value={r}>{r}</SelectItem>))}</SelectContent></Select></div>
-                {rejectionReason === "Outros" && (<div><Label htmlFor="customReason" className="text-gray-700">Motivo Personalizado</Label><Input id="customReason" value={customReason} onChange={(e) => setCustomReason(e.target.value)} placeholder="Digite o motivo da reprovação" className="bg-white border-gray-200" /></div>)}
-                <div className="flex gap-4 pt-4"><Button onClick={handleApprove} className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"><Check className="w-4 h-4 mr-2" />Aprovar</Button><Button onClick={handleReject} className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800"><X className="w-4 h-4 mr-2" />Reprovar</Button></div>
+                <div><Label htmlFor="promoter" className="text-slate-700" style={{ fontFamily: "var(--font-inter)" }}>Selecionar Promotor (para aprovação)</Label><Select value={selectedPromoter} onValueChange={setSelectedPromoter}><SelectTrigger className="bg-white/80 backdrop-blur-sm border-white/50 rounded-2xl"><SelectValue placeholder="Escolha um promotor" /></SelectTrigger><SelectContent>{promoters.map((p) => (<SelectItem key={p.id} value={p.name}>{p.name}</SelectItem>))}</SelectContent></Select></div>
+                <div><Label htmlFor="rejectionReason" className="text-slate-700" style={{ fontFamily: "var(--font-inter)" }}>Motivo da Reprovação (se aplicável)</Label><Select value={rejectionReason} onValueChange={setRejectionReason}><SelectTrigger className="bg-white/80 backdrop-blur-sm border-white/50 rounded-2xl"><SelectValue placeholder="Selecione um motivo" /></SelectTrigger><SelectContent>{rejectionReasons.map((r) => (<SelectItem key={r} value={r}>{r}</SelectItem>))}</SelectContent></Select></div>
+                {rejectionReason === "Outros" && (<div><Label htmlFor="customReason" className="text-slate-700" style={{ fontFamily: "var(--font-inter)" }}>Motivo Personalizado</Label><Input id="customReason" value={customReason} onChange={(e) => setCustomReason(e.target.value)} placeholder="Digite o motivo da reprovação" className="bg-white/80 backdrop-blur-sm border-white/50 rounded-2xl" /></div>)}
+                <div className="flex gap-4 pt-4"><Button onClick={handleApprove} className="flex-1 text-white font-semibold py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-green-500/20" style={{ background: "linear-gradient(to right, #059669, #047857, #065f46)" }}><Check className="w-4 h-4 mr-2" />Aprovar</Button><Button onClick={handleReject} className="flex-1 text-white font-semibold py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-red-500/20" style={{ background: "linear-gradient(to right, #dc2626, #b91c1c, #991b1b)" }}><X className="w-4 h-4 mr-2" />Reprovar</Button></div>
                 </>
             )}
-             {lead.status === "APROVADO" && <p className="text-green-700 p-4 bg-green-50 rounded-md border border-green-200">Cadastro aprovado e encaminhado para o promotor: {lead.promotorId}.</p>}
-             {lead.status === "REPROVADO" && <p className="text-red-700 p-4 bg-red-50 rounded-md border border-red-200">Cadastro reprovado. Motivo: {lead.motivoReprovacao}.</p>}
+             {lead.status === "APROVADO" && <p className="text-green-700 p-4 bg-green-50/70 backdrop-blur-sm rounded-md border border-green-200" style={{ fontFamily: "var(--font-inter)" }}>Cadastro aprovado e encaminhado para o promotor: {lead.promotorId}.</p>}
+             {lead.status === "REPROVADO" && <p className="text-red-700 p-4 bg-red-50/70 backdrop-blur-sm rounded-md border border-red-200" style={{ fontFamily: "var(--font-inter)" }}>Cadastro reprovado. Motivo: {lead.motivoReprovacao}.</p>}
         </TabsContent>
   
         <TabsContent value="history" className="space-y-4 pt-4">
-          <p className="text-gray-600">O histórico de alterações do lead aparecerá aqui.</p>
+          <p className="text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>O histórico de alterações do lead aparecerá aqui.</p>
         </TabsContent>
       </Tabs>
     )

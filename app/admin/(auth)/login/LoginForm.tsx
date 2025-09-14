@@ -10,12 +10,12 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Eye, EyeOff, Shield, Loader2, AlertTriangle, ArrowLeft } from "lucide-react"
-import { Playfair_Display, Poppins } from "next/font/google"
+import { Playfair_Display, Inter } from "next/font/google"
 import Image from "next/image"
 import Link from "next/link"
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" });
-const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-poppins" });
+const inter = Inter({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"], variable: "--font-inter" });
 
 export default function LoginForm() {
   const [email, setEmail] = useState("")
@@ -47,29 +47,34 @@ export default function LoginForm() {
       return
     }
 
-    // Sucesso! O middleware irá tratar do redirecionamento.
-    // Apenas forçamos um refresh da página para o dashboard.
     router.push('/admin/dashboard')
     router.refresh()
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 flex items-center justify-center p-4 ${poppins.variable} ${playfair.variable} font-sans`}>
+    <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-indigo-50/20 flex items-center justify-center p-4 ${inter.variable} ${playfair.variable} font-sans relative overflow-hidden`}>
+      {/* Background decorativo */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-300/10 to-pink-300/10 rounded-full blur-3xl"></div>
+      </div>
+
       {/* Botão Voltar */}
       <div className="absolute top-4 left-4 z-10">
         <Link href="/">
-          <Button variant="outline" size="sm" className="border-purple-200 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 shadow-sm">
+          <Button variant="outline" size="sm" className="border-white/50 bg-white/50 text-slate-700 hover:bg-white hover:text-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Voltar ao Site
           </Button>
         </Link>
       </div>
 
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-md z-10">
         {/* Logo e Título */}
         <div className="text-center mb-8">
           <div className="flex flex-col items-center space-y-4 mb-6">
-            <div className="p-4 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-2xl shadow-lg">
+            <div className="p-4 rounded-2xl shadow-lg" style={{ background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)" }}>
               <Image 
                 src="/logo2.png" 
                 alt="Segunda Pele Lingerie" 
@@ -80,26 +85,26 @@ export default function LoginForm() {
               />
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2 drop-shadow-sm" style={{ fontFamily: "var(--font-playfair)" }}>
+          <h1 className="text-4xl font-bold text-slate-800 mb-2 drop-shadow-sm" style={{ fontFamily: "var(--font-playfair)" }}>
             Área Administrativa
           </h1>
-          <p className="text-gray-600 text-lg" style={{ fontFamily: "var(--font-poppins)" }}>
+          <p className="text-slate-600 text-lg" style={{ fontFamily: "var(--font-inter)" }}>
             Acesse o painel de controle
           </p>
         </div>
 
         {/* Card de Login */}
-        <Card className="border-0 shadow-xl bg-white">
+        <Card className="border border-white/50 bg-white/80 backdrop-blur-lg shadow-xl rounded-2xl">
           <CardHeader className="text-center pb-6">
             <div className="flex justify-center mb-4">
-              <div className="p-3 bg-gradient-to-r from-purple-100 to-indigo-100 rounded-full">
-                <Shield className="w-8 h-8 text-purple-600" />
+              <div className="p-3 rounded-full" style={{ background: "rgba(93, 58, 91, 0.1)" }}>
+                <Shield className="w-8 h-8" style={{ color: "#5D3A5B" }} />
               </div>
             </div>
-            <CardTitle className="text-gray-900 text-2xl" style={{ fontFamily: "var(--font-playfair)" }}>
+            <CardTitle className="text-slate-800 text-2xl" style={{ fontFamily: "var(--font-playfair)" }}>
               Login Administrativo
             </CardTitle>
-            <CardDescription className="text-gray-600" style={{ fontFamily: "var(--font-poppins)" }}>
+            <CardDescription className="text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>
               Entre com suas credenciais para acessar o sistema
             </CardDescription>
           </CardHeader>
@@ -107,14 +112,14 @@ export default function LoginForm() {
           <CardContent className="pt-0">
             <form onSubmit={handleSubmit} className="space-y-6">
               {formError && (
-                <Alert className="border-red-200 bg-red-50">
+                <Alert className="border-red-200 bg-red-50/70 backdrop-blur-sm">
                   <AlertTriangle className="h-4 w-4 text-red-600" />
                   <AlertDescription className="text-red-800">{formError}</AlertDescription>
                 </Alert>
               )}
               
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-gray-700 font-medium" style={{ fontFamily: "var(--font-poppins)" }}>
+                <Label htmlFor="email" className="text-slate-700 font-medium" style={{ fontFamily: "var(--font-inter)" }}>
                   Email
                 </Label>
                 <Input 
@@ -125,15 +130,15 @@ export default function LoginForm() {
                   onChange={(e) => setEmail(e.target.value)} 
                   placeholder="admin@segundapele.com" 
                   disabled={isSubmitting} 
-                  className="border-gray-200 focus:border-purple-500 focus:ring-purple-500 h-12" 
-                  style={{ fontFamily: "var(--font-poppins)" }}
+                  className="border-white/50 focus:border-purple-500 focus:ring-purple-500 h-12 bg-white/70 backdrop-blur-sm rounded-2xl" 
+                  style={{ fontFamily: "var(--font-inter)" }}
                   autoComplete="email" 
                   required 
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-gray-700 font-medium" style={{ fontFamily: "var(--font-poppins)" }}>
+                <Label htmlFor="password" className="text-slate-700 font-medium" style={{ fontFamily: "var(--font-inter)" }}>
                   Senha
                 </Label>
                 <div className="relative">
@@ -145,8 +150,8 @@ export default function LoginForm() {
                     onChange={(e) => setPassword(e.target.value)} 
                     placeholder="Digite sua senha" 
                     disabled={isSubmitting} 
-                    className="border-gray-200 focus:border-purple-500 focus:ring-purple-500 h-12 pr-12" 
-                    style={{ fontFamily: "var(--font-poppins)" }}
+                    className="border-white/50 focus:border-purple-500 focus:ring-purple-500 h-12 pr-12 bg-white/70 backdrop-blur-sm rounded-2xl" 
+                    style={{ fontFamily: "var(--font-inter)" }}
                     autoComplete="current-password" 
                     required 
                   />
@@ -154,7 +159,7 @@ export default function LoginForm() {
                     type="button" 
                     variant="ghost" 
                     size="sm" 
-                    className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-gray-600" 
+                    className="absolute right-0 top-0 h-full px-3 text-slate-400 hover:text-slate-600" 
                     onClick={() => setShowPassword(!showPassword)} 
                     disabled={isSubmitting} 
                     tabIndex={-1}
@@ -169,8 +174,11 @@ export default function LoginForm() {
                 <Button 
                   type="button" 
                   variant="link" 
-                  className="px-0 text-sm text-purple-600 hover:text-purple-700" 
-                  style={{ fontFamily: "var(--font-poppins)" }}
+                  className="px-0 text-sm" 
+                  style={{ 
+                    fontFamily: "var(--font-inter)",
+                    color: "#5D3A5B"
+                  }}
                   disabled={isSubmitting}
                 >
                   Esqueci minha senha
@@ -179,8 +187,11 @@ export default function LoginForm() {
               
               <Button 
                 type="submit" 
-                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-semibold py-3 h-12 shadow-lg" 
-                style={{ fontFamily: "var(--font-poppins)" }}
+                className="w-full text-white font-semibold py-3 h-12 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-purple-500/20 rounded-2xl" 
+                style={{ 
+                  fontFamily: "var(--font-inter)",
+                  background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
+                }}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
@@ -198,7 +209,7 @@ export default function LoginForm() {
         
         {/* Footer */}
         <div className="text-center mt-8">
-          <p className="text-sm text-gray-500" style={{ fontFamily: "var(--font-poppins)" }}>
+          <p className="text-sm text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>
             © 2024 Segunda Pele Lingerie. Todos os direitos reservados.
           </p>
         </div>

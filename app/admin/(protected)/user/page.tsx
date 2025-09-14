@@ -26,13 +26,13 @@ import {
   XCircle, AlertCircle, Loader2, RefreshCw, UserCog,
   Key, Eye, EyeOff, Lock, Unlock, UserCheck, UserX
 } from "lucide-react"
-import { Playfair_Display, Poppins } from "next/font/google"
+import { Playfair_Display, Inter } from "next/font/google"
 import Image from "next/image"
 import { format } from "date-fns"
 import { ptBR } from "date-fns/locale"
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" });
-const poppins = Poppins({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-poppins" });
+const inter = Inter({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"], variable: "--font-inter" });
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json())
 
@@ -162,20 +162,8 @@ export default function UserManagementPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
-    console.log('🚀 Iniciando envio do formulário');
-    console.log('📋 Dados do formulário:', {
-      nome: formData.nome,
-      email: formData.email,
-      role: formData.role,
-      telefone: formData.telefone,
-      password: formData.password ? '[OCULTADO]' : 'vazio',
-      confirmPassword: formData.confirmPassword ? '[OCULTADO]' : 'vazio',
-      isEditing: !!editingUser
-    });
-    
     // Validações
     if (!editingUser && formData.password !== formData.confirmPassword) {
-      console.error('❌ Senhas não coincidem');
       toast({
         title: "Erro",
         description: "As senhas não coincidem.",
@@ -185,7 +173,6 @@ export default function UserManagementPage() {
     }
     
     if (!editingUser && formData.password.length < 8) {
-      console.error('❌ Senha muito curta');
       toast({
         title: "Erro",
         description: "A senha deve ter pelo menos 8 caracteres.",
@@ -196,7 +183,6 @@ export default function UserManagementPage() {
     
     // Validação de campos obrigatórios
     if (!formData.nome || !formData.email || (!editingUser && !formData.password)) {
-      console.error('❌ Campos obrigatórios não preenchidos');
       toast({
         title: "Erro",
         description: "Preencha todos os campos obrigatórios.",
@@ -206,7 +192,6 @@ export default function UserManagementPage() {
     }
     
     setIsLoading(true)
-    console.log('⏳ Loading iniciado...');
     
     try {
       const endpoint = editingUser 
@@ -214,8 +199,6 @@ export default function UserManagementPage() {
         : '/api/admin/user'
       
       const method = editingUser ? 'PUT' : 'POST'
-      
-      console.log(`📤 Fazendo ${method} para ${endpoint}`);
       
       // Preparar dados para envio
       const dataToSend = editingUser 
@@ -226,41 +209,17 @@ export default function UserManagementPage() {
           }
         : formData;
       
-      console.log('📤 Dados sendo enviados:', {
-        ...dataToSend,
-        password: dataToSend.password ? '[OCULTADO]' : undefined,
-        confirmPassword: dataToSend.confirmPassword ? '[OCULTADO]' : undefined
-      });
-      
       const response = await fetch(endpoint, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dataToSend)
       })
       
-      console.log('📥 Resposta recebida:', {
-        status: response.status,
-        statusText: response.statusText,
-        ok: response.ok,
-        headers: {
-          'content-type': response.headers.get('content-type')
-        }
-      });
-      
       const data = await response.json()
       
-      console.log('📥 Dados da resposta:', data);
-      
       if (!response.ok) {
-        console.error('❌ Resposta não OK:', {
-          status: response.status,
-          error: data.error,
-          details: data.details
-        });
         throw new Error(data.error || data.details || 'Erro ao salvar usuário')
       }
-      
-      console.log('✅ Usuário salvo com sucesso!');
       
       toast({
         title: "Sucesso!",
@@ -269,15 +228,11 @@ export default function UserManagementPage() {
           : "Usuário criado com sucesso.",
       })
       
-      console.log('🔄 Recarregando lista de usuários...');
       mutateUsers()
-      
-      console.log('🔒 Fechando modal...');
       setIsModalOpen(false)
       
       // Limpar formulário se for criação
       if (!editingUser) {
-        console.log('🧹 Limpando formulário...');
         setFormData({
           nome: "",
           email: "",
@@ -289,13 +244,6 @@ export default function UserManagementPage() {
       }
       
     } catch (error: any) {
-      console.error('❌ Erro completo:', {
-        message: error.message,
-        stack: error.stack,
-        name: error.name,
-        cause: error.cause
-      });
-      
       // Mensagem de erro mais específica
       let errorMessage = "Erro ao salvar usuário.";
       
@@ -320,13 +268,10 @@ export default function UserManagementPage() {
       })
     } finally {
       setIsLoading(false)
-      console.log('⏹️ Loading finalizado');
     }
   }
   
   const handleToggleStatus = async (userId: string, currentStatus: boolean) => {
-    console.log(`🔄 Alternando status do usuário ${userId} de ${currentStatus} para ${!currentStatus}`);
-    
     try {
       const response = await fetch(`/api/admin/user/${userId}/toggle-status`, {
         method: 'PATCH',
@@ -346,7 +291,6 @@ export default function UserManagementPage() {
       mutateUsers()
       
     } catch (error) {
-      console.error('❌ Erro ao alterar status:', error);
       toast({
         title: "Erro",
         description: "Não foi possível alterar o status.",
@@ -357,8 +301,6 @@ export default function UserManagementPage() {
   
   const handleResetPassword = async (userId: string, email: string) => {
     if (!confirm(`Deseja realmente resetar a senha de ${email}?`)) return
-    
-    console.log(`🔑 Resetando senha do usuário ${userId} (${email})`);
     
     try {
       const response = await fetch(`/api/admin/user/${userId}/reset-password`, {
@@ -376,7 +318,6 @@ export default function UserManagementPage() {
       })
       
     } catch (error) {
-      console.error('❌ Erro ao resetar senha:', error);
       toast({
         title: "Erro",
         description: "Não foi possível resetar a senha.",
@@ -397,7 +338,7 @@ export default function UserManagementPage() {
     const Icon = variant.icon
     
     return (
-      <Badge className={variant.className}>
+      <Badge className={`${variant.className} rounded-lg`}>
         <Icon className="w-3 h-3 mr-1" />
         {role}
       </Badge>
@@ -415,31 +356,42 @@ export default function UserManagementPage() {
   
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 flex items-center justify-center">
-        <div className="text-center p-8 bg-white rounded-xl shadow-lg max-w-md">
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-indigo-50/20 relative overflow-hidden flex items-center justify-center">
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+        </div>
+        <div className="text-center p-8 bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 max-w-md z-10">
           <div className="inline-flex items-center justify-center mb-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: "#5D3A5B" }}></div>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-2">Carregando</h2>
-          <p className="text-gray-600">Aguarde um momento...</p>
+          <h2 className="text-xl font-semibold text-slate-800 mb-2" style={{ fontFamily: "var(--font-playfair)" }}>Carregando</h2>
+          <p className="text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Aguarde um momento...</p>
         </div>
       </div>
     )
   }
   
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-gray-50 to-purple-50 ${poppins.variable} ${playfair.variable} font-sans`}>
+    <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-indigo-50/20 relative overflow-hidden ${inter.variable} ${playfair.variable} font-sans`}>
+      {/* Background decorativo */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-300/10 to-pink-300/10 rounded-full blur-3xl"></div>
+      </div>
+
       {/* Header */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-40">
+      <header className="bg-white/80 backdrop-blur-md border-b border-white/50 sticky top-0 z-40">
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="p-2 bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg">
+              <div className="p-2 rounded-2xl" style={{ background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)" }}>
                 <Image src="/logo2.png" alt="Segunda Pele" width={40} height={40} className="filter brightness-0 invert" />
               </div>
               <div>
-                <span className="text-xl font-bold text-gray-900" style={{ fontFamily: "var(--font-playfair)" }}>Segunda Pele Lingerie</span>
-                <p className="text-sm text-gray-600" style={{ fontFamily: "var(--font-poppins)" }}>Gerenciamento de Usuários</p>
+                <span className="text-xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Segunda Pele Lingerie</span>
+                <p className="text-sm text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Gerenciamento de Usuários</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
@@ -447,7 +399,7 @@ export default function UserManagementPage() {
                 onClick={refreshData}
                 variant="outline"
                 size="sm"
-                className="border-purple-200 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 shadow-sm"
+                className="border-white/50 bg-white/50 text-slate-700 hover:bg-white hover:text-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
               >
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Atualizar
@@ -456,7 +408,7 @@ export default function UserManagementPage() {
                 variant="outline"
                 size="sm"
                 onClick={() => router.push('/admin/dashboard')}
-                className="border-purple-200 bg-white text-purple-700 hover:bg-purple-50 hover:text-purple-800 shadow-sm"
+                className="border-white/50 bg-white/50 text-slate-700 hover:bg-white hover:text-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
               >
                 ← Dashboard
               </Button>
@@ -465,72 +417,72 @@ export default function UserManagementPage() {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-6 relative z-10">
         {/* Título */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900 mb-1" style={{ fontFamily: "var(--font-playfair)" }}>
+          <h1 className="text-3xl font-bold text-slate-800 mb-1" style={{ fontFamily: "var(--font-playfair)" }}>
             Gerenciar Usuários
           </h1>
-          <p className="text-gray-600">Administre os usuários do sistema administrativo</p>
+          <p className="text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Administre os usuários do sistema administrativo</p>
         </div>
         
         {/* Estatísticas */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
-          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-purple-50">
+          <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-xs">Total</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.total}</p>
+                <p className="text-slate-600 text-xs" style={{ fontFamily: "var(--font-inter)" }}>Total</p>
+                <p className="text-2xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>{stats.total}</p>
               </div>
-              <Users className="h-8 w-8 text-purple-600" />
+              <Users className="h-8 w-8" style={{ color: "#5D3A5B" }} />
             </CardContent>
           </Card>
           
-          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-green-50">
+          <Card className="border border-white/50 bg-green-50/70 backdrop-blur-lg shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-xs">Ativos</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.active}</p>
+                <p className="text-slate-600 text-xs" style={{ fontFamily: "var(--font-inter)" }}>Ativos</p>
+                <p className="text-2xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>{stats.active}</p>
               </div>
               <CheckCircle className="h-8 w-8 text-green-600" />
             </CardContent>
           </Card>
           
-          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-red-50">
+          <Card className="border border-white/50 bg-red-50/70 backdrop-blur-lg shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-xs">Admins</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.admins}</p>
+                <p className="text-slate-600 text-xs" style={{ fontFamily: "var(--font-inter)" }}>Admins</p>
+                <p className="text-2xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>{stats.admins}</p>
               </div>
               <Shield className="h-8 w-8 text-red-600" />
             </CardContent>
           </Card>
           
-          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-blue-50">
+          <Card className="border border-white/50 bg-blue-50/70 backdrop-blur-lg shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-xs">Triagem</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.triagem}</p>
+                <p className="text-slate-600 text-xs" style={{ fontFamily: "var(--font-inter)" }}>Triagem</p>
+                <p className="text-2xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>{stats.triagem}</p>
               </div>
               <UserCog className="h-8 w-8 text-blue-600" />
             </CardContent>
           </Card>
           
-          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-green-50">
+          <Card className="border border-white/50 bg-green-50/70 backdrop-blur-lg shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-xs">Promotores</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.promotores}</p>
+                <p className="text-slate-600 text-xs" style={{ fontFamily: "var(--font-inter)" }}>Promotores</p>
+                <p className="text-2xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>{stats.promotores}</p>
               </div>
               <UserCheck className="h-8 w-8 text-green-600" />
             </CardContent>
           </Card>
           
-          <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-gray-50">
+          <Card className="border border-white/50 bg-gray-50/70 backdrop-blur-lg shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
             <CardContent className="p-4 flex items-center justify-between">
               <div>
-                <p className="text-gray-600 text-xs">Visualizadores</p>
-                <p className="text-2xl font-bold text-gray-900">{stats.visualizadores}</p>
+                <p className="text-slate-600 text-xs" style={{ fontFamily: "var(--font-inter)" }}>Visualizadores</p>
+                <p className="text-2xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>{stats.visualizadores}</p>
               </div>
               <Eye className="h-8 w-8 text-gray-600" />
             </CardContent>
@@ -538,22 +490,22 @@ export default function UserManagementPage() {
         </div>
         
         {/* Controles */}
-        <Card className="border-0 shadow-md mb-6">
+        <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl mb-6">
           <CardContent className="p-4">
             <div className="flex flex-col lg:flex-row gap-4 items-center justify-between">
               <div className="flex flex-1 gap-4 w-full lg:w-auto">
                 <div className="relative flex-1 lg:max-w-sm">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                   <Input
                     placeholder="Buscar por nome ou email..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 border-gray-200 focus:border-purple-500 focus:ring-purple-500"
+                    className="pl-10 border-white/50 bg-white/80 focus:border-purple-500 focus:ring-purple-500 rounded-2xl"
                   />
                 </div>
                 
                 <Select value={roleFilter} onValueChange={setRoleFilter}>
-                  <SelectTrigger className="w-40 border-gray-200 focus:border-purple-500 focus:ring-purple-500">
+                  <SelectTrigger className="w-40 border-white/50 bg-white/80 focus:border-purple-500 focus:ring-purple-500 rounded-2xl">
                     <Filter className="w-4 h-4 mr-2" />
                     <SelectValue />
                   </SelectTrigger>
@@ -567,7 +519,7 @@ export default function UserManagementPage() {
                 </Select>
                 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-40 border-gray-200 focus:border-purple-500 focus:ring-purple-500">
+                  <SelectTrigger className="w-40 border-white/50 bg-white/80 focus:border-purple-500 focus:ring-purple-500 rounded-2xl">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -580,7 +532,10 @@ export default function UserManagementPage() {
               
               <Button
                 onClick={() => handleOpenModal()}
-                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                className="text-white font-semibold py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-purple-500/20"
+                style={{
+                  background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
+                }}
               >
                 <UserPlus className="w-4 h-4 mr-2" />
                 Novo Usuário
@@ -590,28 +545,28 @@ export default function UserManagementPage() {
         </Card>
         
         {/* Tabela de Usuários */}
-        <Card className="border-0 shadow-md">
+        <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
           <CardContent className="p-0">
             <Table>
               <TableHeader>
-                <TableRow className="border-b border-gray-200">
-                  <TableHead className="text-gray-600 font-medium">Usuário</TableHead>
-                  <TableHead className="text-gray-600 font-medium">Email</TableHead>
-                  <TableHead className="text-gray-600 font-medium">Cargo</TableHead>
-                  <TableHead className="text-gray-600 font-medium">Status</TableHead>
-                  <TableHead className="text-gray-600 font-medium">Último Acesso</TableHead>
-                  <TableHead className="text-gray-600 font-medium">Criado em</TableHead>
-                  <TableHead className="text-right text-gray-600 font-medium">Ações</TableHead>
+                <TableRow className="border-b border-white/20">
+                  <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Usuário</TableHead>
+                  <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Email</TableHead>
+                  <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Cargo</TableHead>
+                  <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Status</TableHead>
+                  <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Último Acesso</TableHead>
+                  <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Criado em</TableHead>
+                  <TableHead className="text-right text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {filteredUsers.map((user: SystemUser) => (
-                  <TableRow key={user.id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <TableRow key={user.id} className="border-b border-white/10 hover:bg-white/50">
                     <TableCell>
                       <div>
-                        <div className="font-medium text-gray-900">{user.nome}</div>
+                        <div className="font-medium text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>{user.nome}</div>
                         {user.telefone && (
-                          <div className="text-xs text-gray-500 flex items-center mt-1">
+                          <div className="text-xs text-slate-500 flex items-center mt-1" style={{ fontFamily: "var(--font-inter)" }}>
                             <Phone className="w-3 h-3 mr-1" />
                             {user.telefone}
                           </div>
@@ -619,16 +574,16 @@ export default function UserManagementPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center text-gray-900">
-                        <Mail className="w-3 h-3 mr-1 text-gray-400" />
+                      <div className="flex items-center text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>
+                        <Mail className="w-3 h-3 mr-1 text-slate-400" />
                         {user.email}
                       </div>
                     </TableCell>
                     <TableCell>{getRoleBadge(user.role)}</TableCell>
                     <TableCell>
                       <Badge className={user.ativo 
-                        ? "bg-green-100 text-green-800 border-green-200" 
-                        : "bg-red-100 text-red-800 border-red-200"
+                        ? "bg-green-100 text-green-800 border-green-200 rounded-lg" 
+                        : "bg-red-100 text-red-800 border-red-200 rounded-lg"
                       }>
                         {user.ativo ? (
                           <><Unlock className="w-3 h-3 mr-1" /> Ativo</>
@@ -638,7 +593,7 @@ export default function UserManagementPage() {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <div className="text-gray-900 text-sm">
+                      <div className="text-slate-800 text-sm" style={{ fontFamily: "var(--font-inter)" }}>
                         {user.last_sign_in 
                           ? format(new Date(user.last_sign_in), "dd/MM/yyyy HH:mm", { locale: ptBR })
                           : "Nunca acessou"
@@ -646,8 +601,8 @@ export default function UserManagementPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <div className="flex items-center text-gray-900 text-sm">
-                        <Calendar className="w-3 h-3 mr-1 text-gray-400" />
+                      <div className="flex items-center text-slate-800 text-sm" style={{ fontFamily: "var(--font-inter)" }}>
+                        <Calendar className="w-3 h-3 mr-1 text-slate-400" />
                         {format(new Date(user.created_at), "dd/MM/yyyy", { locale: ptBR })}
                       </div>
                     </TableCell>
@@ -657,7 +612,7 @@ export default function UserManagementPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleOpenModal(user)}
-                          className="bg-white border-purple-200 text-purple-700 hover:bg-purple-50"
+                          className="bg-white/80 border-purple-200/50 text-purple-700 hover:bg-purple-50 rounded-xl"
                           disabled={user.id === currentUser.id}
                         >
                           <Edit className="w-4 h-4" />
@@ -667,7 +622,7 @@ export default function UserManagementPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleToggleStatus(user.id, user.ativo)}
-                          className="bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+                          className="bg-white/80 border-gray-200/50 text-gray-700 hover:bg-gray-50 rounded-xl"
                           disabled={user.id === currentUser.id}
                         >
                           {user.ativo ? <UserX className="w-4 h-4" /> : <UserCheck className="w-4 h-4" />}
@@ -677,7 +632,7 @@ export default function UserManagementPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => handleResetPassword(user.id, user.email)}
-                          className="bg-white border-gray-200 text-gray-700 hover:bg-gray-50"
+                          className="bg-white/80 border-gray-200/50 text-gray-700 hover:bg-gray-50 rounded-xl"
                           disabled={user.id === currentUser.id}
                         >
                           <Key className="w-4 h-4" />
@@ -694,12 +649,12 @@ export default function UserManagementPage() {
       
       {/* Modal de Cadastro/Edição */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="bg-white border-gray-200 max-w-2xl">
+        <DialogContent className="bg-white/95 backdrop-blur-lg border-white/50 shadow-2xl rounded-3xl max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-xl text-gray-900">
+            <DialogTitle className="text-xl text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
               {editingUser ? 'Editar Usuário' : 'Novo Usuário'}
             </DialogTitle>
-            <DialogDescription className="text-gray-600">
+            <DialogDescription className="text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>
               {editingUser 
                 ? 'Atualize as informações do usuário do sistema.'
                 : 'Cadastre um novo usuário para acessar o sistema administrativo.'
@@ -710,19 +665,19 @@ export default function UserManagementPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <Label htmlFor="nome" className="text-gray-700 font-medium">Nome Completo *</Label>
+                <Label htmlFor="nome" className="text-slate-700 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Nome Completo *</Label>
                 <Input
                   id="nome"
                   value={formData.nome}
                   onChange={(e) => setFormData({...formData, nome: e.target.value})}
                   required
-                  className="border-gray-200 focus:border-purple-500 focus:ring-purple-500"
+                  className="border-white/50 bg-white/80 focus:border-purple-500 focus:ring-purple-500 rounded-2xl"
                   placeholder="João Silva"
                 />
               </div>
               
               <div>
-                <Label htmlFor="email" className="text-gray-700 font-medium">Email *</Label>
+                <Label htmlFor="email" className="text-slate-700 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Email *</Label>
                 <Input
                   id="email"
                   type="email"
@@ -730,26 +685,26 @@ export default function UserManagementPage() {
                   onChange={(e) => setFormData({...formData, email: e.target.value})}
                   required
                   disabled={!!editingUser}
-                  className="border-gray-200 focus:border-purple-500 focus:ring-purple-500 disabled:bg-gray-50"
+                  className="border-white/50 bg-white/80 focus:border-purple-500 focus:ring-purple-500 disabled:bg-gray-50 rounded-2xl"
                   placeholder="joao@segundapele.com"
                 />
               </div>
               
               <div>
-                <Label htmlFor="telefone" className="text-gray-700 font-medium">Telefone (opcional)</Label>
+                <Label htmlFor="telefone" className="text-slate-700 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Telefone (opcional)</Label>
                 <Input
                   id="telefone"
                   value={formData.telefone}
                   onChange={(e) => setFormData({...formData, telefone: e.target.value})}
-                  className="border-gray-200 focus:border-purple-500 focus:ring-purple-500"
+                  className="border-white/50 bg-white/80 focus:border-purple-500 focus:ring-purple-500 rounded-2xl"
                   placeholder="(67) 99999-9999"
                 />
               </div>
               
               <div>
-                <Label htmlFor="role" className="text-gray-700 font-medium">Cargo *</Label>
+                <Label htmlFor="role" className="text-slate-700 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Cargo *</Label>
                 <Select value={formData.role} onValueChange={(v) => setFormData({...formData, role: v})}>
-                  <SelectTrigger className="border-gray-200 focus:border-purple-500 focus:ring-purple-500">
+                  <SelectTrigger className="border-white/50 bg-white/80 focus:border-purple-500 focus:ring-purple-500 rounded-2xl">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -764,7 +719,7 @@ export default function UserManagementPage() {
               {!editingUser && (
                 <>
                   <div>
-                    <Label htmlFor="password" className="text-gray-700 font-medium">Senha *</Label>
+                    <Label htmlFor="password" className="text-slate-700 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Senha *</Label>
                     <div className="relative">
                       <Input
                         id="password"
@@ -772,14 +727,14 @@ export default function UserManagementPage() {
                         value={formData.password}
                         onChange={(e) => setFormData({...formData, password: e.target.value})}
                         required
-                        className="border-gray-200 focus:border-purple-500 focus:ring-purple-500 pr-10"
+                        className="border-white/50 bg-white/80 focus:border-purple-500 focus:ring-purple-500 pr-10 rounded-2xl"
                         placeholder="Mínimo 8 caracteres"
                       />
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="absolute right-0 top-0 h-full px-3 text-gray-400 hover:text-gray-600"
+                        className="absolute right-0 top-0 h-full px-3 text-slate-400 hover:text-slate-600"
                         onClick={() => setShowPassword(!showPassword)}
                       >
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -788,14 +743,14 @@ export default function UserManagementPage() {
                   </div>
                   
                   <div>
-                    <Label htmlFor="confirmPassword" className="text-gray-700 font-medium">Confirmar Senha *</Label>
+                    <Label htmlFor="confirmPassword" className="text-slate-700 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Confirmar Senha *</Label>
                     <Input
                       id="confirmPassword"
                       type="password"
                       value={formData.confirmPassword}
                       onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
                       required
-                      className="border-gray-200 focus:border-purple-500 focus:ring-purple-500"
+                      className="border-white/50 bg-white/80 focus:border-purple-500 focus:ring-purple-500 rounded-2xl"
                       placeholder="Digite a senha novamente"
                     />
                   </div>
@@ -804,35 +759,35 @@ export default function UserManagementPage() {
             </div>
             
             {/* Informações sobre os cargos */}
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-              <h4 className="font-semibold text-gray-900 mb-2">Permissões por Cargo:</h4>
+            <div className="bg-slate-50/70 backdrop-blur-sm rounded-2xl p-4 space-y-2 border border-white/30">
+              <h4 className="font-semibold text-slate-800 mb-2" style={{ fontFamily: "var(--font-playfair)" }}>Permissões por Cargo:</h4>
               <div className="space-y-1 text-sm">
                 <div className="flex items-start gap-2">
                   <Shield className="w-4 h-4 text-red-600 mt-0.5" />
                   <div>
-                    <span className="text-gray-900 font-medium">Administrador:</span>
-                    <span className="text-gray-600 ml-2">Acesso total ao sistema, gerenciamento de usuários</span>
+                    <span className="text-slate-800 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Administrador:</span>
+                    <span className="text-slate-600 ml-2" style={{ fontFamily: "var(--font-inter)" }}>Acesso total ao sistema, gerenciamento de usuários</span>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
                   <UserCog className="w-4 h-4 text-blue-600 mt-0.5" />
                   <div>
-                    <span className="text-gray-900 font-medium">Triagem:</span>
-                    <span className="text-gray-600 ml-2">Aprovar/reprovar cadastros, visualizar relatórios</span>
+                    <span className="text-slate-800 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Triagem:</span>
+                    <span className="text-slate-600 ml-2" style={{ fontFamily: "var(--font-inter)" }}>Aprovar/reprovar cadastros, visualizar relatórios</span>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
                   <UserCheck className="w-4 h-4 text-green-600 mt-0.5" />
                   <div>
-                    <span className="text-gray-900 font-medium">Promotor:</span>
-                    <span className="text-gray-600 ml-2">Gerenciar consultoras atribuídas, relatórios próprios</span>
+                    <span className="text-slate-800 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Promotor:</span>
+                    <span className="text-slate-600 ml-2" style={{ fontFamily: "var(--font-inter)" }}>Gerenciar consultoras atribuídas, relatórios próprios</span>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">
                   <Eye className="w-4 h-4 text-gray-600 mt-0.5" />
                   <div>
-                    <span className="text-gray-900 font-medium">Visualizador:</span>
-                    <span className="text-gray-600 ml-2">Apenas visualização de dados e relatórios</span>
+                    <span className="text-slate-800 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Visualizador:</span>
+                    <span className="text-slate-600 ml-2" style={{ fontFamily: "var(--font-inter)" }}>Apenas visualização de dados e relatórios</span>
                   </div>
                 </div>
               </div>
@@ -843,7 +798,7 @@ export default function UserManagementPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setIsModalOpen(false)}
-                className="border-gray-200 text-gray-700 hover:bg-gray-50"
+                className="border-white/50 bg-white/50 text-slate-700 hover:bg-white hover:text-slate-800 rounded-2xl"
                 disabled={isLoading}
               >
                 Cancelar
@@ -851,7 +806,10 @@ export default function UserManagementPage() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700"
+                className="text-white font-semibold rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300"
+                style={{
+                  background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
+                }}
               >
                 {isLoading ? (
                   <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Salvando...</>
