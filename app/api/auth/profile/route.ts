@@ -1,7 +1,8 @@
 // app/api/auth/profile/route.ts
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+// CORRIGIDO: O nome da função importada foi alterado para createClient
+import { createClient } from '@/lib/supabase/server'
 
 // Garante que a rota seja sempre dinâmica e nunca cacheada estaticamente
 export const dynamic = 'force-dynamic'
@@ -18,8 +19,8 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Criar cliente Supabase server-side
-    const supabase = await createServerSupabaseClient()
+    // CORRIGIDO: O nome da função foi alterado para createClient
+    const supabase = createClient()
 
     // Verificar se o usuário está autenticado
     const { data: { user }, error: authError } = await supabase.auth.getUser()
@@ -96,8 +97,8 @@ export async function PUT(request: NextRequest) {
   try {
     const { nome, role } = await request.json()
 
-    // Criar cliente Supabase server-side
-    const supabase = await createServerSupabaseClient()
+    // CORRIGIDO: O nome da função foi alterado para createClient
+    const supabase = createClient()
 
     // Verificar se o usuário está autenticado
     const { data: { user }, error: authError } = await supabase.auth.getUser()

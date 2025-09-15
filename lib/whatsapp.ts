@@ -1,19 +1,38 @@
-// lib/whatsapp.ts
+// lib/whatsapp.ts - Versão melhorada
 
-export async function sendMessage(to: string, text: string): Promise<boolean> {
+import { supabaseAdmin } from "@/lib/supabase-server";
+
+export interface WhatsAppResponse {
+  success: boolean;
+  messageId?: string;
+  error?: string;
+}
+
+export async function sendMessage(
+  to: string,
+  text: string,
+  messageRecordId?: string
+): Promise<WhatsAppResponse> {
   const whatsappToken = process.env.WHATSAPP_TOKEN;
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
   if (!whatsappToken || !phoneNumberId) {
-    console.error("Variáveis de ambiente do WhatsApp não estão configuradas.");
-    return false;
+    console.error("ERRO CRÍTICO: Variáveis de ambiente do WhatsApp não estão configuradas.");
+    return { success: false, error: "Configuração do servidor incompleta" };
+  }
+
+  const cleanNumber = to.replace(/\D/g, '');
+
+  if (cleanNumber.length < 10) {
+    console.error("ERRO: Número de telefone inválido:", to);
+    return { success: false, error: "Número inválido" };
   }
 
   const url = `https://graph.facebook.com/v19.0/${phoneNumberId}/messages`;
 
   const payload = {
     messaging_product: "whatsapp",
-    to: to,
+    to: cleanNumber,
     type: "text",
     text: {
       body: text,
@@ -21,6 +40,7 @@ export async function sendMessage(to: string, text: string): Promise<boolean> {
   };
 
   try {
+    console.log(`---> [ENVIO] Tentando enviar mensagem para ${cleanNumber}`);
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -30,18 +50,27 @@ export async function sendMessage(to: string, text: string): Promise<boolean> {
       body: JSON.stringify(payload),
     });
 
+    const responseData = await response.json();
+
     if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Erro ao enviar mensagem pelo WhatsApp:", errorData);
-      return false;
+      console.error("<--- [FALHA] Erro da API do WhatsApp:", responseData.error);
+      return {
+        success: false,
+        error: responseData.error?.message || 'Erro desconhecido no envio'
+      };
     }
 
-    const responseData = await response.json();
-    console.log("Mensagem enviada com sucesso:", responseData);
-    return true;
+    console.log("<--- [SUCESSO] Mensagem enviada via API:", responseData);
+    return {
+      success: true,
+      messageId: responseData.messages[0].id
+    };
 
   } catch (error) {
-    console.error("Erro de rede ao enviar mensagem:", error);
-    return false;
+    console.error("ERRO DE REDE: Falha ao conectar com a API do WhatsApp:", error);
+    return {
+      success: false,
+      error: "Erro de rede"
+    };
   }
 }
