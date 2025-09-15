@@ -14,17 +14,8 @@ import { Playfair_Display, Inter } from "next/font/google";
 import Image from "next/image";
 import useSWR, { mutate } from 'swr';
 
-const playfair = Playfair_Display({ 
-  subsets: ["latin"], 
-  weight: ["400", "500", "600", "700"], 
-  variable: "--font-playfair" 
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-inter"
-});
+const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" });
+const inter = Inter({ subsets: ["latin"], weight: ["300", "400", "500", "600", "700"], variable: "--font-inter" });
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
@@ -130,27 +121,26 @@ export default function PromoterManagementPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-indigo-50/20 relative overflow-hidden flex items-center justify-center">
-        {/* Background decorativo */}
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-indigo-50/20 flex items-center justify-center relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
           <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-gradient-to-tr from-indigo-400/20 to-purple-400/20 rounded-full blur-3xl"></div>
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-300/10 to-pink-300/10 rounded-full blur-3xl"></div>
         </div>
-        
+
         <div className="text-center p-8 bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 max-w-md z-10">
           <div className="inline-flex items-center justify-center mb-4">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: "#5D3A5B" }}></div>
           </div>
           <h2 className="text-xl font-semibold text-slate-800 mb-2" style={{ fontFamily: "var(--font-playfair)" }}>Carregando promotores</h2>
-          <p className="text-slate-600">Aguarde um momento...</p>
+          <p className="text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Aguarde um momento...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-indigo-50/20 relative overflow-hidden ${inter.variable} ${playfair.variable} font-sans`}>
+    <div className={`min-h-screen bg-gradient-to-br from-slate-50 via-purple-50/30 to-indigo-50/20 ${inter.variable} ${playfair.variable} font-sans relative overflow-hidden`}>
       {/* Background decorativo */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full blur-3xl"></div>
@@ -200,11 +190,11 @@ export default function PromoterManagementPage() {
         </div>
 
         {/* Estatísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-6">
           <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
             <CardContent className="p-6 flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600 mb-1">Total de Promotores</p>
+                <p className="text-sm text-slate-600 mb-1" style={{ fontFamily: "var(--font-inter)" }}>Total de Promotores</p>
                 <p className="text-2xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>{promoters.length}</p>
               </div>
               <Users className="h-8 w-8" style={{ color: "#5D3A5B" }} />
@@ -214,7 +204,7 @@ export default function PromoterManagementPage() {
           <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
             <CardContent className="p-6 flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-600 mb-1">Promotores Ativos</p>
+                <p className="text-sm text-slate-600 mb-1" style={{ fontFamily: "var(--font-inter)" }}>Promotores Ativos</p>
                 <p className="text-2xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>{promoters.length}</p>
               </div>
               <User className="h-8 w-8 text-green-600" />
@@ -242,7 +232,7 @@ export default function PromoterManagementPage() {
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       required
-                      className="border-white/50 bg-white/80 backdrop-blur-sm focus:border-purple-300 focus:ring-purple-400/50 rounded-2xl"
+                      className="border-white/50 focus:border-purple-500 focus:ring-purple-500 bg-white/70 backdrop-blur-sm rounded-2xl"
                       placeholder="Ex: Carlos Mendes"
                     />
                   </div>
@@ -253,7 +243,7 @@ export default function PromoterManagementPage() {
                       value={phone}
                       onChange={handlePhoneChange}
                       required
-                      className="border-white/50 bg-white/80 backdrop-blur-sm focus:border-purple-300 focus:ring-purple-400/50 rounded-2xl"
+                      className="border-white/50 focus:border-purple-500 focus:ring-purple-500 bg-white/70 backdrop-blur-sm rounded-2xl"
                       placeholder="(67) 99999-9999"
                       maxLength={15}
                     />
@@ -261,8 +251,10 @@ export default function PromoterManagementPage() {
                   <Button 
                     type="submit" 
                     disabled={isSubmitting} 
-                    className="w-full text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-purple-500/20 rounded-2xl"
-                    style={{ background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)" }}
+                    className="w-full text-white font-semibold py-3 shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-purple-500/20 rounded-2xl"
+                    style={{
+                      background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
+                    }}
                   >
                     {isSubmitting ? (
                       <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Salvando...</>
@@ -300,15 +292,15 @@ export default function PromoterManagementPage() {
                 ) : (
                   <Table>
                     <TableHeader>
-                      <TableRow className="border-b border-slate-200/50">
-                        <TableHead className="text-slate-600 font-medium">Nome</TableHead>
-                        <TableHead className="text-slate-600 font-medium">Telefone</TableHead>
-                        <TableHead className="text-right text-slate-600 font-medium">Ações</TableHead>
+                      <TableRow className="border-b border-white/30">
+                        <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Nome</TableHead>
+                        <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Telefone</TableHead>
+                        <TableHead className="text-right text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Ações</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
                       {promoters.map((promoter: any) => (
-                        <TableRow key={promoter.id} className="border-b border-slate-100/50 hover:bg-white/50">
+                        <TableRow key={promoter.id} className="border-b border-white/30 hover:bg-white/50">
                           <TableCell>
                             <div className="flex items-center gap-3">
                               <div className="w-8 h-8 rounded-full flex items-center justify-center" style={{ background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)" }}>
@@ -316,12 +308,12 @@ export default function PromoterManagementPage() {
                               </div>
                               <div>
                                 <div className="font-medium text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>{promoter.name}</div>
-                                <div className="text-sm text-slate-500">Promotor</div>
+                                <div className="text-sm text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>Promotor</div>
                               </div>
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-2 text-slate-800">
+                            <div className="flex items-center gap-2 text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>
                               <Phone className="w-4 h-4 text-slate-400" />
                               {promoter.phone}
                             </div>
@@ -331,7 +323,7 @@ export default function PromoterManagementPage() {
                               variant="outline" 
                               size="sm" 
                               onClick={() => handleDelete(promoter.id, promoter.name)}
-                              className="border-red-200/50 bg-red-50/70 text-red-700 hover:bg-red-100 hover:border-red-300 backdrop-blur-sm rounded-2xl"
+                              className="border-red-200 text-red-700 hover:bg-red-50 hover:border-red-300 hover:text-red-800 rounded-xl"
                             >
                               <Trash2 className="w-4 h-4"/>
                             </Button>
