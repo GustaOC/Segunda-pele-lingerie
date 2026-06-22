@@ -1,0 +1,15 @@
+version: "3.9"
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sp_user
+      POSTGRES_PASSWORD: sp_pass
+      POSTGRES_DB: sp_db
+    ports: ["5432:5432"]
+    volumes:
+      - db:/var/lib/postgresql/data
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+volumes: { db: {} }
