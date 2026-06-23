@@ -88,7 +88,7 @@ export function Navbar() {
   return (
     <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-md shadow-sm py-2" : "bg-white/80 backdrop-blur-md py-6"}`}>
       <div className="max-w-7xl mx-auto px-6">
-        <div className={`flex items-center justify-between transition-all duration-500 overflow-hidden ${scrolled ? 'max-h-0 opacity-0' : 'max-h-[100px] opacity-100'}`}>
+        <div className={`flex items-center justify-between transition-all duration-500 overflow-hidden ${scrolled ? 'max-h-0 opacity-0' : 'max-h-[250px] opacity-100'}`}>
           {/* Search */}
           <div className="flex-1 hidden md:block">
             <div className="flex items-center space-x-2 text-slate-500 hover:text-slate-800 transition cursor-pointer">
@@ -103,9 +103,9 @@ export function Navbar() {
               <Image 
                 src="/logo3.png" 
                 alt="Segunda Pele" 
-                width={280} 
-                height={80} 
-                className="object-contain h-20 w-auto"
+                width={500} 
+                height={160} 
+                className="object-contain h-32 md:h-40 w-auto scale-125"
               />
               <div className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-brand-plum transition-all duration-300 group-hover:w-full group-hover:left-0"></div>
             </Link>
