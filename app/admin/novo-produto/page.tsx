@@ -229,7 +229,7 @@ export default function NovoProdutoPage() {
                 <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 mt-4">
                   {imagePreviews.map((preview, index) => (
                     <div key={index} className="relative aspect-[4/5] rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
-                      <Image src={preview} alt={`Preview ${index}`} fill className="object-cover" />
+                      <Image src={preview} alt={`Preview ${index}`} fill className="object-contain" />
                       {index === 0 && (
                         <div className="absolute top-0 left-0 right-0 bg-brand-plum/90 text-white text-[10px] uppercase font-bold text-center py-1 backdrop-blur-sm z-10">
                           Capa

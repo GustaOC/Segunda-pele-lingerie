@@ -119,12 +119,12 @@ export default function ProdutoPage() {
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 flex flex-col md:flex-row">
           {/* Image Section */}
           <div className="w-full md:w-1/2 flex flex-col md:border-r border-slate-100">
-            <div className="w-full h-[500px] md:h-[600px] relative bg-slate-100 group">
+            <div className="w-full aspect-[4/5] relative bg-slate-50 group">
               <Image 
                 src={currentImage} 
                 alt={product.name} 
                 fill 
-                className="object-cover object-top transition-transform duration-700 group-hover:scale-105" 
+                className="object-contain transition-transform duration-700 group-hover:scale-105" 
               />
               <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 pointer-events-none"></div>
               <FavoriteButton productId={product.id} className="absolute top-6 right-6 w-12 h-12 bg-white/90 backdrop-blur rounded-full hover:bg-white shadow-md z-10" />
@@ -136,9 +136,9 @@ export default function ProdutoPage() {
                   <button 
                     key={idx}
                     onClick={() => setCurrentImage(img)}
-                    className={`relative w-24 h-32 shrink-0 rounded-xl overflow-hidden border-2 transition-all ${currentImage === img ? 'border-brand-plum ring-2 ring-brand-plum/20 ring-offset-2' : 'border-transparent opacity-70 hover:opacity-100 hover:border-slate-300'}`}
+                    className={`relative w-24 h-32 shrink-0 rounded-xl overflow-hidden border-2 transition-all bg-slate-50 ${currentImage === img ? 'border-brand-plum ring-2 ring-brand-plum/20 ring-offset-2' : 'border-transparent opacity-70 hover:opacity-100 hover:border-slate-300'}`}
                   >
-                    <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" />
+                    <Image src={img} alt={`Thumb ${idx}`} fill className="object-contain" />
                   </button>
                 ))}
               </div>
