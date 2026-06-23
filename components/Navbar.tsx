@@ -12,7 +12,8 @@ const NAVBAR_CATEGORIES = [
     slug: 'linha-noite', 
     children: [
       { name: 'Shortdoll', slug: 'shortdoll' },
-      { name: 'Camisola', slug: 'camisola' }
+      { name: 'Camisola', slug: 'camisola' },
+      { name: 'Pijama', slug: 'pijama' }
     ]
   },
   {
