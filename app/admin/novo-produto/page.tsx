@@ -48,13 +48,8 @@ export default function NovoProdutoPage() {
           children: data.filter(c => c.parent_id === parent.id)
         }))
         setCategories(grouped)
-        
-        // Find a default category ID (preferably a child if exists)
-        const firstParent = grouped[0]
-        if (firstParent) {
-           if (firstParent.children.length > 0) setCategoryId(firstParent.children[0].id)
-           else setCategoryId(firstParent.id)
-        }
+        // Default categoryId is already "" from useState, we just keep it that way so the user is forced to choose
+        setCategoryId("")
       }
     }
     checkAuthAndFetchCategories()
@@ -161,6 +156,7 @@ export default function NovoProdutoPage() {
                   className="w-full h-12 bg-slate-50 border border-slate-200 rounded-xl px-4 text-slate-800 focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all outline-none"
                   required
                 >
+                  <option value="" disabled>Selecione uma subcategoria...</option>
                   {categories.map((group) => (
                     group.children && group.children.length > 0 ? (
                       <optgroup key={group.id} label={group.name}>
@@ -169,7 +165,7 @@ export default function NovoProdutoPage() {
                         ))}
                       </optgroup>
                     ) : (
-                      <option key={group.id} value={group.id}>{group.name}</option>
+                      <option key={group.id} value={group.id} disabled>{group.name} (Crie subcategorias para adicionar produtos)</option>
                     )
                   ))}
                 </select>
