@@ -351,6 +351,17 @@ export default function EcommerceHome() {
                 </Link>
               </div>
             </div>
+            
+            {/* Image side */}
+            <div className="hidden md:block relative h-full min-h-[400px] w-full rounded-2xl overflow-hidden shadow-xl transform translate-x-4 lg:translate-x-8">
+              <Image 
+                src="/modelovitrine2.jpg" 
+                alt="Seja uma Consultora" 
+                fill 
+                className="object-cover object-top"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+            </div>
           </div>
         </div>
       </section>
