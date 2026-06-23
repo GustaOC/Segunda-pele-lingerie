@@ -262,7 +262,7 @@ export default function EcommerceHome() {
                   </Button>
                 </Link>
               )}
-              <Link href="/lingeries" className="hidden sm:flex items-center text-[#5D3A5B] font-semibold hover:text-purple-700 transition">
+              <Link href="/destaques" className="hidden sm:flex items-center text-[#5D3A5B] font-semibold hover:text-purple-700 transition">
                 Ver tudo <ArrowRight className="w-4 h-4 ml-2" />
               </Link>
             </div>
