@@ -37,7 +37,6 @@ const CATEGORIES = [
   { id: 3, name: "Infantil", slug: "infantil", image: "https://images.unsplash.com/photo-1598555891781-a67b57917ba3?q=80&w=600&auto=format&fit=crop" },
   { id: 4, name: "Calcinha", slug: "calcinha", image: "https://images.unsplash.com/photo-1596464871987-a2f643e9e51c?q=80&w=600&auto=format&fit=crop" },
   { id: 5, name: "Cueca", slug: "cueca", image: "https://images.unsplash.com/photo-1565597920392-1262d1ec8656?q=80&w=600&auto=format&fit=crop" },
-  { id: 6, name: "Coleção Noivas", slug: "noivas", image: "https://images.unsplash.com/photo-1620601335269-1d489b5311cc?q=80&w=600&auto=format&fit=crop" },
 ]
 
 export default function EcommerceHome() {

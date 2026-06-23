@@ -176,8 +176,6 @@ export function Navbar() {
               )}
             </div>
           ))}
-          
-          <Link href="/categoria/noivas" className="hover:text-brand-plum transition-colors uppercase tracking-widest py-2">Noivas</Link>
           <Link href="/sale" className="hover:text-red-500 text-red-500 transition-colors uppercase tracking-widest py-2">Sale</Link>
           
           <Link href="/seja-consultora" className="hover:text-purple-600 transition-colors uppercase tracking-widest font-bold flex items-center py-2">
