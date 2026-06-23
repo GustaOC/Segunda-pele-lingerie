@@ -382,10 +382,13 @@ export default function EcommerceHome() {
             <div>
               <h4 className="text-white font-semibold mb-6 uppercase tracking-wider text-sm">Categorias</h4>
               <ul className="space-y-4">
-                <li><Link href="#" className="text-slate-400 hover:text-white transition-colors">Lingeries</Link></li>
-                <li><Link href="#" className="text-slate-400 hover:text-white transition-colors">Pijamas</Link></li>
-                <li><Link href="#" className="text-slate-400 hover:text-white transition-colors">Acessórios</Link></li>
-                <li><Link href="#" className="text-slate-400 hover:text-white transition-colors">Moda Praia</Link></li>
+                {CATEGORIES.map(cat => (
+                  <li key={cat.id}>
+                    <Link href={`/categoria/${cat.slug}`} className="text-slate-400 hover:text-white transition-colors">
+                      {cat.name}
+                    </Link>
+                  </li>
+                ))}
               </ul>
             </div>
             
