@@ -41,13 +41,13 @@ export default function SucessoPage() {
         </h1>
         
         <p className="text-lg text-slate-500 mb-10 max-w-md mx-auto leading-relaxed">
-          Obrigado por escolher a <span className="font-medium text-[#5D3A5B]">Segunda Pele Lingerie</span>. 
+          Obrigado por escolher a <span className="font-medium text-brand-plum">Segunda Pele Lingerie</span>. 
           Seu pedido foi recebido e já estamos preparando com muito carinho para o envio.
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10 text-left">
-          <div className="bg-pink-50/50 p-6 rounded-2xl border border-pink-100 flex items-start space-x-4">
-            <div className="bg-white p-2 rounded-full shadow-sm text-[#5D3A5B]">
+          <div className="bg-brand-peach/50 p-6 rounded-2xl border border-brand-peach flex items-start space-x-4">
+            <div className="bg-white p-2 rounded-full shadow-sm text-brand-plum">
               <Package className="w-6 h-6" />
             </div>
             <div>
@@ -57,7 +57,7 @@ export default function SucessoPage() {
           </div>
           
           <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex items-start space-x-4">
-            <div className="bg-white p-2 rounded-full shadow-sm text-pink-500">
+            <div className="bg-white p-2 rounded-full shadow-sm text-brand-rose">
               <Heart className="w-6 h-6" />
             </div>
             <div>
@@ -69,7 +69,7 @@ export default function SucessoPage() {
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
           <Link href="/" className="w-full sm:w-auto">
-            <Button size="lg" className="w-full bg-[#5D3A5B] hover:bg-[#4A2E49] text-white rounded-full px-8 h-14 text-lg shadow-lg hover:shadow-xl transition-all">
+            <Button size="lg" className="w-full bg-brand-plum hover:bg-brand-rose text-white rounded-full px-8 h-14 text-lg shadow-lg hover:shadow-xl transition-all">
               Continuar Comprando
             </Button>
           </Link>

@@ -107,7 +107,7 @@ export function Navbar() {
                 height={80} 
                 className="object-contain h-20 w-auto"
               />
-              <div className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-[#5D3A5B] transition-all duration-300 group-hover:w-full group-hover:left-0"></div>
+              <div className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-brand-plum transition-all duration-300 group-hover:w-full group-hover:left-0"></div>
             </Link>
           </div>
 
@@ -122,7 +122,7 @@ export function Navbar() {
             <Link href="/carrinho" className="text-slate-800 hover:text-purple-600 transition relative">
               <ShoppingCart className="w-5 h-5" />
               {cartCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                <span className="absolute -top-2 -right-2 bg-brand-rose text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                   {cartCount}
                 </span>
               )}
@@ -149,7 +149,7 @@ export function Navbar() {
           
           {NAVBAR_CATEGORIES.map((category) => (
             <div key={category.slug} className="relative group">
-              <Link href={`/categoria/${category.slug}`} className="hover:text-[#5D3A5B] transition-colors uppercase tracking-widest py-2 flex items-center">
+              <Link href={`/categoria/${category.slug}`} className="hover:text-brand-plum transition-colors uppercase tracking-widest py-2 flex items-center">
                 {category.name}
                 {category.children && <ChevronDown className="w-4 h-4 ml-1 opacity-50 group-hover:opacity-100 transition-opacity" />}
               </Link>
@@ -161,7 +161,7 @@ export function Navbar() {
                       <Link 
                         key={child.slug} 
                         href={`/categoria/${child.slug}`} 
-                        className="px-5 py-2.5 hover:bg-pink-50 hover:text-[#5D3A5B] transition-colors text-sm font-medium whitespace-nowrap"
+                        className="px-5 py-2.5 hover:bg-brand-peach hover:text-brand-plum transition-colors text-sm font-medium whitespace-nowrap"
                       >
                         {child.name}
                       </Link>
@@ -172,7 +172,7 @@ export function Navbar() {
             </div>
           ))}
           
-          <Link href="/categoria/noivas" className="hover:text-[#5D3A5B] transition-colors uppercase tracking-widest py-2">Noivas</Link>
+          <Link href="/categoria/noivas" className="hover:text-brand-plum transition-colors uppercase tracking-widest py-2">Noivas</Link>
           <Link href="/sale" className="hover:text-red-500 text-red-500 transition-colors uppercase tracking-widest py-2">Sale</Link>
           
           <Link href="/seja-consultora" className="hover:text-purple-600 transition-colors uppercase tracking-widest font-bold flex items-center py-2">

@@ -92,7 +92,7 @@ export default function ProdutoPage() {
   if (loadingProduct) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#5D3A5B]" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand-plum" />
         <p className="mt-4 text-slate-500">Carregando produto...</p>
       </div>
     )
@@ -104,11 +104,11 @@ export default function ProdutoPage() {
     <div className={`min-h-screen bg-slate-50 ${inter.variable} ${playfair.variable} font-sans pt-12 pb-24`}>
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex justify-between items-center mb-8">
-          <Link href="/" className="inline-flex items-center text-slate-500 hover:text-[#5D3A5B] transition-colors">
+          <Link href="/" className="inline-flex items-center text-slate-500 hover:text-brand-plum transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para a loja
           </Link>
           <Link href="/carrinho" className="inline-flex items-center text-slate-900 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200 hover:border-pink-300 transition-colors">
-            <ShoppingCart className="w-4 h-4 mr-2 text-pink-500" /> Carrinho
+            <ShoppingCart className="w-4 h-4 mr-2 text-brand-rose" /> Carrinho
           </Link>
         </div>
 
@@ -153,7 +153,7 @@ export default function ProdutoPage() {
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-medium transition-all ${selectedSize === size ? "bg-[#5D3A5B] text-white shadow-lg scale-110" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+                    className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-medium transition-all ${selectedSize === size ? "bg-brand-plum text-white shadow-lg scale-110" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
                   >
                     {size}
                   </button>
@@ -164,7 +164,7 @@ export default function ProdutoPage() {
             <Button 
               size="lg" 
               onClick={handleAddToCart}
-              className={`w-full rounded-2xl h-16 text-lg shadow-xl transition-all ${added ? "bg-green-500 hover:bg-green-600" : "bg-[#5D3A5B] hover:bg-[#4A2E49]"}`}
+              className={`w-full rounded-2xl h-16 text-lg shadow-xl transition-all ${added ? "bg-green-500 hover:bg-green-600" : "bg-brand-plum hover:bg-brand-rose"}`}
             >
               {added ? "Adicionado ao Carrinho! ✓" : "Adicionar ao Carrinho"}
             </Button>

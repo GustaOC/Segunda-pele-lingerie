@@ -47,7 +47,7 @@ export default function FavoritosPage() {
   if (isLoadingAuth) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#5D3A5B]" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand-plum" />
         <p className="mt-4 text-slate-500">Carregando seus favoritos...</p>
       </div>
     )
@@ -56,7 +56,7 @@ export default function FavoritosPage() {
   return (
     <div className={`min-h-screen bg-slate-50 ${inter.variable} ${playfair.variable} font-sans pt-12 pb-24`}>
       <div className="max-w-7xl mx-auto px-6">
-        <Link href="/" className="inline-flex items-center text-slate-500 hover:text-[#5D3A5B] transition-colors mb-8">
+        <Link href="/" className="inline-flex items-center text-slate-500 hover:text-brand-plum transition-colors mb-8">
           <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para Home
         </Link>
         
@@ -72,7 +72,7 @@ export default function FavoritosPage() {
             <Heart className="w-16 h-16 text-slate-300 mx-auto mb-6" />
             <p className="text-xl text-slate-500 mb-6">Você ainda não tem nenhum produto salvo nos favoritos.</p>
             <Link href="/">
-              <Button size="lg" className="bg-[#5D3A5B] hover:bg-[#4A2E49] rounded-full px-8">
+              <Button size="lg" className="bg-brand-plum hover:bg-brand-rose rounded-full px-8">
                 Explorar Catálogo
               </Button>
             </Link>
@@ -91,7 +91,7 @@ export default function FavoritosPage() {
                   <div className="flex items-center mb-2">
                     {[...Array(product.rating)].map((_, i) => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
                   </div>
-                  <div className="text-lg font-medium text-slate-900 group-hover:text-[#5D3A5B] transition-colors mb-2 line-clamp-2">
+                  <div className="text-lg font-medium text-slate-900 group-hover:text-brand-plum transition-colors mb-2 line-clamp-2">
                     {product.name}
                   </div>
                   <div className="mt-auto flex items-center space-x-3">

@@ -116,6 +116,12 @@
   /* Added Figtree font to theme configuration */
   --font-sans: var(--font-figtree);
   --font-figtree: var(--font-figtree);
+
+  /* New Brand Colors */
+  --color-brand-rose: #935765;
+  --color-brand-brown: #71452D;
+  --color-brand-peach: #F9E4D4;
+  --color-brand-plum: #4B2C4E;
 }
 
 @layer base {

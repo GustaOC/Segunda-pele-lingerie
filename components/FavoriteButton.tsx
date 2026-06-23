@@ -66,7 +66,7 @@ export function FavoriteButton({ productId, className }: { productId: string, cl
 
   return (
     <button onClick={toggleFavorite} className={`flex items-center justify-center transition-colors ${className}`}>
-      <Heart className={`w-5 h-5 ${isFavorite ? 'fill-pink-500 text-pink-500' : 'text-slate-400 hover:text-pink-500'}`} />
+      <Heart className={`w-5 h-5 ${isFavorite ? 'fill-pink-500 text-brand-rose' : 'text-slate-400 hover:text-brand-rose'}`} />
     </button>
   )
 }

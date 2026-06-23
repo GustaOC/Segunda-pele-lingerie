@@ -58,7 +58,7 @@ export default function ContaPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#5D3A5B]" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand-plum" />
       </div>
     )
   }
@@ -68,7 +68,7 @@ export default function ContaPage() {
   return (
     <div className={`min-h-screen bg-slate-50 ${inter.variable} ${playfair.variable} font-sans pt-12 pb-24`}>
       <div className="max-w-4xl mx-auto px-6">
-        <Link href="/" className="inline-flex items-center text-slate-500 hover:text-[#5D3A5B] transition-colors mb-8">
+        <Link href="/" className="inline-flex items-center text-slate-500 hover:text-brand-plum transition-colors mb-8">
           <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para a Loja
         </Link>
         
@@ -108,12 +108,12 @@ export default function ContaPage() {
             ) : (
               <div className="flex-1 overflow-y-auto space-y-4 pr-2">
                 {favorites.map((fav) => (
-                  <Link key={fav.product_id} href={`/produto/${fav.product_id}`} className="flex items-center space-x-4 group p-2 hover:bg-pink-50 rounded-xl transition-colors">
+                  <Link key={fav.product_id} href={`/produto/${fav.product_id}`} className="flex items-center space-x-4 group p-2 hover:bg-brand-peach rounded-xl transition-colors">
                     {fav.products?.image && (
                       <img src={fav.products.image} alt={fav.products.name} className="w-16 h-16 object-cover rounded-lg" />
                     )}
                     <div>
-                      <h4 className="text-sm font-bold text-slate-800 group-hover:text-pink-600 transition-colors line-clamp-1">{fav.products?.name}</h4>
+                      <h4 className="text-sm font-bold text-slate-800 group-hover:text-brand-brown transition-colors line-clamp-1">{fav.products?.name}</h4>
                       <p className="text-sm text-slate-500">R$ {fav.products?.price?.toFixed(2).replace('.', ',')}</p>
                     </div>
                   </Link>

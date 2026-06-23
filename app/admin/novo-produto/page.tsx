@@ -89,7 +89,7 @@ export default function NovoProdutoPage() {
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#5D3A5B]" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand-plum" />
         <p className="mt-4 text-slate-500">Verificando permissões...</p>
       </div>
     )
@@ -100,7 +100,7 @@ export default function NovoProdutoPage() {
   return (
     <div className={`min-h-screen bg-slate-50 ${inter.variable} ${playfair.variable} font-sans pt-12 pb-24`}>
       <div className="max-w-3xl mx-auto px-6">
-        <Link href="/" className="inline-flex items-center text-slate-500 hover:text-[#5D3A5B] transition-colors mb-8">
+        <Link href="/" className="inline-flex items-center text-slate-500 hover:text-brand-plum transition-colors mb-8">
           <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para o Catálogo
         </Link>
         
@@ -119,7 +119,7 @@ export default function NovoProdutoPage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ex: Conjunto Rendado Aurora"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-[#5D3A5B] focus:ring-1 focus:ring-[#5D3A5B] transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all"
               />
             </div>
 
@@ -133,7 +133,7 @@ export default function NovoProdutoPage() {
                   value={price}
                   onChange={(e) => setPrice(e.target.value)}
                   placeholder="Ex: 129.90"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-[#5D3A5B] focus:ring-1 focus:ring-[#5D3A5B] transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all"
                 />
               </div>
               <div>
@@ -144,7 +144,7 @@ export default function NovoProdutoPage() {
                   value={oldPrice}
                   onChange={(e) => setOldPrice(e.target.value)}
                   placeholder="Ex: 159.90 (Opcional)"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-[#5D3A5B] focus:ring-1 focus:ring-[#5D3A5B] transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all"
                 />
               </div>
             </div>
@@ -185,7 +185,7 @@ export default function NovoProdutoPage() {
                   value={image}
                   onChange={(e) => setImage(e.target.value)}
                   placeholder="https://..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 outline-none focus:border-[#5D3A5B] focus:ring-1 focus:ring-[#5D3A5B] transition-all"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all"
                 />
               </div>
             </div>
@@ -197,7 +197,7 @@ export default function NovoProdutoPage() {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Detalhes sobre o produto..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-[#5D3A5B] focus:ring-1 focus:ring-[#5D3A5B] transition-all"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all"
               />
             </div>
 

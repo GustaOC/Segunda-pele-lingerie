@@ -84,7 +84,7 @@ export default function DestaquesPage() {
       <Navbar />
 
       <div className="pt-32 pb-24 max-w-7xl mx-auto px-6">
-        <Link href="/" className="inline-flex items-center text-slate-500 hover:text-[#5D3A5B] transition-colors mb-8">
+        <Link href="/" className="inline-flex items-center text-slate-500 hover:text-brand-plum transition-colors mb-8">
           <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para Home
         </Link>
 
@@ -99,7 +99,7 @@ export default function DestaquesPage() {
 
         {loading ? (
           <div className="flex justify-center items-center py-20">
-            <Loader2 className="w-8 h-8 animate-spin text-[#5D3A5B]" />
+            <Loader2 className="w-8 h-8 animate-spin text-brand-plum" />
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
@@ -126,7 +126,7 @@ export default function DestaquesPage() {
                   <div className="flex items-center mb-2">
                     {[...Array(product.rating || 5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
                   </div>
-                  <div className="text-lg font-medium text-slate-900 group-hover:text-[#5D3A5B] transition-colors mb-2 line-clamp-2">
+                  <div className="text-lg font-medium text-slate-900 group-hover:text-brand-plum transition-colors mb-2 line-clamp-2">
                     {product.name}
                   </div>
                   <div className="mt-auto flex items-center space-x-3">

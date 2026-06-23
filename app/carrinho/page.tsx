@@ -77,7 +77,7 @@ export default function CarrinhoPage() {
   if (isLoadingAuth) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#5D3A5B]" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand-plum" />
       </div>
     )
   }
@@ -85,7 +85,7 @@ export default function CarrinhoPage() {
   return (
     <div className={`min-h-screen bg-slate-50 ${inter.variable} ${playfair.variable} font-sans pt-12 pb-24`}>
       <div className="max-w-7xl mx-auto px-6">
-        <Link href="/" className="inline-flex items-center text-slate-500 hover:text-[#5D3A5B] transition-colors mb-8">
+        <Link href="/" className="inline-flex items-center text-slate-500 hover:text-brand-plum transition-colors mb-8">
           <ArrowLeft className="w-4 h-4 mr-2" /> Continuar comprando
         </Link>
         
@@ -97,7 +97,7 @@ export default function CarrinhoPage() {
           <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
             <p className="text-xl text-slate-500 mb-6">Seu carrinho está vazio.</p>
             <Link href="/lingeries">
-              <Button size="lg" className="bg-[#5D3A5B] hover:bg-[#4A2E49] rounded-full px-8">
+              <Button size="lg" className="bg-brand-plum hover:bg-brand-rose rounded-full px-8">
                 Ver Lançamentos
               </Button>
             </Link>
@@ -116,16 +116,16 @@ export default function CarrinhoPage() {
                   <div className="flex-1 text-center sm:text-left">
                     <h3 className="text-xl font-bold text-slate-900 mb-1" style={{ fontFamily: "var(--font-playfair)" }}>{item.name}</h3>
                     <p className="text-slate-500 mb-2">Tamanho: <span className="font-medium text-slate-900">{item.size}</span></p>
-                    <p className="text-[#5D3A5B] font-bold text-lg">R$ {item.price.toFixed(2).replace('.', ',')}</p>
+                    <p className="text-brand-plum font-bold text-lg">R$ {item.price.toFixed(2).replace('.', ',')}</p>
                   </div>
 
                   <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
                     <div className="flex items-center bg-slate-50 rounded-full border border-slate-200">
-                      <button onClick={() => updateQuantity(item.cart_id, -1)} className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-[#5D3A5B] transition">
+                      <button onClick={() => updateQuantity(item.cart_id, -1)} className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-brand-plum transition">
                         <Minus className="w-4 h-4" />
                       </button>
                       <span className="w-8 text-center font-medium text-slate-900">{item.quantity}</span>
-                      <button onClick={() => updateQuantity(item.cart_id, 1)} className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-[#5D3A5B] transition">
+                      <button onClick={() => updateQuantity(item.cart_id, 1)} className="w-10 h-10 flex items-center justify-center text-slate-500 hover:text-brand-plum transition">
                         <Plus className="w-4 h-4" />
                       </button>
                     </div>
@@ -160,13 +160,13 @@ export default function CarrinhoPage() {
               <div className="pt-6 border-t border-slate-100 mb-8">
                 <div className="flex justify-between items-end">
                   <span className="text-lg font-medium text-slate-900">Total</span>
-                  <span className="text-3xl font-bold text-[#5D3A5B]">R$ {total.toFixed(2).replace('.', ',')}</span>
+                  <span className="text-3xl font-bold text-brand-plum">R$ {total.toFixed(2).replace('.', ',')}</span>
                 </div>
                 <p className="text-xs text-slate-500 mt-2 text-right">em até 6x sem juros</p>
               </div>
 
               <Link href="/checkout" className="block w-full">
-                <Button size="lg" className="w-full bg-[#5D3A5B] hover:bg-[#4A2E49] text-white rounded-2xl h-16 text-lg shadow-lg hover:shadow-xl transition-all">
+                <Button size="lg" className="w-full bg-brand-plum hover:bg-brand-rose text-white rounded-2xl h-16 text-lg shadow-lg hover:shadow-xl transition-all">
                   Finalizar Compra
                 </Button>
               </Link>

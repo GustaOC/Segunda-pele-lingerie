@@ -72,14 +72,14 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
       <Navbar />
 
       <div className="pt-32 pb-24 max-w-7xl mx-auto px-6">
-        <Link href="/" className="inline-flex items-center text-slate-500 hover:text-[#5D3A5B] transition-colors mb-8">
+        <Link href="/" className="inline-flex items-center text-slate-500 hover:text-brand-plum transition-colors mb-8">
           <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para Home
         </Link>
         
         <div className="flex justify-between items-end mb-12">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4" style={{ fontFamily: "var(--font-playfair)" }}>
-              {loading ? <Loader2 className="w-8 h-8 animate-spin text-[#5D3A5B]" /> : categoryName}
+              {loading ? <Loader2 className="w-8 h-8 animate-spin text-brand-plum" /> : categoryName}
             </h1>
             <p className="text-slate-500 text-lg">Encontre as melhores peças de nossa coleção.</p>
           </div>
@@ -100,8 +100,8 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
             <h2 className="text-xl font-semibold text-slate-800 mb-6">Navegue por subcategorias:</h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {subCategories.map((sub: any) => (
-                <Link key={sub.id} href={`/categoria/${sub.slug}`} className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center hover:border-[#5D3A5B] hover:shadow-md transition-all group">
-                  <h3 className="text-lg font-medium text-slate-700 group-hover:text-[#5D3A5B] transition-colors">{sub.name}</h3>
+                <Link key={sub.id} href={`/categoria/${sub.slug}`} className="bg-white border border-slate-200 rounded-2xl p-6 flex flex-col items-center justify-center text-center hover:border-brand-plum hover:shadow-md transition-all group">
+                  <h3 className="text-lg font-medium text-slate-700 group-hover:text-brand-plum transition-colors">{sub.name}</h3>
                 </Link>
               ))}
             </div>
@@ -124,7 +124,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                   <div className="flex items-center mb-2">
                     {[...Array(product.rating || 5)].map((_, i) => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
                   </div>
-                  <div className="text-lg font-medium text-slate-900 group-hover:text-[#5D3A5B] transition-colors mb-2 line-clamp-2">
+                  <div className="text-lg font-medium text-slate-900 group-hover:text-brand-plum transition-colors mb-2 line-clamp-2">
                     {product.name}
                   </div>
                   <div className="mt-auto flex items-center space-x-3">

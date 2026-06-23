@@ -110,7 +110,7 @@ export default function CheckoutPage() {
   if (isLoadingAuth) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-[#5D3A5B]" />
+        <Loader2 className="w-8 h-8 animate-spin text-brand-plum" />
       </div>
     )
   }
@@ -119,7 +119,7 @@ export default function CheckoutPage() {
     <div className={`min-h-screen bg-slate-50 ${inter.variable} ${playfair.variable} font-sans pt-12 pb-24`}>
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex items-center justify-between mb-8">
-          <Link href="/carrinho" className="inline-flex items-center text-slate-500 hover:text-[#5D3A5B] transition-colors">
+          <Link href="/carrinho" className="inline-flex items-center text-slate-500 hover:text-brand-plum transition-colors">
             <ArrowLeft className="w-4 h-4 mr-2" /> Voltar ao Carrinho
           </Link>
           <div className="flex items-center text-green-600 font-medium text-sm bg-green-50 px-4 py-2 rounded-full">
@@ -139,8 +139,8 @@ export default function CheckoutPage() {
             {/* Endereço e Frete */}
             <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
               <div className="flex items-center mb-6">
-                <div className="w-10 h-10 bg-pink-50 rounded-full flex items-center justify-center mr-4">
-                  <MapPin className="w-5 h-5 text-[#5D3A5B]" />
+                <div className="w-10 h-10 bg-brand-peach rounded-full flex items-center justify-center mr-4">
+                  <MapPin className="w-5 h-5 text-brand-plum" />
                 </div>
                 <h2 className="text-xl font-bold text-slate-900">Endereço de Entrega</h2>
               </div>
@@ -151,7 +151,7 @@ export default function CheckoutPage() {
                   placeholder="00000-000"
                   value={cep}
                   onChange={(e) => setCep(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-[#5D3A5B] focus:ring-1 focus:ring-[#5D3A5B] transition-all max-w-[200px]"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all max-w-[200px]"
                 />
                 <Button 
                   onClick={handleCepSearch} 
@@ -178,8 +178,8 @@ export default function CheckoutPage() {
             {/* Pagamento */}
             <div className={`bg-white p-8 rounded-3xl shadow-sm border border-slate-100 transition-opacity ${!address ? 'opacity-50 pointer-events-none' : ''}`}>
               <div className="flex items-center mb-6">
-                <div className="w-10 h-10 bg-pink-50 rounded-full flex items-center justify-center mr-4">
-                  <CreditCard className="w-5 h-5 text-[#5D3A5B]" />
+                <div className="w-10 h-10 bg-brand-peach rounded-full flex items-center justify-center mr-4">
+                  <CreditCard className="w-5 h-5 text-brand-plum" />
                 </div>
                 <h2 className="text-xl font-bold text-slate-900">Método de Pagamento</h2>
               </div>
@@ -187,10 +187,10 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-2 gap-4 mb-8">
                 <button 
                   onClick={() => setPaymentMethod('credit_card')}
-                  className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${paymentMethod === 'credit_card' ? 'border-[#5D3A5B] bg-pink-50/30' : 'border-slate-100 bg-white hover:border-slate-200'}`}
+                  className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${paymentMethod === 'credit_card' ? 'border-brand-plum bg-brand-peach/30' : 'border-slate-100 bg-white hover:border-slate-200'}`}
                 >
-                  <CreditCard className={`w-8 h-8 mb-2 ${paymentMethod === 'credit_card' ? 'text-[#5D3A5B]' : 'text-slate-400'}`} />
-                  <span className={`font-medium ${paymentMethod === 'credit_card' ? 'text-[#5D3A5B]' : 'text-slate-600'}`}>Cartão de Crédito</span>
+                  <CreditCard className={`w-8 h-8 mb-2 ${paymentMethod === 'credit_card' ? 'text-brand-plum' : 'text-slate-400'}`} />
+                  <span className={`font-medium ${paymentMethod === 'credit_card' ? 'text-brand-plum' : 'text-slate-600'}`}>Cartão de Crédito</span>
                 </button>
                 <button 
                   onClick={() => setPaymentMethod('pix')}
@@ -205,25 +205,25 @@ export default function CheckoutPage() {
                 <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Número do Cartão</label>
-                    <input type="text" placeholder="0000 0000 0000 0000" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-[#5D3A5B] transition-all" />
+                    <input type="text" placeholder="0000 0000 0000 0000" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum transition-all" />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-2">Nome Impresso no Cartão</label>
-                    <input type="text" placeholder="Ex: MARIA DA SILVA" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-[#5D3A5B] transition-all uppercase" />
+                    <input type="text" placeholder="Ex: MARIA DA SILVA" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum transition-all uppercase" />
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">Validade</label>
-                      <input type="text" placeholder="MM/AA" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-[#5D3A5B] transition-all" />
+                      <input type="text" placeholder="MM/AA" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum transition-all" />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">CVV</label>
-                      <input type="text" placeholder="123" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-[#5D3A5B] transition-all" />
+                      <input type="text" placeholder="123" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum transition-all" />
                     </div>
                   </div>
                   <div className="pt-2">
                     <label className="block text-sm font-medium text-slate-700 mb-2">Parcelamento</label>
-                    <select className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-[#5D3A5B] transition-all appearance-none cursor-pointer">
+                    <select className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum transition-all appearance-none cursor-pointer">
                       <option>1x de R$ {total.toFixed(2).replace('.', ',')} sem juros</option>
                       <option>2x de R$ {(total/2).toFixed(2).replace('.', ',')} sem juros</option>
                       <option>3x de R$ {(total/3).toFixed(2).replace('.', ',')} sem juros</option>
@@ -266,7 +266,7 @@ export default function CheckoutPage() {
                     <div className="flex-1 py-1">
                       <h4 className="font-medium text-slate-900 text-sm line-clamp-2">{item.name}</h4>
                       <p className="text-xs text-slate-500 mt-1">Qtd: {item.quantity}</p>
-                      <p className="font-bold text-[#5D3A5B] mt-1">R$ {(item.price * item.quantity).toFixed(2).replace('.', ',')}</p>
+                      <p className="font-bold text-brand-plum mt-1">R$ {(item.price * item.quantity).toFixed(2).replace('.', ',')}</p>
                     </div>
                   </div>
                 ))}
@@ -292,14 +292,14 @@ export default function CheckoutPage() {
               <div className="pt-6 border-t border-slate-100 mb-8 bg-slate-50 -mx-8 px-8 pb-8 rounded-b-3xl -mb-8">
                 <div className="flex justify-between items-end mb-6 pt-4">
                   <span className="text-lg font-medium text-slate-900">Total a Pagar</span>
-                  <span className="text-3xl font-bold text-[#5D3A5B]">R$ {total.toFixed(2).replace('.', ',')}</span>
+                  <span className="text-3xl font-bold text-brand-plum">R$ {total.toFixed(2).replace('.', ',')}</span>
                 </div>
 
                 <Button 
                   size="lg" 
                   onClick={handleCheckout}
                   disabled={!address || isProcessing}
-                  className="w-full bg-[#5D3A5B] hover:bg-[#4A2E49] text-white rounded-2xl h-16 text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
+                  className="w-full bg-brand-plum hover:bg-brand-rose text-white rounded-2xl h-16 text-lg shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
                 >
                   {isProcessing ? (
                     <><Loader2 className="w-5 h-5 mr-2 animate-spin" /> Processando Pagamento...</>

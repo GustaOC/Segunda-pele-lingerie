@@ -54,7 +54,7 @@ export default function LoginPage() {
   return (
     <div className={`min-h-screen bg-slate-50 flex flex-col justify-center items-center ${inter.variable} ${playfair.variable} font-sans p-6`}>
       <div className="absolute top-8 left-8">
-        <Link href="/" className="inline-flex items-center text-slate-500 hover:text-[#5D3A5B] transition-colors">
+        <Link href="/" className="inline-flex items-center text-slate-500 hover:text-brand-plum transition-colors">
           <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para a Loja
         </Link>
       </div>
@@ -83,7 +83,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl focus:ring-pink-500 focus:border-pink-500 text-slate-900"
+                  className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl focus:ring-brand-rose focus:border-brand-rose text-slate-900"
                   placeholder="seu@email.com"
                 />
               </div>
@@ -100,7 +100,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl focus:ring-pink-500 focus:border-pink-500 text-slate-900"
+                  className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl focus:ring-brand-rose focus:border-brand-rose text-slate-900"
                   placeholder="••••••••"
                 />
               </div>
@@ -109,7 +109,7 @@ export default function LoginPage() {
             <Button 
               type="submit"
               disabled={isLoading}
-              className="w-full h-12 rounded-xl bg-[#5D3A5B] hover:bg-[#4A2E49] text-white font-medium text-lg flex items-center justify-center transition-all shadow-sm mt-2"
+              className="w-full h-12 rounded-xl bg-brand-plum hover:bg-brand-rose text-white font-medium text-lg flex items-center justify-center transition-all shadow-sm mt-2"
             >
               {isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
@@ -145,7 +145,7 @@ export default function LoginPage() {
           </Button>
 
           <p className="mt-4 text-sm text-slate-500">
-            Não tem uma conta? <Link href="/registro" className="text-pink-500 hover:text-pink-600 font-medium">Registre-se</Link>
+            Não tem uma conta? <Link href="/registro" className="text-brand-rose hover:text-brand-brown font-medium">Registre-se</Link>
           </p>
         </div>
       </div>
