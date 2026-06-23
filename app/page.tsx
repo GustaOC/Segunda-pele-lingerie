@@ -121,7 +121,7 @@ export default function EcommerceHome() {
             </div>
             
             <h1 className="text-5xl md:text-7xl font-bold text-slate-900 leading-normal pb-2">
-              O Poder <br/> da sua <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-plum to-purple-500 italic font-medium">Segunda Pele</span>
+              O Poder <br/> da sua <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-plum to-purple-500 italic font-medium pr-2">Segunda Pele</span>
             </h1>
             
             <p className="text-lg text-slate-600 leading-relaxed max-w-md">
