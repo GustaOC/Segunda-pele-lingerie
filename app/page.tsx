@@ -145,22 +145,12 @@ export default function EcommerceHome() {
           
           <div className="relative hidden md:block h-[80vh] w-full rounded-t-full overflow-hidden shadow-2xl border-4 border-white">
             <Image 
-              src="https://images.unsplash.com/photo-1588622152843-98335b290d23?q=80&w=1200&auto=format&fit=crop" 
+              src="/modelovitrine1.png" 
               alt="Modelo usando lingerie Segunda Pele"
               fill
               className="object-cover object-top hover:scale-105 transition-transform duration-[20s]"
               priority
             />
-            {/* Overlay Glass Badge */}
-            <div className="absolute bottom-12 -left-6 bg-white/80 backdrop-blur-md p-4 rounded-2xl shadow-xl border border-white/50 flex items-center space-x-4 animate-bounce" style={{ animationDuration: '3s' }}>
-              <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
-                <Star className="w-6 h-6 text-purple-600 fill-purple-600" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-slate-800">Top Qualidade</p>
-                <p className="text-xs text-slate-500">+5.000 clientes felizes</p>
-              </div>
-            </div>
           </div>
         </div>
       </section>
