@@ -101,7 +101,7 @@ export function Navbar() {
           <div className="flex-1 flex justify-center">
             <Link href="/" className="relative group flex items-center justify-center">
               <Image 
-                src="/logo2.png" 
+                src="/logo3.png" 
                 alt="Segunda Pele" 
                 width={200} 
                 height={60} 
