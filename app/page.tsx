@@ -360,9 +360,9 @@ export default function EcommerceHome() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
             <div className="space-y-6">
-              <div className="relative w-48 h-16 mb-2">
+              <div className="relative w-72 h-24 mb-4">
                 <Image 
-                  src="/logoinicial.png" 
+                  src="/logo.png" 
                   alt="Segunda Pele Logo" 
                   fill 
                   className="object-contain object-left" 
