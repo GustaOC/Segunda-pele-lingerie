@@ -86,7 +86,7 @@ export function Navbar() {
   }, [supabase])
 
   return (
-    <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-md shadow-sm py-4" : "bg-white/80 backdrop-blur-md py-6"}`}>
+    <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-md shadow-sm py-2" : "bg-white/80 backdrop-blur-md py-6"}`}>
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex items-center justify-between">
           {/* Search */}
@@ -105,7 +105,7 @@ export function Navbar() {
                 alt="Segunda Pele" 
                 width={200} 
                 height={60} 
-                className="object-contain"
+                className={`object-contain transition-all duration-300 ${scrolled ? 'h-10 w-auto' : 'h-[60px] w-auto'}`}
               />
               <div className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-[#5D3A5B] transition-all duration-300 group-hover:w-full group-hover:left-0"></div>
             </Link>
@@ -131,7 +131,7 @@ export function Navbar() {
         </div>
 
         {/* Desktop Links with Hover Dropdowns */}
-        <div className="hidden md:flex justify-center space-x-8 mt-6 text-sm font-medium text-slate-700">
+        <div className={`hidden md:flex justify-center space-x-8 text-sm font-medium text-slate-700 transition-all duration-300 ${scrolled ? 'mt-2' : 'mt-6'}`}>
           
           {NAVBAR_CATEGORIES.map((category) => (
             <div key={category.slug} className="relative group">
