@@ -34,9 +34,9 @@ const FALLBACK_PRODUCTS = [
 const CATEGORIES = [
   { id: 1, name: "Conjuntos", slug: "conjuntos", image: "https://images.unsplash.com/photo-1616421598911-34446c6463eb?q=80&w=600&auto=format&fit=crop" },
   { id: 2, name: "Linha Noite", slug: "linha-noite", image: "https://images.unsplash.com/photo-1610411646274-13eb76ab39f7?q=80&w=600&auto=format&fit=crop" },
-  { id: 3, name: "Infantil", slug: "infantil", image: "https://images.unsplash.com/photo-1598555891781-a67b57917ba3?q=80&w=600&auto=format&fit=crop" },
+  { id: 3, name: "Infantil", slug: "infantil", image: "/modeloinfantil.jpg" },
   { id: 4, name: "Calcinha", slug: "calcinha", image: "https://images.unsplash.com/photo-1596464871987-a2f643e9e51c?q=80&w=600&auto=format&fit=crop" },
-  { id: 5, name: "Cueca", slug: "cueca", image: "https://images.unsplash.com/photo-1565597920392-1262d1ec8656?q=80&w=600&auto=format&fit=crop" },
+  { id: 5, name: "Cueca", slug: "cueca", image: "/modelocueca.jpg" },
 ]
 
 export default function EcommerceHome() {
