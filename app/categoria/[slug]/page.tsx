@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Star, Heart, Loader2 } from "lucide-react"
+import { ArrowLeft, Star, Heart, Loader2, Plus } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
@@ -18,9 +18,17 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
   const [subCategories, setSubCategories] = useState<any[]>([])
   const [categoryName, setCategoryName] = useState("")
   const [loading, setLoading] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [categoryId, setCategoryId] = useState("")
   const supabase = createClient()
   useEffect(() => {
     const fetchCategoryAndProducts = async () => {
+      // Check admin status
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user?.email === 'admin@segundapele.com') {
+        setIsAdmin(true)
+      }
+
       // 1. Busca a categoria atual e as suas filhas (se existirem)
       const { data: category, error: catError } = await supabase
         .from('categories')
@@ -35,6 +43,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
       }
 
       setCategoryName(category.name)
+      setCategoryId(category.id)
 
       // Monta array de IDs de categoria permitidos (a categoria atual + filhas)
       const allowedCategoryIds = [category.id]
@@ -73,6 +82,16 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
               {loading ? <Loader2 className="w-8 h-8 animate-spin text-[#5D3A5B]" /> : categoryName}
             </h1>
             <p className="text-slate-500 text-lg">Encontre as melhores peças de nossa coleção.</p>
+          </div>
+          <div className="flex items-center space-x-4">
+            {!loading && isAdmin && subCategories.length === 0 && (
+              <Link href="/admin/novo-produto">
+                <Button className="bg-green-500 hover:bg-green-600 text-white rounded-full font-semibold shadow-md flex items-center transition-all mb-2">
+                  <Plus className="w-5 h-5 mr-2" />
+                  Adicionar Produto
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 
