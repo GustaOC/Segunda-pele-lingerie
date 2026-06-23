@@ -438,8 +438,9 @@ export default function HomePage() {
           
           <div className="mt-4">
             <Link 
-              href="https://www.instagram.com/segundapelemslingerie?igsh=MTMxZGJmczBsdGNraA%3D%3D&utm_source=qr" 
-              target="_blank"
+              href="https://www.instagram.com/segundapelemslingerie/" 
+              target="_blank" 
+              rel="noopener noreferrer"
               className="group px-8 py-4 rounded-full text-white font-semibold shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center text-base hover:scale-105 border border-purple-500/20"
               style={{ 
                 background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
