@@ -165,9 +165,11 @@ export default function CarrinhoPage() {
                 <p className="text-xs text-slate-500 mt-2 text-right">em até 6x sem juros</p>
               </div>
 
-              <Button size="lg" className="w-full bg-[#5D3A5B] hover:bg-[#4A2E49] text-white rounded-2xl h-16 text-lg shadow-lg hover:shadow-xl transition-all">
-                Finalizar Compra
-              </Button>
+              <Link href="/checkout" className="block w-full">
+                <Button size="lg" className="w-full bg-[#5D3A5B] hover:bg-[#4A2E49] text-white rounded-2xl h-16 text-lg shadow-lg hover:shadow-xl transition-all">
+                  Finalizar Compra
+                </Button>
+              </Link>
 
               <div className="mt-6 flex justify-center items-center text-slate-400 text-sm">
                 <Lock className="w-4 h-4 mr-2" /> Compra 100% Segura
