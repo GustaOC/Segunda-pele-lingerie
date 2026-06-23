@@ -32,7 +32,7 @@ const FALLBACK_PRODUCTS = [
 
 // --- Mock Data ---
 const CATEGORIES = [
-  { id: 1, name: "Conjuntos", slug: "conjuntos", image: "https://images.unsplash.com/photo-1616421598911-34446c6463eb?q=80&w=600&auto=format&fit=crop" },
+  { id: 1, name: "Conjuntos", slug: "conjuntos", image: "/modeloconjunto.png" },
   { id: 2, name: "Linha Noite", slug: "linha-noite", image: "/modelolinhanoite.png" },
   { id: 3, name: "Infantil", slug: "infantil", image: "/modeloinfantil.jpg" },
   { id: 4, name: "Calcinha", slug: "calcinha", image: "https://images.unsplash.com/photo-1596464871987-a2f643e9e51c?q=80&w=600&auto=format&fit=crop" },
