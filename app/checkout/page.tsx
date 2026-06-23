@@ -18,6 +18,7 @@ export default function CheckoutPage() {
   
   // Checkout State
   const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'pix'>('credit_card')
+  const [deliveryMethod, setDeliveryMethod] = useState<'delivery' | 'pickup'>('delivery')
   const [cep, setCep] = useState("")
   const [address, setAddress] = useState<{ logradouro: string, bairro: string, localidade: string, uf: string } | null>(null)
   const [frete, setFrete] = useState<number | null>(null)
@@ -62,7 +63,8 @@ export default function CheckoutPage() {
   }, [router, supabase])
 
   const subtotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
-  const total = subtotal + (frete || 0)
+  const effectiveFrete = deliveryMethod === 'pickup' ? 0 : (frete || 0)
+  const total = subtotal + effectiveFrete
 
   const handleCepSearch = async () => {
     if (cep.replace(/\D/g, '').length !== 8) return alert("CEP inválido")
@@ -91,7 +93,7 @@ export default function CheckoutPage() {
   }
 
   const handleCheckout = async () => {
-    if (!address) return alert("Por favor, calcule o frete para o seu CEP primeiro.")
+    if (deliveryMethod === 'delivery' && !address) return alert("Por favor, calcule o frete para o seu CEP primeiro.")
     
     setIsProcessing(true)
     
@@ -142,41 +144,73 @@ export default function CheckoutPage() {
                 <div className="w-10 h-10 bg-brand-peach rounded-full flex items-center justify-center mr-4">
                   <MapPin className="w-5 h-5 text-brand-plum" />
                 </div>
-                <h2 className="text-xl font-bold text-slate-900">Endereço de Entrega</h2>
+                <h2 className="text-xl font-bold text-slate-900">Entrega ou Retirada</h2>
               </div>
               
-              <div className="flex gap-4 mb-6">
-                <input
-                  type="text"
-                  placeholder="00000-000"
-                  value={cep}
-                  onChange={(e) => setCep(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all max-w-[200px]"
-                />
-                <Button 
-                  onClick={handleCepSearch} 
-                  disabled={isCalculatingFreight || !cep}
-                  className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl h-[50px] px-6"
+              <div className="flex flex-col sm:flex-row gap-4 mb-8">
+                <button 
+                  onClick={() => setDeliveryMethod('delivery')}
+                  className={`flex-1 py-4 px-4 rounded-xl border-2 font-bold transition-all flex flex-col items-center justify-center ${deliveryMethod === 'delivery' ? 'border-brand-plum bg-brand-peach/30 text-brand-plum' : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200'}`}
                 >
-                  {isCalculatingFreight ? <Loader2 className="w-4 h-4 animate-spin" /> : "Calcular"}
-                </Button>
+                  <Truck className="w-6 h-6 mb-2" />
+                  Receber em casa
+                </button>
+                <button 
+                  onClick={() => setDeliveryMethod('pickup')}
+                  className={`flex-1 py-4 px-4 rounded-xl border-2 font-bold transition-all flex flex-col items-center justify-center ${deliveryMethod === 'pickup' ? 'border-brand-plum bg-brand-peach/30 text-brand-plum' : 'border-slate-100 bg-white text-slate-500 hover:border-slate-200'}`}
+                >
+                  <MapPin className="w-6 h-6 mb-2" />
+                  Retirar na Loja (Grátis)
+                </button>
               </div>
 
-              {address && (
-                <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 text-sm text-slate-600 space-y-1">
-                  <p className="font-medium text-slate-900">{address.logradouro}</p>
-                  <p>{address.bairro}</p>
-                  <p>{address.localidade} - {address.uf}</p>
-                  <div className="mt-4 flex items-center text-green-600 font-medium">
-                    <Truck className="w-4 h-4 mr-2" /> 
-                    {frete === 0 ? "Frete Grátis (Promoção)" : `Frete Transportadora: R$ ${frete?.toFixed(2).replace('.', ',')}`}
+              {deliveryMethod === 'delivery' ? (
+                <>
+                  <div className="flex gap-4 mb-6">
+                    <input
+                      type="text"
+                      placeholder="00000-000"
+                      value={cep}
+                      onChange={(e) => setCep(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all max-w-[200px]"
+                    />
+                    <Button 
+                      onClick={handleCepSearch} 
+                      disabled={isCalculatingFreight || !cep}
+                      className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl h-[50px] px-6"
+                    >
+                      {isCalculatingFreight ? <Loader2 className="w-4 h-4 animate-spin" /> : "Calcular"}
+                    </Button>
+                  </div>
+
+                  {address && (
+                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 text-sm text-slate-600 space-y-1">
+                      <p className="font-medium text-slate-900">{address.logradouro}</p>
+                      <p>{address.bairro}</p>
+                      <p>{address.localidade} - {address.uf}</p>
+                      <div className="mt-4 flex items-center text-green-600 font-medium">
+                        <Truck className="w-4 h-4 mr-2" /> 
+                        {frete === 0 ? "Frete Grátis (Promoção)" : `Frete Transportadora: R$ ${frete?.toFixed(2).replace('.', ',')}`}
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <div className="bg-brand-peach/20 p-6 rounded-xl border border-brand-peach/50 text-sm text-brand-plum">
+                  <div className="flex items-start">
+                    <MapPin className="w-5 h-5 mr-3 mt-0.5 shrink-0" />
+                    <div>
+                      <p className="font-bold text-lg mb-1">Loja Física - Segunda Pele</p>
+                      <p className="text-slate-600">Av. Afonso Pena, 2000 - Centro, Campo Grande - MS</p>
+                      <p className="text-xs mt-3 opacity-80">Você receberá um e-mail quando seu pedido estiver separado e pronto para retirada.</p>
+                    </div>
                   </div>
                 </div>
               )}
             </div>
 
             {/* Pagamento */}
-            <div className={`bg-white p-8 rounded-3xl shadow-sm border border-slate-100 transition-opacity ${!address ? 'opacity-50 pointer-events-none' : ''}`}>
+            <div className={`bg-white p-8 rounded-3xl shadow-sm border border-slate-100 transition-opacity ${deliveryMethod === 'delivery' && !address ? 'opacity-50 pointer-events-none' : ''}`}>
               <div className="flex items-center mb-6">
                 <div className="w-10 h-10 bg-brand-peach rounded-full flex items-center justify-center mr-4">
                   <CreditCard className="w-5 h-5 text-brand-plum" />
@@ -277,15 +311,13 @@ export default function CheckoutPage() {
                   <span>Subtotal</span>
                   <span>R$ {subtotal.toFixed(2).replace('.', ',')}</span>
                 </div>
-                <div className="flex justify-between text-slate-600">
+                <div className="flex justify-between text-slate-600 mb-2">
                   <span>Frete</span>
-                  {frete === null ? (
-                    <span className="text-slate-400 text-sm">Calcule com o CEP</span>
-                  ) : frete === 0 ? (
-                    <span className="text-green-500 font-medium">Grátis</span>
-                  ) : (
-                    <span>R$ {frete.toFixed(2).replace('.', ',')}</span>
-                  )}
+                  <span>
+                    {deliveryMethod === 'pickup' 
+                      ? 'Grátis' 
+                      : (frete === null ? '--' : (frete === 0 ? 'Grátis' : `R$ ${frete.toFixed(2).replace('.', ',')}`))}
+                  </span>
                 </div>
               </div>
               
