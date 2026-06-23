@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Loader2, Mail, Lock } from "lucide-react"
+import { ArrowLeft, Loader2, Mail, Lock, User } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import { Playfair_Display, Inter } from "next/font/google"
@@ -11,29 +11,45 @@ import { useRouter } from "next/navigation"
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" })
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inter" })
 
-export default function LoginPage() {
+export default function RegistroPage() {
   const [isLoading, setIsLoading] = useState(false)
+  const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [errorMsg, setErrorMsg] = useState("")
+  const [successMsg, setSuccessMsg] = useState("")
   const supabase = createClient()
   const router = useRouter()
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
+  const handleEmailSignUp = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     setErrorMsg("")
-    
-    const { error } = await supabase.auth.signInWithPassword({
+    setSuccessMsg("")
+
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: {
+          full_name: name,
+        },
+        emailRedirectTo: `${window.location.origin}/conta`,
+      }
     })
 
     if (error) {
-      setErrorMsg("Email ou senha incorretos.")
+      setErrorMsg(error.message)
       setIsLoading(false)
     } else {
-      router.push("/conta")
+      if (data.session) {
+        // Usuário foi logado automaticamente
+        router.push("/conta")
+      } else {
+        // Precisa confirmar email
+        setSuccessMsg("Conta criada com sucesso! Por favor, verifique seu email para confirmar o cadastro.")
+        setIsLoading(false)
+      }
     }
   }
 
@@ -46,7 +62,7 @@ export default function LoginPage() {
       },
     })
     if (error) {
-      console.error("Erro ao fazer login com Google:", error.message)
+      setErrorMsg(error.message)
       setIsLoading(false)
     }
   }
@@ -62,8 +78,8 @@ export default function LoginPage() {
       <div className="w-full max-w-md bg-white p-10 rounded-3xl shadow-xl border border-slate-100 text-center relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-pink-50/50 rounded-3xl pointer-events-none"></div>
         <div className="relative z-10">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2" style={{ fontFamily: "var(--font-playfair)" }}>Bem-vinda de volta</h1>
-          <p className="text-slate-500 mb-6">Faça login para salvar seus favoritos e ver seus pedidos.</p>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2" style={{ fontFamily: "var(--font-playfair)" }}>Criar Conta</h1>
+          <p className="text-slate-500 mb-6">Crie sua conta para salvar favoritos e ver seus pedidos.</p>
 
           {errorMsg && (
             <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">
@@ -71,7 +87,30 @@ export default function LoginPage() {
             </div>
           )}
 
-          <form onSubmit={handleEmailLogin} className="space-y-4 mb-6 text-left">
+          {successMsg && (
+            <div className="bg-green-50 text-green-600 p-3 rounded-lg text-sm mb-4">
+              {successMsg}
+            </div>
+          )}
+
+          <form onSubmit={handleEmailSignUp} className="space-y-4 mb-6 text-left">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-1">Nome Completo</label>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <User className="h-5 w-5 text-slate-400" />
+                </div>
+                <input 
+                  type="text" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl focus:ring-pink-500 focus:border-pink-500 text-slate-900"
+                  placeholder="Seu nome"
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">Email</label>
               <div className="relative">
@@ -100,6 +139,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  minLength={6}
                   className="block w-full pl-10 pr-3 py-3 border border-slate-200 rounded-xl focus:ring-pink-500 focus:border-pink-500 text-slate-900"
                   placeholder="••••••••"
                 />
@@ -114,7 +154,7 @@ export default function LoginPage() {
               {isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
-                "Entrar"
+                "Criar Conta"
               )}
             </Button>
           </form>
@@ -124,7 +164,7 @@ export default function LoginPage() {
               <div className="w-full border-t border-slate-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-slate-500">Ou entre com</span>
+              <span className="px-2 bg-white text-slate-500">Ou cadastre-se com</span>
             </div>
           </div>
 
@@ -145,7 +185,7 @@ export default function LoginPage() {
           </Button>
 
           <p className="mt-4 text-sm text-slate-500">
-            Não tem uma conta? <Link href="/registro" className="text-pink-500 hover:text-pink-600 font-medium">Registre-se</Link>
+            Já tem uma conta? <Link href="/login" className="text-pink-500 hover:text-pink-600 font-medium">Faça login</Link>
           </p>
         </div>
       </div>
