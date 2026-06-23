@@ -1,23 +1,14 @@
 // app/layout.tsx
 
 import type { Metadata } from "next"
-import { Figtree } from "next/font/google"
-import { GeistMono } from "geist/font/mono"
-import { Instrument_Serif } from "next/font/google"
+import { Arsenal } from "next/font/google"
 import "./globals.css"
 
-const figtree = Figtree({
+const arsenal = Arsenal({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-figtree",
-  display: "swap",
-})
-
-const instrumentSerif = Instrument_Serif({
-  subsets: ["latin"],
-  weight: ["400"],
+  weight: ["400", "700"],
   style: ["normal", "italic"],
-  variable: "--font-instrument-serif",
+  variable: "--font-arsenal",
   display: "swap",
 })
 
@@ -34,7 +25,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${figtree.variable} ${instrumentSerif.variable} ${GeistMono.variable}`}
+      className={`${arsenal.variable}`}
     >
       <body>
         {children}
