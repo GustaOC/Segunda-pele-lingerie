@@ -88,7 +88,7 @@ export function Navbar() {
   return (
     <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-md shadow-sm py-2" : "bg-white/80 backdrop-blur-md py-6"}`}>
       <div className="max-w-7xl mx-auto px-6">
-        <div className="flex items-center justify-between">
+        <div className={`flex items-center justify-between transition-all duration-500 overflow-hidden ${scrolled ? 'max-h-0 opacity-0' : 'max-h-[100px] opacity-100'}`}>
           {/* Search */}
           <div className="flex-1 hidden md:block">
             <div className="flex items-center space-x-2 text-slate-500 hover:text-slate-800 transition cursor-pointer">
@@ -128,6 +128,20 @@ export function Navbar() {
               )}
             </Link>
           </div>
+        </div>
+
+
+        {/* Scrolled Small Logo */}
+        <div className={`flex justify-center transition-all duration-500 overflow-hidden ${scrolled ? 'max-h-[40px] opacity-100 mb-2' : 'max-h-0 opacity-0 m-0'}`}>
+          <Link href="/" className="flex items-center justify-center">
+            <Image 
+              src="/logo4.png" 
+              alt="Segunda Pele" 
+              width={100} 
+              height={30} 
+              className="object-contain h-6 w-auto"
+            />
+          </Link>
         </div>
 
         {/* Desktop Links with Hover Dropdowns */}
