@@ -23,6 +23,7 @@ export default function NovoProdutoPage() {
   const [categoryId, setCategoryId] = useState("")
   const [image, setImage] = useState("")
   const [description, setDescription] = useState("")
+  const [isHighlight, setIsHighlight] = useState(false)
   
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -70,6 +71,7 @@ export default function NovoProdutoPage() {
       image,
       description,
       is_active: true,
+      is_highlight: isHighlight,
       sizes: ['P', 'M', 'G', 'GG'] // Default mockado
     })
 
@@ -194,9 +196,22 @@ export default function NovoProdutoPage() {
                 rows={4}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Descreva os detalhes da peça..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-[#5D3A5B] focus:ring-1 focus:ring-[#5D3A5B] transition-all resize-none"
+                placeholder="Detalhes sobre o produto..."
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-[#5D3A5B] focus:ring-1 focus:ring-[#5D3A5B] transition-all"
               />
+            </div>
+
+            <div className="flex items-center space-x-3 bg-yellow-50/50 p-4 rounded-xl border border-yellow-100">
+              <input
+                type="checkbox"
+                id="isHighlight"
+                checked={isHighlight}
+                onChange={(e) => setIsHighlight(e.target.checked)}
+                className="w-5 h-5 rounded border-gray-300 text-yellow-500 focus:ring-yellow-500"
+              />
+              <label htmlFor="isHighlight" className="text-sm font-medium text-slate-700">
+                ⭐ Destacar na página de Destaques?
+              </label>
             </div>
 
             <div className="pt-6">

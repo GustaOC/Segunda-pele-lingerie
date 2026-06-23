@@ -9,6 +9,7 @@ import { Playfair_Display, Inter } from "next/font/google"
 import { createClient } from "@/lib/supabase/client"
 import { Navbar } from "@/components/Navbar"
 import { FavoriteButton } from "@/components/FavoriteButton"
+import { HighlightButton } from "@/components/HighlightButton"
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -283,9 +284,12 @@ export default function EcommerceHome() {
                     </div>
                   )}
                   {isAdmin ? (
-                    <button onClick={(e) => { e.preventDefault(); alert("Produto excluído (mock)"); }} className="absolute top-4 right-4 z-20 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-red-500 hover:text-white hover:bg-red-500 shadow-md transition-colors translate-x-4 group-hover:translate-x-0 opacity-0 group-hover:opacity-100 duration-300">
-                      <Trash2 className="w-5 h-5" />
-                    </button>
+                    <div className="absolute top-4 right-4 z-20 flex flex-col gap-2">
+                      <HighlightButton productId={product.id} initialHighlight={product.is_highlight} className="w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-md translate-x-4 group-hover:translate-x-0 opacity-0 group-hover:opacity-100 duration-300 hover:scale-110" />
+                      <button onClick={(e) => { e.preventDefault(); alert("Produto excluído (mock)"); }} className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-red-500 hover:text-white hover:bg-red-500 shadow-md transition-colors translate-x-4 group-hover:translate-x-0 opacity-0 group-hover:opacity-100 duration-300">
+                        <Trash2 className="w-5 h-5" />
+                      </button>
+                    </div>
                   ) : (
                     <button className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/80 backdrop-blur rounded-full flex items-center justify-center text-slate-400 hover:text-pink-500 hover:bg-white shadow-sm transition-colors opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 duration-300">
                       <Heart className="w-5 h-5" />
