@@ -103,9 +103,9 @@ export function Navbar() {
               <Image 
                 src="/logo3.png" 
                 alt="Segunda Pele" 
-                width={200} 
-                height={60} 
-                className={`object-contain transition-all duration-300 ${scrolled ? 'h-10 w-auto' : 'h-[60px] w-auto'}`}
+                width={280} 
+                height={80} 
+                className="object-contain h-20 w-auto"
               />
               <div className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-[#5D3A5B] transition-all duration-300 group-hover:w-full group-hover:left-0"></div>
             </Link>
@@ -137,9 +137,9 @@ export function Navbar() {
             <Image 
               src="/logo4.png" 
               alt="Segunda Pele" 
-              width={100} 
-              height={30} 
-              className="object-contain h-6 w-auto"
+              width={140} 
+              height={40} 
+              className="object-contain h-10 w-auto"
             />
           </Link>
         </div>
