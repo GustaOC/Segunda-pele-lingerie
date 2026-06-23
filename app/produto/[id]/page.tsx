@@ -30,6 +30,7 @@ export default function ProdutoPage() {
   const [selectedSize, setSelectedSize] = useState("M")
   const [added, setAdded] = useState(false)
   const [product, setProduct] = useState<any>(null)
+  const [currentImage, setCurrentImage] = useState("")
   const [loadingProduct, setLoadingProduct] = useState(true)
   
   const supabase = createClient()
@@ -45,12 +46,15 @@ export default function ProdutoPage() {
       if (error || !data) {
         // Fallback para o mock se não encontrar ou se as tabelas ainda não existirem
         setProduct(FALLBACK_PRODUCT)
+        setCurrentImage(FALLBACK_PRODUCT.image)
       } else {
-        setProduct({
+        const prod = {
           ...data,
           sizes: data.sizes || ["P", "M", "G", "GG"], // Fallback pros tamanhos se for nulo
           oldPrice: data.old_price, // Mapeamento pro formato que o layout espera
-        })
+        }
+        setProduct(prod)
+        setCurrentImage(prod.image)
       }
       setLoadingProduct(false)
     }
@@ -114,14 +118,31 @@ export default function ProdutoPage() {
 
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 flex flex-col md:flex-row">
           {/* Image Section */}
-          <div className="w-full md:w-1/2 h-[500px] md:h-auto relative bg-slate-100">
-            <Image 
-              src={product.image} 
-              alt={product.name} 
-              fill 
-              className="object-cover object-top" 
-            />
-            <FavoriteButton productId={product.id} className="absolute top-6 right-6 w-12 h-12 bg-white/90 backdrop-blur rounded-full hover:bg-white shadow-md" />
+          <div className="w-full md:w-1/2 flex flex-col md:border-r border-slate-100">
+            <div className="w-full h-[500px] md:h-[600px] relative bg-slate-100 group">
+              <Image 
+                src={currentImage} 
+                alt={product.name} 
+                fill 
+                className="object-cover object-top transition-transform duration-700 group-hover:scale-105" 
+              />
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-300 pointer-events-none"></div>
+              <FavoriteButton productId={product.id} className="absolute top-6 right-6 w-12 h-12 bg-white/90 backdrop-blur rounded-full hover:bg-white shadow-md z-10" />
+            </div>
+            
+            {product.images && product.images.length > 1 && (
+              <div className="flex gap-4 p-6 overflow-x-auto pb-6 custom-scrollbar bg-white">
+                {product.images.map((img: string, idx: number) => (
+                  <button 
+                    key={idx}
+                    onClick={() => setCurrentImage(img)}
+                    className={`relative w-24 h-32 shrink-0 rounded-xl overflow-hidden border-2 transition-all ${currentImage === img ? 'border-brand-plum ring-2 ring-brand-plum/20 ring-offset-2' : 'border-transparent opacity-70 hover:opacity-100 hover:border-slate-300'}`}
+                  >
+                    <Image src={img} alt={`Thumb ${idx}`} fill className="object-cover" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Details Section */}

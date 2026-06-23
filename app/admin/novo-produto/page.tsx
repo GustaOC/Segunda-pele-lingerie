@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button"
 import { ArrowLeft, Save, Loader2, Image as ImageIcon } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 import { useState, useEffect } from "react"
 import { Playfair_Display, Inter } from "next/font/google"
 import { createClient } from "@/lib/supabase/client"
@@ -21,7 +22,8 @@ export default function NovoProdutoPage() {
   const [price, setPrice] = useState("")
   const [oldPrice, setOldPrice] = useState("")
   const [categoryId, setCategoryId] = useState("")
-  const [image, setImage] = useState("")
+  const [images, setImages] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [description, setDescription] = useState("")
   const [isHighlight, setIsHighlight] = useState(false)
   
@@ -63,12 +65,39 @@ export default function NovoProdutoPage() {
     const priceNum = parseFloat(price.replace(',', '.'))
     const oldPriceNum = oldPrice ? parseFloat(oldPrice.replace(',', '.')) : null
 
+    let uploadedUrls: string[] = []
+    
+    for (const file of images) {
+      const fileExt = file.name.split('.').pop()
+      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`
+      
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(fileName, file)
+        
+      if (uploadError) {
+        console.error("Upload error:", uploadError)
+        alert("Erro ao fazer upload da imagem: " + file.name)
+        setIsSubmitting(false)
+        return
+      }
+      
+      const { data: publicUrlData } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(fileName)
+        
+      uploadedUrls.push(publicUrlData.publicUrl)
+    }
+
+    const mainImage = uploadedUrls.length > 0 ? uploadedUrls[0] : ""
+
     const { error } = await supabase.from('products').insert({
       name,
       price: priceNum,
       old_price: oldPriceNum,
       category_id: categoryId,
-      image,
+      image: mainImage,
+      images: uploadedUrls,
       description,
       is_active: true,
       is_highlight: isHighlight,
@@ -174,20 +203,42 @@ export default function NovoProdutoPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">URL da Imagem *</label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                  <ImageIcon className="h-5 w-5 text-slate-400" />
-                </div>
-                <input 
+              <label className="block text-sm font-medium text-slate-700 mb-2">Imagens do Produto (A primeira será a capa) *</label>
+              <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 hover:border-brand-plum transition-colors cursor-pointer bg-slate-50 flex flex-col items-center justify-center text-center relative">
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={(e) => {
+                    if (e.target.files) {
+                      const files = Array.from(e.target.files)
+                      setImages(files)
+                      const previews = files.map(file => URL.createObjectURL(file))
+                      setImagePreviews(previews)
+                    }
+                  }}
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                   required
-                  type="url" 
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
-                  placeholder="https://..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-11 pr-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all"
                 />
+                <ImageIcon className="w-8 h-8 text-slate-400 mb-2" />
+                <p className="text-sm text-slate-600 font-medium">Clique para selecionar ou arraste as fotos</p>
+                <p className="text-xs text-slate-400 mt-1">Recomendado: 1000x1200 px (até 5MB)</p>
               </div>
+              
+              {imagePreviews.length > 0 && (
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 mt-4">
+                  {imagePreviews.map((preview, index) => (
+                    <div key={index} className="relative aspect-[4/5] rounded-lg overflow-hidden border border-slate-200 bg-slate-100">
+                      <Image src={preview} alt={`Preview ${index}`} fill className="object-cover" />
+                      {index === 0 && (
+                        <div className="absolute top-0 left-0 right-0 bg-brand-plum/90 text-white text-[10px] uppercase font-bold text-center py-1 backdrop-blur-sm z-10">
+                          Capa
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div>
