@@ -126,9 +126,6 @@ export function Navbar() {
 
         {/* Desktop Links with Hover Dropdowns */}
         <div className="hidden md:flex justify-center space-x-8 mt-6 text-sm font-medium text-slate-700">
-          <Link href="/destaques" className="text-yellow-600 hover:text-yellow-700 transition-colors uppercase tracking-widest py-2 flex items-center font-bold">
-            <Star className="w-4 h-4 mr-1 fill-yellow-500" /> DESTAQUES
-          </Link>
           
           {NAVBAR_CATEGORIES.map((category) => (
             <div key={category.slug} className="relative group">
