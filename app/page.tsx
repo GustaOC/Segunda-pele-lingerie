@@ -120,7 +120,7 @@ export default function EcommerceHome() {
               <span className="text-xs font-semibold uppercase tracking-wider text-brand-plum">Nova Coleção Outono</span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-bold text-slate-900 leading-[1.1]" style={{ fontFamily: "var(--font-playfair)" }}>
+            <h1 className="text-5xl md:text-7xl font-bold text-slate-900 leading-normal pb-2">
               O Poder <br/> da sua <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-plum to-purple-500 italic font-medium">Segunda Pele</span>
             </h1>
             
@@ -186,7 +186,7 @@ export default function EcommerceHome() {
       {/* Shop by Category */}
       <section className="py-24 max-w-7xl mx-auto px-6">
         <div className="text-center mb-16 space-y-4">
-          <h2 className="text-4xl font-bold text-slate-900" style={{ fontFamily: "var(--font-playfair)" }}>Compre por Categoria</h2>
+          <h2 className="text-4xl font-bold text-slate-900 pb-2">Compre por Categoria</h2>
           <p className="text-slate-500 max-w-2xl mx-auto text-lg">Encontre a peça perfeita para o seu estilo e conforto.</p>
         </div>
 
@@ -221,7 +221,7 @@ export default function EcommerceHome() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
                 <div className="absolute bottom-8 left-0 w-full text-center">
-                  <h3 className="text-white text-2xl font-semibold tracking-wide" style={{ fontFamily: "var(--font-playfair)" }}>{cat.name}</h3>
+                  <h3 className="text-white text-2xl font-semibold tracking-wide leading-normal pb-1">{cat.name}</h3>
                   <span className="inline-block mt-3 text-white/80 text-sm uppercase tracking-widest border-b border-transparent group-hover:border-white transition-colors pb-1">Ver coleção</span>
                 </div>
               </Link>
@@ -243,7 +243,7 @@ export default function EcommerceHome() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex justify-between items-end mb-12">
             <div>
-              <h2 className="text-4xl font-bold text-slate-900 mb-4" style={{ fontFamily: "var(--font-playfair)" }}>Destaques</h2>
+              <h2 className="text-4xl font-bold text-slate-900 pb-2">Novidades</h2>
               <p className="text-slate-500 text-lg">Nossas peças mais desejadas no momento.</p>
             </div>
             <div className="flex items-center space-x-4">
@@ -337,7 +337,7 @@ export default function EcommerceHome() {
           
           <div className="relative z-10 grid md:grid-cols-2 p-12 md:p-20 items-center gap-12">
             <div className="space-y-8">
-              <h2 className="text-4xl md:text-5xl font-bold text-white leading-tight" style={{ fontFamily: "var(--font-playfair)" }}>
+              <h2 className="text-4xl md:text-5xl font-bold text-white leading-normal pb-2">
                 Transforme sua <span className="italic text-pink-300">Independência</span> em Realidade
               </h2>
               <p className="text-xl text-white/80 font-light">
