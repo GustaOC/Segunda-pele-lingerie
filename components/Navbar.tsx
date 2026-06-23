@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { Search, ShoppingCart, User, Heart, ChevronDown, Star } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
@@ -98,10 +99,14 @@ export function Navbar() {
 
           {/* Logo Central */}
           <div className="flex-1 flex justify-center">
-            <Link href="/" className="relative group">
-              <span className="text-2xl md:text-3xl font-bold tracking-tight text-slate-900 group-hover:text-[#5D3A5B] transition-colors duration-300" style={{ fontFamily: "var(--font-playfair)" }}>
-                Segunda Pele
-              </span>
+            <Link href="/" className="relative group flex items-center justify-center">
+              <Image 
+                src="/logo2.png" 
+                alt="Segunda Pele" 
+                width={200} 
+                height={60} 
+                className="object-contain"
+              />
               <div className="absolute -bottom-1 left-1/2 w-0 h-0.5 bg-[#5D3A5B] transition-all duration-300 group-hover:w-full group-hover:left-0"></div>
             </Link>
           </div>
