@@ -356,9 +356,14 @@ export default function EcommerceHome() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
             <div className="space-y-6">
-              <span className="text-3xl font-bold tracking-tight text-white block" style={{ fontFamily: "var(--font-playfair)" }}>
-                Segunda Pele
-              </span>
+              <div className="relative w-48 h-16 mb-2">
+                <Image 
+                  src="/logoinicial.png" 
+                  alt="Segunda Pele Logo" 
+                  fill 
+                  className="object-contain object-left" 
+                />
+              </div>
               <p className="text-slate-400 leading-relaxed text-sm">
                 A maior empresa de lingerie do estado de Mato Grosso do Sul. Para você usar, ousar e lucrar!
               </p>
