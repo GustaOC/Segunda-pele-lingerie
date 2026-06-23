@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { usePathname } from "next/navigation"
 import { Search, ShoppingCart, User, Heart, ChevronDown, Star } from "lucide-react"
 import { createClient } from "@/lib/supabase/client"
 
@@ -50,7 +51,11 @@ const NAVBAR_CATEGORIES = [
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false)
   const [cartCount, setCartCount] = useState(0)
+  const pathname = usePathname()
   const supabase = createClient()
+
+  // Se não estiver na home, a navbar fica sempre na forma reduzida
+  const isReduced = scrolled || pathname !== "/"
 
   useEffect(() => {
     const handleScroll = () => {
@@ -86,9 +91,9 @@ export function Navbar() {
   }, [supabase])
 
   return (
-    <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${scrolled ? "bg-white/95 backdrop-blur-md shadow-sm py-2" : "bg-white/80 backdrop-blur-md py-6"}`}>
+    <nav className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${isReduced ? "bg-white/95 backdrop-blur-md shadow-sm py-2" : "bg-white/80 backdrop-blur-md py-6"}`}>
       <div className="max-w-7xl mx-auto px-6">
-        <div className={`flex items-center justify-between transition-all duration-500 overflow-hidden ${scrolled ? 'max-h-0 opacity-0' : 'max-h-[250px] opacity-100'}`}>
+        <div className={`flex items-center justify-between transition-all duration-500 overflow-hidden ${isReduced ? 'max-h-0 opacity-0' : 'max-h-[250px] opacity-100'}`}>
           {/* Search */}
           <div className="flex-1 hidden md:block">
             <div className="flex items-center space-x-2 text-slate-500 hover:text-slate-800 transition cursor-pointer">
@@ -132,7 +137,7 @@ export function Navbar() {
 
 
         {/* Scrolled Small Logo */}
-        <div className={`flex justify-center transition-all duration-500 overflow-hidden ${scrolled ? 'max-h-[40px] opacity-100 mb-2' : 'max-h-0 opacity-0 m-0'}`}>
+        <div className={`flex justify-center transition-all duration-500 overflow-hidden ${isReduced ? 'max-h-[40px] opacity-100 mb-2' : 'max-h-0 opacity-0 m-0'}`}>
           <Link href="/" className="flex items-center justify-center">
             <Image 
               src="/logo4.png" 
@@ -145,7 +150,7 @@ export function Navbar() {
         </div>
 
         {/* Desktop Links with Hover Dropdowns */}
-        <div className={`hidden md:flex justify-center space-x-8 text-sm font-medium text-slate-700 transition-all duration-300 ${scrolled ? 'mt-2' : 'mt-6'}`}>
+        <div className={`hidden md:flex justify-center space-x-8 text-sm font-medium text-slate-700 transition-all duration-300 ${isReduced ? 'mt-2' : 'mt-6'}`}>
           
           {NAVBAR_CATEGORIES.map((category) => (
             <div key={category.slug} className="relative group">
