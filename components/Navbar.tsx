@@ -101,20 +101,20 @@ export function Navbar() {
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 w-full z-40 transition-all duration-300 ${isReduced ? "bg-white/95 backdrop-blur-md shadow-sm py-2" : "bg-white/95 md:bg-white/80 backdrop-blur-md py-4 md:py-6"}`}>
+      <nav className={`fixed top-0 left-0 w-full z-40 transition-all duration-300 ${isReduced ? "bg-brand-peach/95 backdrop-blur-md shadow-sm py-2" : "bg-brand-peach/95 md:bg-brand-peach/90 backdrop-blur-md py-4 md:py-6"}`}>
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="flex items-center justify-between">
             
             {/* Left Actions (Menu on Mobile, Search on Desktop) */}
             <div className="flex-1 flex items-center justify-start">
               <button 
-                className="md:hidden p-2 -ml-2 text-slate-800 hover:text-purple-600 transition"
+                className="md:hidden p-2 -ml-2 text-brand-plum hover:text-brand-plum/80 transition"
                 onClick={() => setIsMobileMenuOpen(true)}
               >
                 <Menu className="w-6 h-6" />
               </button>
               
-              <div className="hidden md:flex items-center space-x-2 text-slate-500 hover:text-slate-800 transition cursor-pointer">
+              <div className="hidden md:flex items-center space-x-2 text-brand-plum hover:text-brand-plum/80 transition cursor-pointer">
                 <Search className="w-5 h-5" />
                 <span className="text-sm font-medium">Buscar</span>
               </div>
@@ -151,13 +151,13 @@ export function Navbar() {
 
             {/* Right Actions (User, Heart, Cart) */}
             <div className="flex flex-1 items-center justify-end space-x-4 md:space-x-6">
-              <Link href="/conta" className="text-slate-800 hover:text-purple-600 transition hidden sm:block">
+              <Link href="/conta" className="text-brand-plum hover:text-brand-plum/80 transition hidden sm:block">
                 <User className="w-5 h-5" />
               </Link>
-              <Link href="/favoritos" className="text-slate-800 hover:text-purple-600 transition hidden sm:block">
+              <Link href="/favoritos" className="text-brand-plum hover:text-brand-plum/80 transition hidden sm:block">
                 <Heart className="w-5 h-5" />
               </Link>
-              <Link href="/carrinho" className="text-slate-800 hover:text-purple-600 transition relative p-2 -mr-2 md:p-0 md:mr-0">
+              <Link href="/carrinho" className="text-brand-plum hover:text-brand-plum/80 transition relative p-2 -mr-2 md:p-0 md:mr-0">
                 <ShoppingCart className="w-5 h-5 md:w-5 md:h-5" />
                 {cartCount > 0 && (
                   <span className="absolute top-0 right-0 md:-top-2 md:-right-2 bg-brand-rose text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
@@ -169,7 +169,7 @@ export function Navbar() {
           </div>
 
           {/* Desktop Links with Hover Dropdowns */}
-          <div className={`hidden md:flex justify-center space-x-8 text-sm font-medium text-slate-700 transition-all duration-300 ${isReduced ? 'mt-2' : 'mt-6'}`}>
+          <div className={`hidden md:flex justify-center space-x-8 text-sm font-medium text-brand-plum transition-all duration-300 ${isReduced ? 'mt-2' : 'mt-6'}`}>
             {NAVBAR_CATEGORIES.map((category) => (
               <div key={category.slug} className="relative group">
                 <Link href={`/categoria/${category.slug}`} className="hover:text-brand-plum transition-colors uppercase tracking-widest py-2 flex items-center">
@@ -196,7 +196,7 @@ export function Navbar() {
             ))}
             <Link href="/sale" className="hover:text-red-500 text-red-500 transition-colors uppercase tracking-widest py-2">Sale</Link>
             
-            <Link href="/seja-consultora" className="hover:text-purple-600 transition-colors uppercase tracking-widest font-bold flex items-center py-2">
+            <Link href="/seja-consultora" className="hover:text-brand-plum/80 transition-colors uppercase tracking-widest font-bold flex items-center py-2">
               Seja Consultora
               <span className="ml-1 w-2 h-2 rounded-full bg-purple-500 animate-pulse"></span>
             </Link>
