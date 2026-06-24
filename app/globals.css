@@ -119,6 +119,19 @@
   --color-brand-brown: #71452D;
   --color-brand-peach: #F9E4D4;
   --color-brand-plum: #4B2C4E;
+
+  /* Global Purple Replacement */
+  --color-purple-50: #4B2C4E;
+  --color-purple-100: #4B2C4E;
+  --color-purple-200: #4B2C4E;
+  --color-purple-300: #4B2C4E;
+  --color-purple-400: #4B2C4E;
+  --color-purple-500: #4B2C4E;
+  --color-purple-600: #4B2C4E;
+  --color-purple-700: #4B2C4E;
+  --color-purple-800: #4B2C4E;
+  --color-purple-900: #4B2C4E;
+  --color-purple-950: #4B2C4E;
 }
 
 @layer base {
