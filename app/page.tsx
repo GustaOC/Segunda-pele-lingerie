@@ -271,7 +271,7 @@ export default function EcommerceHome() {
                       Novo
                     </div>
                   )}
-                  {product.oldPrice && (
+                  {(product.old_price || product.oldPrice) && (
                     <div className="absolute top-4 left-4 z-10 bg-brand-rose text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-sm uppercase tracking-wider">
                       Oferta
                     </div>
@@ -317,10 +317,10 @@ export default function EcommerceHome() {
                     {product.name}
                   </div>
                   <div className="mt-auto flex items-center space-x-3">
-                    {product.oldPrice && (
-                      <span className="text-brand-plum/60 line-through text-sm">R$ {product.oldPrice.toFixed(2).replace('.', ',')}</span>
+                    {(product.old_price || product.oldPrice) && (
+                      <span className="text-brand-plum/60 line-through text-sm">R$ {(product.old_price || product.oldPrice).toFixed(2).replace('.', ',')}</span>
                     )}
-                    <span className="text-lg font-bold text-brand-plum">R$ {product.price.toFixed(2).replace('.', ',')}</span>
+                    <span className="text-lg font-bold text-brand-plum">R$ {product.price?.toFixed(2).replace('.', ',')}</span>
                   </div>
                 </div>
               </Link>

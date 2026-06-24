@@ -95,8 +95,8 @@ export default function SalePage() {
                   {product.name}
                 </div>
                 <div className="mt-auto flex items-center space-x-3">
-                  <span className="text-slate-400 line-through text-sm">R$ {product.oldPrice.toFixed(2).replace('.', ',')}</span>
-                  <span className="text-lg font-bold text-red-600">R$ {product.price.toFixed(2).replace('.', ',')}</span>
+                  <span className="text-slate-400 line-through text-sm">R$ {(product.old_price || product.oldPrice)?.toFixed(2).replace('.', ',')}</span>
+                  <span className="text-lg font-bold text-red-600">R$ {product.price?.toFixed(2).replace('.', ',')}</span>
                 </div>
               </div>
             </Link>
