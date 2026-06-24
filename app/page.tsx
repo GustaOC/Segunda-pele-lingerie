@@ -120,7 +120,7 @@ export default function EcommerceHome() {
               <span className="text-xs font-semibold uppercase tracking-wider text-brand-plum">Nova Coleção Outono</span>
             </div>
             
-            <h1 className="text-5xl md:text-7xl font-bold text-slate-900 leading-[1.1] pb-2" style={{ fontFamily: "var(--font-playfair)" }}>
+            <h1 className="text-4xl md:text-7xl font-bold text-slate-900 leading-[1.1] pb-2" style={{ fontFamily: "var(--font-playfair)" }}>
               O Poder <br/> da sua <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-plum to-purple-500 italic font-medium pr-2">Segunda Pele</span>
             </h1>
             
