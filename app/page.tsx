@@ -367,7 +367,7 @@ export default function EcommerceHome() {
       </section>
 
       {/* Footer Premium */}
-      <footer className="bg-slate-900 text-white pt-20 pb-10">
+      <footer className="bg-brand-plum text-white pt-20 pb-10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
             <div className="space-y-6">
@@ -379,7 +379,7 @@ export default function EcommerceHome() {
                   className="object-contain object-left" 
                 />
               </div>
-              <p className="text-slate-400 leading-relaxed text-sm">
+              <p className="text-white/80 leading-relaxed text-sm">
                 A maior empresa de lingerie do estado de Mato Grosso do Sul. Para você usar, ousar e lucrar!
               </p>
               <div className="flex space-x-4">
@@ -395,7 +395,7 @@ export default function EcommerceHome() {
               <ul className="space-y-4">
                 {CATEGORIES.map(cat => (
                   <li key={cat.id}>
-                    <Link href={`/categoria/${cat.slug}`} className="text-slate-400 hover:text-white transition-colors">
+                    <Link href={`/categoria/${cat.slug}`} className="text-white/80 hover:text-white transition-colors">
                       {cat.name}
                     </Link>
                   </li>
@@ -406,16 +406,16 @@ export default function EcommerceHome() {
             <div>
               <h4 className="text-white font-semibold mb-6 uppercase tracking-wider text-sm">Empresa</h4>
               <ul className="space-y-4">
-                <li><Link href="#" className="text-slate-400 hover:text-white transition-colors">Sobre Nós</Link></li>
-                <li><Link href="/seja-consultora" className="text-slate-400 hover:text-white transition-colors">Seja Consultora</Link></li>
-                <li><Link href="#" className="text-slate-400 hover:text-white transition-colors">Dúvidas Frequentes</Link></li>
-                <li><Link href="#" className="text-slate-400 hover:text-white transition-colors">Política de Privacidade</Link></li>
+                <li><Link href="#" className="text-white/80 hover:text-white transition-colors">Sobre Nós</Link></li>
+                <li><Link href="/seja-consultora" className="text-white/80 hover:text-white transition-colors">Seja Consultora</Link></li>
+                <li><Link href="#" className="text-white/80 hover:text-white transition-colors">Dúvidas Frequentes</Link></li>
+                <li><Link href="#" className="text-white/80 hover:text-white transition-colors">Política de Privacidade</Link></li>
               </ul>
             </div>
             
             <div>
               <h4 className="text-white font-semibold mb-6 uppercase tracking-wider text-sm">Atendimento</h4>
-              <ul className="space-y-4 text-slate-400">
+              <ul className="space-y-4 text-white/80">
                 <li>WhatsApp: (67) 99214-9878</li>
                 <li>Email: contato@segundapele.com</li>
                 <li>Seg a Sex das 08h às 18h</li>
@@ -423,7 +423,7 @@ export default function EcommerceHome() {
             </div>
           </div>
           
-          <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-slate-500">
+          <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-sm text-white/60">
             <p>© {new Date().getFullYear()} Segunda Pele Lingerie. Todos os direitos reservados.</p>
             <div className="flex space-x-4 mt-4 md:mt-0">
               <Link href="/admin/login" className="hover:text-white transition-colors">Área Administrativa</Link>
