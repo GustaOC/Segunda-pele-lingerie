@@ -68,7 +68,7 @@ export default function RegistroPage() {
   }
 
   return (
-    <div className={`min-h-screen bg-slate-50 flex flex-col justify-center items-center ${inter.variable} ${playfair.variable} font-sans p-6`}>
+    <div className={`min-h-screen bg-background flex flex-col justify-center items-center ${inter.variable} ${playfair.variable} font-sans p-6`}>
       <div className="absolute top-8 left-8">
         <Link href="/" className="inline-flex items-center text-slate-500 hover:text-brand-plum transition-colors">
           <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para a Loja
@@ -76,7 +76,6 @@ export default function RegistroPage() {
       </div>
 
       <div className="w-full max-w-md bg-white p-10 rounded-3xl shadow-xl border border-slate-100 text-center relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-purple-50/50 to-pink-50/50 rounded-3xl pointer-events-none"></div>
         <div className="relative z-10">
           <h1 className="text-3xl font-bold text-slate-900 mb-2" style={{ fontFamily: "var(--font-playfair)" }}>Criar Conta</h1>
           <p className="text-slate-500 mb-6">Crie sua conta para salvar favoritos e ver seus pedidos.</p>
