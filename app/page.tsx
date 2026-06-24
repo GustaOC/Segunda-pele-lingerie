@@ -157,27 +157,27 @@ export default function EcommerceHome() {
       </section>
 
       {/* Features Banner */}
-      <div className="bg-white border-y border-slate-100 py-10">
+      <div className="bg-brand-plum py-10">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="flex items-center justify-center md:justify-start space-x-4">
-            <Truck className="w-10 h-10 text-purple-400" />
+            <Truck className="w-10 h-10 text-brand-peach" />
             <div>
-              <h4 className="font-bold text-slate-800">Frete Grátis MS</h4>
-              <p className="text-sm text-slate-500">Em compras acima de R$ 299</p>
+              <h4 className="font-bold text-brand-peach">Frete Grátis MS</h4>
+              <p className="text-sm text-brand-peach/80">Em compras acima de R$ 299</p>
             </div>
           </div>
-          <div className="flex items-center justify-center md:justify-center space-x-4 border-y md:border-y-0 md:border-x border-slate-100 py-4 md:py-0">
-            <ShieldCheck className="w-10 h-10 text-purple-400" />
+          <div className="flex items-center justify-center md:justify-center space-x-4 border-y md:border-y-0 md:border-x border-white/10 py-4 md:py-0">
+            <ShieldCheck className="w-10 h-10 text-brand-peach" />
             <div>
-              <h4 className="font-bold text-slate-800">Compra Segura</h4>
-              <p className="text-sm text-slate-500">Seus dados estão protegidos</p>
+              <h4 className="font-bold text-brand-peach">Compra Segura</h4>
+              <p className="text-sm text-brand-peach/80">Seus dados estão protegidos</p>
             </div>
           </div>
           <div className="flex items-center justify-center md:justify-end space-x-4">
-            <CreditCard className="w-10 h-10 text-purple-400" />
+            <CreditCard className="w-10 h-10 text-brand-peach" />
             <div>
-              <h4 className="font-bold text-slate-800">Até 6x sem juros</h4>
-              <p className="text-sm text-slate-500">Em todos os cartões</p>
+              <h4 className="font-bold text-brand-peach">Até 6x sem juros</h4>
+              <p className="text-sm text-brand-peach/80">Em todos os cartões</p>
             </div>
           </div>
         </div>
