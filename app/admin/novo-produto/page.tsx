@@ -26,6 +26,7 @@ export default function NovoProdutoPage() {
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [description, setDescription] = useState("")
   const [isHighlight, setIsHighlight] = useState(false)
+  const [isPromo, setIsPromo] = useState(false)
   
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -152,7 +153,50 @@ export default function NovoProdutoPage() {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="flex items-center space-x-2">
+              <input 
+                type="checkbox" 
+                id="isPromo" 
+                checked={isPromo}
+                onChange={(e) => {
+                  setIsPromo(e.target.checked)
+                  if (!e.target.checked) {
+                    setOldPrice("")
+                  }
+                }}
+                className="w-4 h-4 text-brand-plum rounded border-slate-300 focus:ring-brand-plum"
+              />
+              <label htmlFor="isPromo" className="text-sm font-medium text-slate-700">Este produto está em promoção?</label>
+            </div>
+
+            {isPromo ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Preço Promocional (R$) *</label>
+                  <input 
+                    required
+                    type="number" 
+                    step="0.01"
+                    value={price}
+                    onChange={(e) => setPrice(e.target.value)}
+                    placeholder="Ex: 129.90"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Preço Antigo / Riscado (R$) *</label>
+                  <input 
+                    required
+                    type="number" 
+                    step="0.01"
+                    value={oldPrice}
+                    onChange={(e) => setOldPrice(e.target.value)}
+                    placeholder="Ex: 159.90"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all"
+                  />
+                </div>
+              </div>
+            ) : (
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Preço (R$) *</label>
                 <input 
@@ -165,18 +209,7 @@ export default function NovoProdutoPage() {
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">Preço Antigo / Riscado (R$)</label>
-                <input 
-                  type="number" 
-                  step="0.01"
-                  value={oldPrice}
-                  onChange={(e) => setOldPrice(e.target.value)}
-                  placeholder="Ex: 159.90 (Opcional)"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all"
-                />
-              </div>
-            </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Categoria *</label>
