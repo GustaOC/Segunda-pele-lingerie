@@ -122,14 +122,13 @@ export function Navbar() {
 
             {/* Logo Central (Responsive size based on isReduced) */}
             <div className="flex-1 flex justify-center items-center">
-              <Link href="/" className={`relative flex items-center justify-center transition-all duration-300 ${isReduced ? 'h-8 md:h-10' : 'h-8 md:h-32'}`}>
+              <Link href="/" className={`relative transition-all duration-300 ${isReduced ? 'h-8 w-28 md:h-10 md:w-[140px]' : 'h-8 w-28 md:h-32 md:w-[400px]'}`}>
                 {/* Logo Grande (Desktop) */}
                 <Image 
                   src="/logo3.png" 
                   alt="Segunda Pele" 
-                  width={500} 
-                  height={160} 
-                  className={`hidden md:block absolute object-contain transition-all duration-300 origin-center ${isReduced ? 'opacity-0 scale-75 pointer-events-none' : 'opacity-100 scale-125'} h-32 w-auto`}
+                  fill
+                  className={`hidden md:block object-contain transition-all duration-300 origin-center ${isReduced ? 'opacity-0 scale-75 pointer-events-none' : 'opacity-100 scale-125'}`}
                   priority
                 />
                 
@@ -137,9 +136,8 @@ export function Navbar() {
                 <Image 
                   src="/logo4.png" 
                   alt="Segunda Pele" 
-                  width={140} 
-                  height={40} 
-                  className={`absolute object-contain transition-all duration-300 origin-center ${!isReduced ? 'md:opacity-0 md:scale-75 md:pointer-events-none' : 'opacity-100 scale-100'} h-8 md:h-10 w-auto`}
+                  fill
+                  className={`object-contain transition-all duration-300 origin-center ${!isReduced ? 'md:opacity-0 md:scale-75 md:pointer-events-none' : 'opacity-100 scale-100'}`}
                   priority
                 />
               </Link>
