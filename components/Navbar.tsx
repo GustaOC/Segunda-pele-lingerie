@@ -188,7 +188,7 @@ export function Navbar() {
                 )}
               </div>
             ))}
-            <Link href="/sale" className="hover:text-red-500 text-red-500 transition-colors uppercase tracking-widest py-2">Sale</Link>
+            <Link href="/promocoes" className="hover:text-red-500 text-red-500 transition-colors uppercase tracking-widest py-2">Promoção</Link>
             
             <Link href="/seja-consultora" className="hover:text-brand-plum/80 transition-colors uppercase tracking-widest font-bold flex items-center py-2">
               Seja Consultora
@@ -255,11 +255,11 @@ export function Navbar() {
             ))}
             
             <Link 
-              href="/sale" 
+              href="/promocoes" 
               className="font-semibold text-red-500 uppercase tracking-wider text-sm py-2"
               onClick={() => setIsMobileMenuOpen(false)}
             >
-              Sale
+              Promoção
             </Link>
             
             <Link 

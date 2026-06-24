@@ -55,7 +55,7 @@ export default function SalePage() {
         <div className="flex justify-between items-end mb-12">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold text-red-600 mb-4" style={{ fontFamily: "var(--font-playfair)" }}>
-              Sale / Ofertas
+              Promoções
             </h1>
             <p className="text-slate-500 text-lg">Aproveite as melhores peças com descontos exclusivos.</p>
           </div>
