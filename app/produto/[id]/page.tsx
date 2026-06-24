@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { FavoriteButton } from "@/components/FavoriteButton"
-import { ArrowLeft, Star, Heart, Truck, ShieldCheck, ShoppingCart, Loader2 } from "lucide-react"
+import { ArrowLeft, Star, Heart, Truck, ShieldCheck, ShoppingCart, Loader2, Edit } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
@@ -32,11 +32,20 @@ export default function ProdutoPage() {
   const [product, setProduct] = useState<any>(null)
   const [currentImage, setCurrentImage] = useState("")
   const [loadingProduct, setLoadingProduct] = useState(true)
+  const [isAdmin, setIsAdmin] = useState(false)
   
   const supabase = createClient()
   const router = useRouter()
 
   useEffect(() => {
+    const checkAdmin = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session?.user?.email === 'admin@segundapele.com') {
+        setIsAdmin(true)
+      }
+    }
+    checkAdmin()
+
     const fetchProduct = async () => {
       // Evita o erro caso o ID seja genérico ou vazio no primeiro render
       if (!id) return
@@ -108,9 +117,19 @@ export default function ProdutoPage() {
     <div className={`min-h-screen bg-slate-50 ${inter.variable} ${playfair.variable} font-sans pt-12 pb-24`}>
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex justify-between items-center mb-8">
-          <Link href="/" className="inline-flex items-center text-slate-500 hover:text-brand-plum transition-colors">
-            <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para a loja
-          </Link>
+          <div className="flex items-center space-x-4">
+            <Link href="/" className="inline-flex items-center text-slate-500 hover:text-brand-plum transition-colors">
+              <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para a loja
+            </Link>
+            
+            {isAdmin && (
+              <Link href={`/admin/editar-produto/${product.id}`}>
+                <Button variant="outline" size="sm" className="text-brand-plum border-brand-plum hover:bg-brand-plum hover:text-white transition-colors">
+                  <Edit className="w-4 h-4 mr-2" /> Editar Produto
+                </Button>
+              </Link>
+            )}
+          </div>
           <Link href="/carrinho" className="inline-flex items-center text-slate-900 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-200 hover:border-pink-300 transition-colors">
             <ShoppingCart className="w-4 h-4 mr-2 text-brand-rose" /> Carrinho
           </Link>
