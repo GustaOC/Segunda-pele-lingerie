@@ -130,9 +130,9 @@ export default function DestaquesPage() {
                     {product.name}
                   </div>
                   <div className="mt-auto flex items-center space-x-3">
-                    <span className="text-lg font-bold text-slate-900">R$ {product.price.toFixed(2).replace('.', ',')}</span>
+                    <span className="text-lg font-bold text-slate-900">R$ {product.price?.toFixed(2).replace('.', ',')}</span>
                     {product.old_price && (
-                       <span className="text-sm text-slate-400 line-through">R$ {product.old_price.toFixed(2).replace('.', ',')}</span>
+                       <span className="text-sm text-slate-400 line-through">R$ {product.old_price?.toFixed(2).replace('.', ',')}</span>
                     )}
                   </div>
                 </div>
