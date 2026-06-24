@@ -7,22 +7,22 @@
   /* Updated color tokens for Segunda Pele Lingerie brand */
   --background: #f9e4d4; /* Peach background */
   --foreground: #374151; /* Dark gray text */
-  --card: #f9e4d4; /* Peach cards */
+  --card: #ffffff; /* White cards */
   --card-foreground: #4b5563; /* Medium gray text on cards */
-  --popover: #f9e4d4; /* Peach popovers */
+  --popover: #ffffff; /* White popovers */
   --popover-foreground: #374151; /* Dark gray text in popovers */
   --primary: #d97706; /* Amber primary color */
-  --primary-foreground: #f9e4d4; /* Peach text on primary */
+  --primary-foreground: #ffffff; /* White text on primary */
   --secondary: #d946ef; /* Vibrant purple secondary */
-  --secondary-foreground: #f9e4d4; /* Peach text on secondary */
+  --secondary-foreground: #ffffff; /* White text on secondary */
   --muted: #f9fafb; /* Very light gray for muted elements */
   --muted-foreground: #6b7280; /* Medium gray for muted text */
   --accent: #f472b6; /* Soft pink accent */
-  --accent-foreground: #f9e4d4; /* Peach text on accent */
+  --accent-foreground: #ffffff; /* White text on accent */
   --destructive: #e3342f; /* Red for errors */
-  --destructive-foreground: #f9e4d4; /* Peach text on destructive */
+  --destructive-foreground: #ffffff; /* White text on destructive */
   --border: #e5e7eb; /* Light gray borders */
-  --input: #f9e4d4; /* Peach input backgrounds */
+  --input: #ffffff; /* White input backgrounds */
   --ring: rgba(217, 119, 6, 0.5); /* Amber focus ring */
   --chart-1: #ffed4a;
   --chart-2: #38c172;
@@ -119,10 +119,6 @@
   --color-brand-brown: #71452D;
   --color-brand-peach: #F9E4D4;
   --color-brand-plum: #4B2C4E;
-
-  /* Global White Replacement */
-  --color-white: #f9e4d4;
-  --color-slate-50: #f9e4d4;
 }
 
 @layer base {

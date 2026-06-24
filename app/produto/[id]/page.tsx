@@ -114,7 +114,7 @@ export default function ProdutoPage() {
   if (!product) return null
 
   return (
-    <div className={`min-h-screen bg-slate-50 ${inter.variable} ${playfair.variable} font-sans pt-12 pb-24`}>
+    <div className={`min-h-screen bg-background ${inter.variable} ${playfair.variable} font-sans pt-12 pb-24`}>
       <div className="max-w-7xl mx-auto px-6">
         <div className="flex justify-between items-center mb-8">
           <div className="flex items-center space-x-4">

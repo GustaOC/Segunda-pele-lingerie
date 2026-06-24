@@ -128,7 +128,7 @@ export default function NovoProdutoPage() {
   if (!isAdmin) return null
 
   return (
-    <div className={`min-h-screen bg-slate-50 ${inter.variable} ${playfair.variable} font-sans pt-12 pb-24`}>
+    <div className={`min-h-screen bg-background ${inter.variable} ${playfair.variable} font-sans pt-12 pb-24`}>
       <div className="max-w-3xl mx-auto px-6">
         <Link href="/" className="inline-flex items-center text-slate-500 hover:text-brand-plum transition-colors mb-8">
           <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para o Catálogo

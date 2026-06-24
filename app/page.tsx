@@ -102,7 +102,7 @@ export default function EcommerceHome() {
   }, [supabase, supabase.auth])
 
   return (
-    <div className={`min-h-screen bg-slate-50 ${inter.variable} ${playfair.variable} font-sans`}>
+    <div className={`min-h-screen bg-background ${inter.variable} ${playfair.variable} font-sans`}>
       <Navbar />
       {/* Hero Section */}
       <section className="relative w-full h-[100vh] min-h-[600px] flex items-center pt-24 overflow-hidden bg-brand-peach">
