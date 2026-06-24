@@ -101,7 +101,7 @@ export function Navbar() {
 
   return (
     <>
-      <nav className={`fixed top-0 left-0 w-full z-40 transition-all duration-300 ${isReduced ? "bg-brand-peach/95 backdrop-blur-md shadow-sm py-2" : "bg-brand-peach/95 md:bg-brand-peach/90 backdrop-blur-md py-4 md:py-6"}`}>
+      <nav className={`fixed top-0 left-0 w-full z-40 transition-all duration-300 ${isReduced ? "bg-background/95 backdrop-blur-md shadow-sm py-2" : "bg-background/95 md:bg-background/90 backdrop-blur-md py-4 md:py-6"}`}>
         <div className="max-w-7xl mx-auto px-4 md:px-6">
           <div className="flex items-center justify-between">
             
