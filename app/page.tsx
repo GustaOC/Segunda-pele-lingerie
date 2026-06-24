@@ -105,7 +105,7 @@ export default function EcommerceHome() {
     <div className={`min-h-screen bg-background ${inter.variable} ${playfair.variable} font-sans`}>
       <Navbar />
       {/* Hero Section */}
-      <section className="relative w-full h-[100vh] min-h-[600px] flex items-center pt-24 overflow-hidden bg-brand-peach">
+      <section className="relative w-full h-[100vh] min-h-[600px] flex items-center pt-24 overflow-hidden bg-background">
         {/* Decorative Blobs */}
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-purple-200/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-pink-200/30 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4"></div>
@@ -239,7 +239,7 @@ export default function EcommerceHome() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-24 bg-brand-peach border-t border-white/10">
+      <section className="py-24 bg-background border-t border-border">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex justify-between items-end mb-12">
             <div>
