@@ -142,7 +142,7 @@ export default function EcommerceHome() {
             </div>
           </div>
           
-          <div className="relative hidden md:block h-[80vh] w-full rounded-t-full overflow-hidden shadow-2xl border-4 border-white">
+          <div className="relative hidden md:block h-[80vh] w-full rounded-t-full overflow-hidden shadow-2xl border-4 border-brand-plum">
             <Image 
               src="/modelovitrine1.png" 
               alt="Modelo usando lingerie Segunda Pele"
