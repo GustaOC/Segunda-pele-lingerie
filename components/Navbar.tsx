@@ -122,30 +122,26 @@ export function Navbar() {
 
             {/* Logo Central (Responsive size based on isReduced) */}
             <div className="flex-1 flex justify-center items-center">
-              <Link href="/" className="relative group flex items-center justify-center transition-all duration-500">
-                {!isReduced ? (
-                  <div className="hidden md:block">
-                    <Image 
-                      src="/logo3.png" 
-                      alt="Segunda Pele" 
-                      width={500} 
-                      height={160} 
-                      className="object-contain h-32 w-auto scale-125"
-                      priority
-                    />
-                  </div>
-                ) : null}
+              <Link href="/" className={`relative flex items-center justify-center transition-all duration-300 ${isReduced ? 'h-8 md:h-10' : 'h-8 md:h-32'}`}>
+                {/* Logo Grande (Desktop) */}
+                <Image 
+                  src="/logo3.png" 
+                  alt="Segunda Pele" 
+                  width={500} 
+                  height={160} 
+                  className={`hidden md:block absolute object-contain transition-all duration-300 origin-center ${isReduced ? 'opacity-0 scale-75 pointer-events-none' : 'opacity-100 scale-125'} h-32 w-auto`}
+                  priority
+                />
                 
-                <div className={`${!isReduced ? 'md:hidden' : 'block'}`}>
-                  <Image 
-                    src="/logo4.png" 
-                    alt="Segunda Pele" 
-                    width={140} 
-                    height={40} 
-                    className="object-contain h-8 md:h-10 w-auto"
-                    priority
-                  />
-                </div>
+                {/* Logo Pequeno (Mobile e Desktop scrollado) */}
+                <Image 
+                  src="/logo4.png" 
+                  alt="Segunda Pele" 
+                  width={140} 
+                  height={40} 
+                  className={`absolute object-contain transition-all duration-300 origin-center ${!isReduced ? 'md:opacity-0 md:scale-75 md:pointer-events-none' : 'opacity-100 scale-100'} h-8 md:h-10 w-auto`}
+                  priority
+                />
               </Link>
             </div>
 
