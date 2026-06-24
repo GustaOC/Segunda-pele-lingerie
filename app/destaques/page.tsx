@@ -91,7 +91,7 @@ export default function DestaquesPage() {
         <div className="flex justify-between items-end mb-12">
           <div>
             <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4" style={{ fontFamily: "var(--font-playfair)" }}>
-              Destaques
+              Novidades
             </h1>
             <p className="text-slate-500 text-lg">As peças mais desejadas e mais adicionadas ao carrinho!</p>
           </div>
@@ -103,7 +103,7 @@ export default function DestaquesPage() {
           </div>
         ) : products.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl shadow-sm border border-slate-100">
-            <p className="text-xl text-slate-500">Ainda não há destaques para exibir.</p>
+            <p className="text-xl text-slate-500">Ainda não há novidades para exibir.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
