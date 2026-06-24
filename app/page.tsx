@@ -239,12 +239,12 @@ export default function EcommerceHome() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-24 bg-slate-50 border-t border-slate-200/50">
+      <section className="py-24 bg-brand-peach border-t border-white/10">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex justify-between items-end mb-12">
             <div>
-              <h2 className="text-4xl font-bold text-slate-900 pb-2" style={{ fontFamily: "var(--font-playfair)" }}>Novidades</h2>
-              <p className="text-slate-500 text-lg">Nossas peças mais desejadas no momento.</p>
+              <h2 className="text-4xl font-bold text-brand-plum pb-2" style={{ fontFamily: "var(--font-playfair)" }}>Novidades</h2>
+              <p className="text-brand-plum/80 text-lg">Nossas peças mais desejadas no momento.</p>
             </div>
             <div className="flex items-center space-x-4">
               {isAdmin && (
@@ -267,7 +267,7 @@ export default function EcommerceHome() {
                 {/* Image Box */}
                 <div className="relative h-[380px] overflow-hidden bg-slate-100">
                   {product.isNew && (
-                    <div className="absolute top-4 left-4 z-10 bg-white text-slate-900 text-xs font-bold px-3 py-1.5 rounded-full shadow-sm uppercase tracking-wider">
+                    <div className="absolute top-4 left-4 z-10 bg-white text-brand-plum text-xs font-bold px-3 py-1.5 rounded-full shadow-sm uppercase tracking-wider">
                       Novo
                     </div>
                   )}
@@ -297,7 +297,7 @@ export default function EcommerceHome() {
                   
                   {/* Quick Add Button */}
                   <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                    <Button className="w-full bg-white/90 backdrop-blur-sm hover:bg-slate-900 text-slate-900 hover:text-white font-semibold shadow-lg">
+                    <Button className="w-full bg-white/90 backdrop-blur-sm hover:bg-brand-plum text-brand-plum hover:text-white font-semibold shadow-lg">
                       Adicionar ao Carrinho
                     </Button>
                   </div>
@@ -310,17 +310,17 @@ export default function EcommerceHome() {
                       <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                     ))}
                     {product.rating % 1 !== 0 && <StarHalf className="w-4 h-4 fill-yellow-400 text-yellow-400" />}
-                    <span className="text-xs text-slate-400 ml-2">({Math.floor(Math.random() * 50) + 10})</span>
+                    <span className="text-xs text-brand-plum/60 ml-2">({Math.floor(Math.random() * 50) + 10})</span>
                   </div>
-                  <span className="text-xs text-slate-500 uppercase tracking-wider mb-1">{product.category}</span>
-                  <div className="text-lg font-medium text-slate-900 group-hover:text-brand-plum transition-colors mb-2 line-clamp-2">
+                  <span className="text-xs text-brand-plum/60 uppercase tracking-wider mb-1">{product.category}</span>
+                  <div className="text-lg font-medium text-brand-plum group-hover:text-brand-rose transition-colors mb-2 line-clamp-2">
                     {product.name}
                   </div>
                   <div className="mt-auto flex items-center space-x-3">
                     {product.oldPrice && (
-                      <span className="text-slate-400 line-through text-sm">R$ {product.oldPrice.toFixed(2).replace('.', ',')}</span>
+                      <span className="text-brand-plum/60 line-through text-sm">R$ {product.oldPrice.toFixed(2).replace('.', ',')}</span>
                     )}
-                    <span className="text-lg font-bold text-slate-900">R$ {product.price.toFixed(2).replace('.', ',')}</span>
+                    <span className="text-lg font-bold text-brand-plum">R$ {product.price.toFixed(2).replace('.', ',')}</span>
                   </div>
                 </div>
               </Link>
