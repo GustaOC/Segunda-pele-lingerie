@@ -105,7 +105,7 @@ export default function EcommerceHome() {
     <div className={`min-h-screen bg-slate-50 ${inter.variable} ${playfair.variable} font-sans`}>
       <Navbar />
       {/* Hero Section */}
-      <section className="relative w-full h-[100vh] min-h-[600px] flex items-center pt-24 overflow-hidden bg-[#Fdfbf7]">
+      <section className="relative w-full h-[100vh] min-h-[600px] flex items-center pt-24 overflow-hidden bg-brand-peach">
         {/* Decorative Blobs */}
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-purple-200/40 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-pink-200/30 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4"></div>
