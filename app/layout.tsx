@@ -3,6 +3,7 @@
 import type { Metadata } from "next"
 import { Arsenal } from "next/font/google"
 import "./globals.css"
+import { WhatsAppButton } from "@/components/WhatsAppButton"
 
 const arsenal = Arsenal({
   subsets: ["latin"],
@@ -29,6 +30,7 @@ export default function RootLayout({
     >
       <body>
         {children}
+        <WhatsAppButton />
       </body>
     </html>
   )
