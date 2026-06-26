@@ -143,6 +143,76 @@ export interface Database {
             campaign_id?: string | null;
         };
       }
+      inventory: {
+        Row: {
+          id: string
+          product_id: string
+          size: string
+          color: string
+          quantity: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          product_id: string
+          size: string
+          color: string
+          quantity?: number
+        }
+        Update: {
+          quantity?: number
+        }
+      }
+      promoter_inventory: {
+        Row: {
+          id: string
+          promoter_id: string
+          product_id: string
+          size: string
+          color: string
+          quantity: number
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          promoter_id: string
+          product_id: string
+          size: string
+          color: string
+          quantity?: number
+        }
+        Update: {
+          quantity?: number
+        }
+      }
+      inventory_transactions: {
+        Row: {
+          id: string
+          type: string
+          product_id: string | null
+          size: string
+          color: string
+          quantity: number
+          promoter_id: string | null
+          notes: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          type: string
+          product_id?: string | null
+          size: string
+          color: string
+          quantity: number
+          promoter_id?: string | null
+          notes?: string | null
+        }
+        Update: {
+          notes?: string | null
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -168,6 +238,10 @@ export type UserRole = Database['public']['Enums']['user_role']
 export type WhatsappCampaign = Tables<'whatsapp_campaigns'>
 export type WhatsappMessage = Tables<'whatsapp_messages'>
 export type WhatsappIncomingMessage = Tables<'whatsapp_incoming_messages'>;
+
+export type InventoryItem = Tables<'inventory'>
+export type PromoterInventoryItem = Tables<'promoter_inventory'>
+export type InventoryTransaction = Tables<'inventory_transactions'>
 
 
 // Tipos de autenticação
