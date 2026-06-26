@@ -31,6 +31,7 @@ export default function ProdutoPage() {
   const [added, setAdded] = useState(false)
   const [product, setProduct] = useState<any>(null)
   const [currentImage, setCurrentImage] = useState("")
+  const [selectedColor, setSelectedColor] = useState<any>(null)
   const [loadingProduct, setLoadingProduct] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
   
@@ -63,7 +64,12 @@ export default function ProdutoPage() {
           oldPrice: data.old_price, // Mapeamento pro formato que o layout espera
         }
         setProduct(prod)
-        setCurrentImage(prod.image)
+        if (prod.colors && prod.colors.length > 0) {
+          setSelectedColor(prod.colors[0])
+          setCurrentImage(prod.colors[0].images?.[0] || prod.image)
+        } else {
+          setCurrentImage(prod.image)
+        }
       }
       setLoadingProduct(false)
     }
@@ -149,19 +155,28 @@ export default function ProdutoPage() {
               <FavoriteButton productId={product.id} className="absolute top-6 right-6 w-12 h-12 bg-white/90 backdrop-blur rounded-full hover:bg-white shadow-md z-10" />
             </div>
             
-            {product.images && product.images.length > 1 && (
-              <div className="flex gap-4 p-6 overflow-x-auto pb-6 custom-scrollbar bg-white">
-                {product.images.map((img: string, idx: number) => (
-                  <button 
-                    key={idx}
-                    onClick={() => setCurrentImage(img)}
-                    className={`relative w-24 h-32 shrink-0 rounded-xl overflow-hidden border-2 transition-all bg-slate-50 ${currentImage === img ? 'border-brand-plum ring-2 ring-brand-plum/20 ring-offset-2' : 'border-transparent opacity-70 hover:opacity-100 hover:border-slate-300'}`}
-                  >
-                    <Image src={img} alt={`Thumb ${idx}`} fill className="object-contain" />
-                  </button>
-                ))}
-              </div>
-            )}
+            {(() => {
+              const displayImages = selectedColor && selectedColor.images && selectedColor.images.length > 0 
+                ? selectedColor.images 
+                : (product.images && product.images.length > 1 ? product.images : [])
+              
+              if (displayImages.length > 1) {
+                return (
+                  <div className="flex gap-4 p-6 overflow-x-auto pb-6 custom-scrollbar bg-white">
+                    {displayImages.map((img: string, idx: number) => (
+                      <button 
+                        key={idx}
+                        onClick={() => setCurrentImage(img)}
+                        className={`relative w-24 h-32 shrink-0 rounded-xl overflow-hidden border-2 transition-all bg-slate-50 ${currentImage === img ? 'border-brand-plum ring-2 ring-brand-plum/20 ring-offset-2' : 'border-transparent opacity-70 hover:opacity-100 hover:border-slate-300'}`}
+                      >
+                        <Image src={img} alt={`Thumb ${idx}`} fill className="object-contain" />
+                      </button>
+                    ))}
+                  </div>
+                )
+              }
+              return null
+            })()}
           </div>
 
           {/* Details Section */}
@@ -185,6 +200,29 @@ export default function ProdutoPage() {
             <p className="text-slate-600 text-base leading-relaxed mb-6">
               {product.description}
             </p>
+
+            {product.colors && product.colors.length > 0 && (
+              <div className="mb-6">
+                <span className="block text-sm font-bold text-slate-900 uppercase tracking-wider mb-3">Selecione a Cor {selectedColor && <span className="text-brand-plum font-medium capitalize ml-1">- {selectedColor.name}</span>}</span>
+                <div className="flex space-x-3">
+                  {product.colors.map((color: any, index: number) => (
+                    <button
+                      key={index}
+                      onClick={() => {
+                        setSelectedColor(color)
+                        if (color.images && color.images.length > 0) {
+                          setCurrentImage(color.images[0])
+                        }
+                      }}
+                      className={`relative w-10 h-10 rounded-full border-2 transition-all group flex items-center justify-center ${selectedColor?.hex === color.hex ? "border-brand-plum scale-110 shadow-md" : "border-slate-200 hover:border-slate-300"}`}
+                      title={color.name}
+                    >
+                      <span className="w-7 h-7 rounded-full border border-slate-100" style={{ backgroundColor: color.hex }}></span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="mb-6">
               <span className="block text-sm font-bold text-slate-900 uppercase tracking-wider mb-3">Selecione o Tamanho</span>
