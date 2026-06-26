@@ -40,7 +40,7 @@ export default function VendasPage() {
     async function init() {
       setLoading(true)
       const [prodRes, promRes] = await Promise.all([
-        supabase.from('products').select('id, name, colors, sizes'),
+        supabase.from('products').select('id, name, sku, colors, sizes'),
         supabase.from('profiles').select('id, nome').in('role', ['CONSULTANT', 'USER', 'ADMIN'])
       ])
       if (prodRes.data) setProducts(prodRes.data)
@@ -230,7 +230,7 @@ export default function VendasPage() {
                   <label className="block text-sm font-medium text-slate-700 mb-1">Produto *</label>
                   <select required value={returnProductId} onChange={(e) => { setReturnProductId(e.target.value); setReturnColor(""); setReturnSize("") }} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm">
                     <option value="" disabled>Selecione...</option>
-                    {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    {products.map(p => <option key={p.id} value={p.id}>{p.sku ? `[${p.sku}] ` : ''}{p.name}</option>)}
                   </select>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
@@ -267,7 +267,7 @@ export default function VendasPage() {
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
                   >
                     <option value="" disabled>Selecione o produto...</option>
-                    {products.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+                    {products.map(p => <option key={p.id} value={p.id}>{p.sku ? `[${p.sku}] ` : ''}{p.name}</option>)}
                   </select>
                 </div>
 

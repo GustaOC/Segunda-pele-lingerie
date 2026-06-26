@@ -41,7 +41,7 @@ export default function EstoqueGeralPage() {
     setLoading(true)
     
     // Fetch products to map names
-    const { data: prodData } = await supabase.from('products').select('id, name, colors, sizes')
+    const { data: prodData } = await supabase.from('products').select('id, name, sku, colors, sizes')
     if (prodData) setProducts(prodData)
     
     // Fetch inventory
@@ -52,7 +52,8 @@ export default function EstoqueGeralPage() {
         const p = prodData.find(p => p.id === inv.product_id)
         return {
           ...inv,
-          product_name: p ? p.name : 'Produto Desconhecido'
+          product_name: p ? p.name : 'Produto Desconhecido',
+          sku: p ? p.sku : '-'
         }
       })
       setInventory(mapped)
@@ -170,6 +171,7 @@ export default function EstoqueGeralPage() {
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600 uppercase tracking-wider">
+                  <th className="px-6 py-4">SKU</th>
                   <th className="px-6 py-4">Produto</th>
                   <th className="px-6 py-4">Tamanho</th>
                   <th className="px-6 py-4">Cor</th>
@@ -179,16 +181,15 @@ export default function EstoqueGeralPage() {
               <tbody className="divide-y divide-slate-100">
                 {inventory.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-slate-500">
+                    <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
                       Nenhum item em estoque ainda. Registre uma nova movimentação.
                     </td>
                   </tr>
                 ) : (
                   inventory.map((item) => (
                     <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-slate-800">{item.product_name}</div>
-                      </td>
+                      <td className="px-6 py-4 text-slate-500 font-mono text-sm">{item.sku || '-'}</td>
+                      <td className="px-6 py-4 font-medium text-slate-800">{item.product_name}</td>
                       <td className="px-6 py-4">
                         <span className="inline-flex items-center justify-center px-2 py-1 rounded bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200">
                           {item.size}
@@ -259,7 +260,7 @@ export default function EstoqueGeralPage() {
                 >
                   <option value="" disabled>Selecione o produto...</option>
                   {products.map(p => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
+                    <option key={p.id} value={p.id}>{p.sku ? `[${p.sku}] ` : ''}{p.name}</option>
                   ))}
                 </select>
               </div>
