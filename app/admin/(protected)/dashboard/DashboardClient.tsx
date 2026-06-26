@@ -680,6 +680,33 @@ export default function DashboardClient({ user }: { user: User }) {
                                             </div>
                                         </Button>
                                     </Link>
+                                    <Link href="/admin/estoque">
+                                        <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
+                                            <Package className="w-4 h-4 mr-3" style={{ color: "#5D3A5B" }} />
+                                            <div className="text-left">
+                                                <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>Estoque Geral</div>
+                                                <div className="text-xs text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>Gestão do CD</div>
+                                            </div>
+                                        </Button>
+                                    </Link>
+                                    <Link href="/admin/estoque/promotores">
+                                        <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
+                                            <User className="w-4 h-4 mr-3" style={{ color: "#5D3A5B" }} />
+                                            <div className="text-left">
+                                                <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>Estoque Promotores</div>
+                                                <div className="text-xs text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>Peças com equipe</div>
+                                            </div>
+                                        </Button>
+                                    </Link>
+                                    <Link href="/admin/vendas">
+                                        <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
+                                            <ShoppingCart className="w-4 h-4 mr-3" style={{ color: "#5D3A5B" }} />
+                                            <div className="text-left">
+                                                <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>PDV / Vendas</div>
+                                                <div className="text-xs text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>Registrar saídas</div>
+                                            </div>
+                                        </Button>
+                                    </Link>
                                     <Dialog open={showDetailedReportModal} onOpenChange={setShowDetailedReportModal}>
                                         <DialogTrigger asChild>
                                             <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
