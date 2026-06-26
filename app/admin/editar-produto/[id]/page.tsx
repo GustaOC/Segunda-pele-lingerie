@@ -30,6 +30,7 @@ export default function EditarProdutoPage() {
   
   // Form state
   const [name, setName] = useState("")
+  const [sku, setSku] = useState("")
   const [price, setPrice] = useState("")
   const [oldPrice, setOldPrice] = useState("")
   const [categoryId, setCategoryId] = useState("")
@@ -74,8 +75,9 @@ export default function EditarProdutoPage() {
       if (id) {
         const { data: prodData } = await supabase.from('products').select('*').eq('id', id).single()
         if (prodData) {
-          setName(prodData.name)
-          setPrice(prodData.price?.toString() || "")
+          setName(prodData.name || "")
+          setSku(prodData.sku || "")
+          setPrice(prodData.price ? prodData.price.toString() : "")
           setOldPrice(prodData.old_price?.toString() || "")
           setIsPromo(!!prodData.old_price)
           setCategoryId(prodData.category_id || "")
@@ -187,8 +189,9 @@ export default function EditarProdutoPage() {
 
     const { error } = await supabase.from('products').update({
       name,
+      sku,
       price: priceNum,
-      old_price: isPromo ? oldPriceNum : null,
+      old_price: oldPriceNum,
       category_id: categoryId,
       image: finalMainImage,
       images: finalImages,
@@ -233,16 +236,29 @@ export default function EditarProdutoPage() {
           <p className="text-slate-500 mb-8">Atualize as informações desta peça no catálogo da loja.</p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Nome do Produto *</label>
-              <input 
-                required
-                type="text" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Ex: Conjunto Rendado Aurora"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Nome do Produto *</label>
+                <input 
+                  required
+                  type="text" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Ex: Conjunto Rendado Aurora"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">ID do Produto / Referência (SKU) *</label>
+                <input 
+                  required
+                  type="text" 
+                  value={sku}
+                  onChange={(e) => setSku(e.target.value)}
+                  placeholder="Ex: CONJ-AUR-01"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all"
+                />
+              </div>
             </div>
 
             <div className="flex items-center space-x-2">

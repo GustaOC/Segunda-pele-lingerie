@@ -26,6 +26,7 @@ export default function NovoProdutoPage() {
   
   // Form state
   const [name, setName] = useState("")
+  const [sku, setSku] = useState("")
   const [price, setPrice] = useState("")
   const [oldPrice, setOldPrice] = useState("")
   const [categoryId, setCategoryId] = useState("")
@@ -145,6 +146,7 @@ export default function NovoProdutoPage() {
 
     const { error } = await supabase.from('products').insert({
       name,
+      sku,
       price: priceNum,
       old_price: oldPriceNum,
       category_id: categoryId,
@@ -193,16 +195,29 @@ export default function NovoProdutoPage() {
           <p className="text-slate-500 mb-8">Cadastre uma nova peça no catálogo da loja.</p>
 
           <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Nome do Produto *</label>
-              <input 
-                required
-                type="text" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Ex: Conjunto Rendado Aurora"
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">Nome do Produto *</label>
+                <input 
+                  required
+                  type="text" 
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Ex: Conjunto Rendado Aurora"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">ID do Produto / Referência (SKU) *</label>
+                <input 
+                  required
+                  type="text" 
+                  value={sku}
+                  onChange={(e) => setSku(e.target.value)}
+                  placeholder="Ex: CONJ-AUR-01"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all"
+                />
+              </div>
             </div>
 
             <div className="flex items-center space-x-2">
