@@ -35,6 +35,10 @@ export default function NovoProdutoPage() {
   const [isHighlight, setIsHighlight] = useState(false)
   const [isPromo, setIsPromo] = useState(false)
   
+  const [hasMainColor, setHasMainColor] = useState(false)
+  const [mainColorName, setMainColorName] = useState("")
+  const [mainColorHex, setMainColorHex] = useState("#000000")
+  
   const [colorVariants, setColorVariants] = useState<ColorVariantInput[]>([])
   
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -100,6 +104,14 @@ export default function NovoProdutoPage() {
     }
 
     let finalColors: { name: string, hex: string, images: string[] }[] = []
+    
+    if (hasMainColor) {
+      finalColors.push({
+        name: mainColorName,
+        hex: mainColorHex,
+        images: uploadedUrls
+      })
+    }
     
     for (const color of colorVariants) {
       let colorUploadedUrls: string[] = []
@@ -277,6 +289,48 @@ export default function NovoProdutoPage() {
 
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">Imagens Gerais do Produto (A primeira será a capa principal) *</label>
+              
+              <div className="mb-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <div className="flex items-center space-x-2">
+                  <input 
+                    type="checkbox" 
+                    id="hasMainColor" 
+                    checked={hasMainColor}
+                    onChange={(e) => setHasMainColor(e.target.checked)}
+                    className="w-4 h-4 text-brand-plum rounded border-slate-300 focus:ring-brand-plum"
+                  />
+                  <label htmlFor="hasMainColor" className="text-sm font-medium text-slate-700">Definir uma cor para as imagens gerais?</label>
+                </div>
+                
+                {hasMainColor && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">Cor Visual</label>
+                      <div className="flex items-center space-x-3">
+                        <input 
+                          type="color" 
+                          value={mainColorHex}
+                          onChange={(e) => setMainColorHex(e.target.value)}
+                          className="w-10 h-10 rounded cursor-pointer border-0 p-0"
+                        />
+                        <span className="text-sm text-slate-500 uppercase font-mono">{mainColorHex}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-slate-700 mb-1">Nome da Cor *</label>
+                      <input 
+                        type="text" 
+                        required={hasMainColor}
+                        value={mainColorName}
+                        onChange={(e) => setMainColorName(e.target.value)}
+                        placeholder="Ex: Preto, Verde Musgo"
+                        className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-brand-plum text-sm"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
               <div className="border-2 border-dashed border-slate-300 rounded-xl p-6 hover:border-brand-plum transition-colors cursor-pointer bg-slate-50 flex flex-col items-center justify-center text-center relative">
                 <input
                   type="file"
