@@ -110,7 +110,7 @@ export default function ProdutoPage() {
 
   if (loadingProduct) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col justify-center items-center">
+      <div className="min-h-screen bg-white flex flex-col justify-center items-center">
         <Loader2 className="w-8 h-8 animate-spin text-brand-plum" />
         <p className="mt-4 text-slate-500">Carregando produto...</p>
       </div>
@@ -120,7 +120,7 @@ export default function ProdutoPage() {
   if (!product) return null
 
   return (
-    <div className={`min-h-screen bg-background ${inter.variable} ${playfair.variable} font-sans pt-6 pb-12`}>
+    <div className={`min-h-screen bg-white ${inter.variable} ${playfair.variable} font-sans pt-6 pb-12`}>
       <div className="max-w-5xl mx-auto px-6">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center space-x-4">
