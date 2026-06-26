@@ -114,9 +114,9 @@ export default function ProdutoPage() {
   if (!product) return null
 
   return (
-    <div className={`min-h-screen bg-background ${inter.variable} ${playfair.variable} font-sans pt-12 pb-24`}>
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="flex justify-between items-center mb-8">
+    <div className={`min-h-screen bg-background ${inter.variable} ${playfair.variable} font-sans pt-6 pb-12`}>
+      <div className="max-w-5xl mx-auto px-6">
+        <div className="flex justify-between items-center mb-6">
           <div className="flex items-center space-x-4">
             <Link href="/" className="inline-flex items-center text-slate-500 hover:text-brand-plum transition-colors">
               <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para a loja
@@ -138,7 +138,7 @@ export default function ProdutoPage() {
         <div className="bg-white rounded-3xl shadow-xl overflow-hidden border border-slate-100 flex flex-col md:flex-row">
           {/* Image Section */}
           <div className="w-full md:w-1/2 flex flex-col md:border-r border-slate-100">
-            <div className="w-full aspect-[4/5] relative bg-slate-50 group">
+            <div className="w-full aspect-square md:aspect-[4/5] max-h-[600px] relative bg-slate-50 group">
               <Image 
                 src={currentImage} 
                 alt={product.name} 
@@ -165,35 +165,35 @@ export default function ProdutoPage() {
           </div>
 
           {/* Details Section */}
-          <div className="w-full md:w-1/2 p-8 md:p-16 flex flex-col justify-center">
-            <div className="flex items-center mb-4">
-              {[...Array(product.rating)].map((_, i) => <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />)}
+          <div className="w-full md:w-1/2 p-6 md:p-10 flex flex-col justify-center">
+            <div className="flex items-center mb-3">
+              {[...Array(product.rating)].map((_, i) => <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />)}
               <span className="text-sm text-slate-500 ml-3">(124 avaliações)</span>
             </div>
 
-            <h1 className="text-3xl md:text-5xl font-bold text-slate-900 mb-4" style={{ fontFamily: "var(--font-playfair)" }}>
+            <h1 className="text-3xl md:text-4xl font-bold text-slate-900 mb-3" style={{ fontFamily: "var(--font-playfair)" }}>
               {product.name}
             </h1>
             
-            <div className="flex items-end space-x-4 mb-8">
-              <span className="text-3xl md:text-4xl font-bold text-slate-900">R$ {product.price?.toFixed(2).replace('.', ',')}</span>
+            <div className="flex items-end space-x-4 mb-6">
+              <span className="text-2xl md:text-3xl font-bold text-slate-900">R$ {product.price?.toFixed(2).replace('.', ',')}</span>
               {product.oldPrice && (
-                <span className="text-xl text-slate-400 line-through mb-1">R$ {product.oldPrice.toFixed(2).replace('.', ',')}</span>
+                <span className="text-lg text-slate-400 line-through mb-1">R$ {product.oldPrice.toFixed(2).replace('.', ',')}</span>
               )}
             </div>
 
-            <p className="text-slate-600 text-lg leading-relaxed mb-10">
+            <p className="text-slate-600 text-base leading-relaxed mb-6">
               {product.description}
             </p>
 
-            <div className="mb-10">
-              <span className="block text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">Selecione o Tamanho</span>
-              <div className="flex space-x-4">
-                {product.sizes.map((size) => (
+            <div className="mb-6">
+              <span className="block text-sm font-bold text-slate-900 uppercase tracking-wider mb-3">Selecione o Tamanho</span>
+              <div className="flex space-x-3">
+                {product.sizes.map((size: string) => (
                   <button
                     key={size}
                     onClick={() => setSelectedSize(size)}
-                    className={`w-14 h-14 rounded-full flex items-center justify-center text-lg font-medium transition-all ${selectedSize === size ? "bg-brand-plum text-white shadow-lg scale-110" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+                    className={`w-12 h-12 rounded-full flex items-center justify-center text-base font-medium transition-all ${selectedSize === size ? "bg-brand-plum text-white shadow-lg scale-110" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
                   >
                     {size}
                   </button>
@@ -204,12 +204,12 @@ export default function ProdutoPage() {
             <Button 
               size="lg" 
               onClick={handleAddToCart}
-              className={`w-full rounded-2xl h-16 text-lg shadow-xl transition-all ${added ? "bg-green-500 hover:bg-green-600" : "bg-brand-plum hover:bg-brand-rose"}`}
+              className={`w-full rounded-2xl h-14 text-base shadow-lg transition-all ${added ? "bg-green-500 hover:bg-green-600" : "bg-brand-plum hover:bg-brand-rose"}`}
             >
               {added ? "Adicionado ao Carrinho! ✓" : "Adicionar ao Carrinho"}
             </Button>
 
-            <div className="mt-8 pt-8 border-t border-slate-100 grid grid-cols-2 gap-4">
+            <div className="mt-6 pt-6 border-t border-slate-100 grid grid-cols-2 gap-4">
               <div className="flex items-center text-slate-600">
                 <Truck className="w-5 h-5 mr-3 text-purple-400" />
                 <span className="text-sm font-medium">Frete Grátis MS</span>
