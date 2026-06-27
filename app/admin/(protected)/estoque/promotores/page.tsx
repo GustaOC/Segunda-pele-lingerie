@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Playfair_Display, Inter } from "next/font/google"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
-import { Loader2, Plus, ArrowRight, User } from "lucide-react"
+import { Loader2, Plus, ArrowRight, User, ShoppingCart, Trash2, Package } from "lucide-react"
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" })
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inter" })
@@ -15,6 +15,17 @@ type PromoterInventoryRow = {
   promoter_name: string
   product_id: string
   product_name: string
+  size: string
+  color: string
+  quantity: number
+  sku?: string
+}
+
+type KitItem = {
+  id: string
+  product_id: string
+  product_name: string
+  sku: string
   size: string
   color: string
   quantity: number
@@ -31,13 +42,18 @@ export default function EstoquePromotoresPage() {
   
   // Transfer state
   const [selectedPromoterId, setSelectedPromoterId] = useState("")
+  
+  // Item adding state
   const [selectedProductId, setSelectedProductId] = useState("")
   const [selectedSize, setSelectedSize] = useState("")
   const [selectedColor, setSelectedColor] = useState("")
   const [quantity, setQuantity] = useState(1)
-  const [submitting, setSubmitting] = useState(false)
-  
   const [maxQuantity, setMaxQuantity] = useState(0)
+  
+  // Kit array
+  const [kitItems, setKitItems] = useState<KitItem[]>([])
+
+  const [submitting, setSubmitting] = useState(false)
 
   const supabase = createClient()
 
@@ -85,97 +101,160 @@ export default function EstoquePromotoresPage() {
           .eq('size', selectedSize)
           .single()
         
-        setMaxQuantity(data?.quantity || 0)
-        if (quantity > (data?.quantity || 0)) {
-          setQuantity(data?.quantity || 0)
+        let available = data?.quantity || 0
+        
+        // Subtrair o que já está no carrinho
+        const inCart = kitItems.filter(item => 
+          item.product_id === selectedProductId && 
+          item.color === selectedColor && 
+          item.size === selectedSize
+        ).reduce((sum, item) => sum + item.quantity, 0)
+        
+        available = Math.max(0, available - inCart)
+        
+        setMaxQuantity(available)
+        if (quantity > available) {
+          setQuantity(available === 0 ? 0 : 1)
         }
       } else {
         setMaxQuantity(0)
       }
     }
     checkMax()
-  }, [selectedProductId, selectedColor, selectedSize])
+  }, [selectedProductId, selectedColor, selectedSize, kitItems, supabase])
 
-  const handleTransfer = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setSubmitting(true)
-    
-    if (!selectedPromoterId || !selectedProductId || !selectedSize || !selectedColor || quantity <= 0) {
-      alert("Preencha todos os campos e certifique-se que a quantidade é maior que zero.")
-      setSubmitting(false)
+  const handleAddItemToKit = () => {
+    if (!selectedProductId || !selectedSize || !selectedColor || quantity <= 0) {
+      alert("Preencha todos os campos do produto e certifique-se que a quantidade é maior que zero.")
       return
     }
 
     if (quantity > maxQuantity) {
-      alert("Quantidade excede o estoque geral disponível.")
-      setSubmitting(false)
+      alert(`Você só tem mais ${maxQuantity} unidades disponíveis desse item no estoque geral.`)
       return
     }
 
+    const prod = products.find(p => p.id === selectedProductId)
+
+    const newItem: KitItem = {
+      id: Math.random().toString(36).substr(2, 9),
+      product_id: selectedProductId,
+      product_name: prod?.name || 'Desconhecido',
+      sku: prod?.sku || '-',
+      size: selectedSize,
+      color: selectedColor,
+      quantity: quantity
+    }
+
+    setKitItems([...kitItems, newItem])
+    
+    // Reset selection inputs
+    setSelectedProductId("")
+    setSelectedSize("")
+    setSelectedColor("")
+    setQuantity(1)
+  }
+
+  const handleRemoveFromKit = (id: string) => {
+    setKitItems(kitItems.filter(item => item.id !== id))
+  }
+
+  const handleTransfer = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!selectedPromoterId) {
+      alert("Selecione a promotora que receberá o Kit.")
+      return
+    }
+
+    if (kitItems.length === 0) {
+      alert("O kit está vazio. Adicione pelo menos um produto.")
+      return
+    }
+
+    setSubmitting(true)
+
     try {
-      // 1. Reduzir do estoque geral
-      const { data: generalInv } = await supabase
-        .from('inventory')
-        .select('*')
-        .eq('product_id', selectedProductId)
-        .eq('size', selectedSize)
-        .eq('color', selectedColor)
-        .single()
+      // Processar cada item sequencialmente (ou em Promise.all, mas sequencial previne race conditions na mesma tabela se houver itens duplicados no carrinho, embora a UI limite pela qtd).
+      
+      // Pra garantir, vamos agrupar os itens do carrinho se o usuário adicionou a mesma coisa duas vezes em linhas diferentes
+      const groupedItems = kitItems.reduce((acc, item) => {
+        const key = `${item.product_id}_${item.color}_${item.size}`
+        if (!acc[key]) acc[key] = { ...item }
+        else acc[key].quantity += item.quantity
+        return acc
+      }, {} as Record<string, KitItem>)
 
-      if (!generalInv) throw new Error("Estoque geral não encontrado.")
+      for (const key of Object.keys(groupedItems)) {
+        const item = groupedItems[key]
 
-      await supabase
-        .from('inventory')
-        .update({ quantity: generalInv.quantity - quantity, updated_at: new Date().toISOString() })
-        .eq('id', generalInv.id)
+        // 1. Reduzir do estoque geral
+        const { data: generalInv } = await supabase
+          .from('inventory')
+          .select('*')
+          .eq('product_id', item.product_id)
+          .eq('size', item.size)
+          .eq('color', item.color)
+          .single()
 
-      // 2. Adicionar no estoque do promotor
-      const { data: existingPromInv } = await supabase
-        .from('promoter_inventory')
-        .select('*')
-        .eq('promoter_id', selectedPromoterId)
-        .eq('product_id', selectedProductId)
-        .eq('size', selectedSize)
-        .eq('color', selectedColor)
-        .single()
+        if (!generalInv || generalInv.quantity < item.quantity) {
+          throw new Error(`Estoque insuficiente para ${item.product_name} (${item.color}, ${item.size}).`)
+        }
 
-      if (existingPromInv) {
         await supabase
+          .from('inventory')
+          .update({ quantity: generalInv.quantity - item.quantity, updated_at: new Date().toISOString() })
+          .eq('id', generalInv.id)
+
+        // 2. Adicionar no estoque do promotor
+        const { data: existingPromInv } = await supabase
           .from('promoter_inventory')
-          .update({ quantity: existingPromInv.quantity + quantity, updated_at: new Date().toISOString() })
-          .eq('id', existingPromInv.id)
-      } else {
-        await supabase
-          .from('promoter_inventory')
-          .insert({
-            promoter_id: selectedPromoterId,
-            product_id: selectedProductId,
-            size: selectedSize,
-            color: selectedColor,
-            quantity: quantity
-          })
+          .select('*')
+          .eq('promoter_id', selectedPromoterId)
+          .eq('product_id', item.product_id)
+          .eq('size', item.size)
+          .eq('color', item.color)
+          .single()
+
+        if (existingPromInv) {
+          await supabase
+            .from('promoter_inventory')
+            .update({ quantity: existingPromInv.quantity + item.quantity, updated_at: new Date().toISOString() })
+            .eq('id', existingPromInv.id)
+        } else {
+          await supabase
+            .from('promoter_inventory')
+            .insert({
+              promoter_id: selectedPromoterId,
+              product_id: item.product_id,
+              size: item.size,
+              color: item.color,
+              quantity: item.quantity
+            })
+        }
+
+        // 3. Log transaction
+        await supabase.from('inventory_transactions').insert({
+          type: 'TRANSFER_PROMOTER',
+          product_id: item.product_id,
+          size: item.size,
+          color: item.color,
+          quantity: item.quantity,
+          promoter_id: selectedPromoterId,
+          notes: `Kit de peças alocado (Lote)`
+        })
       }
-
-      // 3. Log transaction
-      await supabase.from('inventory_transactions').insert({
-        type: 'TRANSFER_PROMOTER',
-        product_id: selectedProductId,
-        size: selectedSize,
-        color: selectedColor,
-        quantity: quantity,
-        promoter_id: selectedPromoterId,
-        notes: `Transferência para promotor`
-      })
 
       setIsModalOpen(false)
       fetchData()
       
       // Reset form
-      setQuantity(1)
+      setKitItems([])
+      setSelectedPromoterId("")
       
-    } catch (err) {
+    } catch (err: any) {
       console.error(err)
-      alert("Erro ao realizar transferência.")
+      alert(err.message || "Erro ao realizar transferência.")
     } finally {
       setSubmitting(false)
     }
@@ -187,7 +266,7 @@ export default function EstoquePromotoresPage() {
     <div className={`min-h-screen bg-slate-50 relative overflow-hidden ${inter.variable} ${playfair.variable} font-sans pb-20`}>
       <div className="container mx-auto px-4 py-8">
         
-        <div className="flex justify-between items-center mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
               Estoque de Promotores
@@ -198,7 +277,7 @@ export default function EstoquePromotoresPage() {
             onClick={() => setIsModalOpen(true)}
             className="bg-brand-plum hover:bg-brand-rose text-white rounded-full px-6 shadow-md"
           >
-            <ArrowRight className="w-4 h-4 mr-2" /> Transferir Peças
+            <Package className="w-4 h-4 mr-2" /> Montar Kit (Transferir)
           </Button>
         </div>
 
@@ -208,165 +287,269 @@ export default function EstoquePromotoresPage() {
           </div>
         ) : (
           <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600 uppercase tracking-wider">
-                  <th className="px-6 py-4">Promotor</th>
-                  <th className="px-6 py-4">SKU</th>
-                  <th className="px-6 py-4">Produto</th>
-                  <th className="px-6 py-4">Tamanho</th>
-                  <th className="px-6 py-4">Cor</th>
-                  <th className="px-6 py-4">Qtd com o Promotor</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {inventory.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
-                      Nenhuma peça com promotores atualmente.
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600 uppercase tracking-wider">
+                    <th className="px-6 py-4">Promotor</th>
+                    <th className="px-6 py-4">SKU</th>
+                    <th className="px-6 py-4">Produto</th>
+                    <th className="px-6 py-4">Tamanho</th>
+                    <th className="px-6 py-4">Cor</th>
+                    <th className="px-6 py-4 text-right">Qtd com o Promotor</th>
                   </tr>
-                ) : (
-                  inventory.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center text-slate-800 font-medium">
-                          <User className="w-4 h-4 mr-2 text-brand-plum" />
-                          {item.promoter_name}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-slate-500 font-mono text-sm">{item.sku || '-'}</td>
-                      <td className="px-6 py-4 font-medium text-slate-800">{item.product_name}</td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center justify-center px-2 py-1 rounded bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200">
-                          {item.size}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 capitalize text-slate-600">
-                        {item.color}
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="font-bold text-slate-800">{item.quantity} un</span>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {inventory.length === 0 ? (
+                    <tr>
+                      <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
+                        Nenhuma peça com promotores atualmente.
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    inventory.map((item) => (
+                      <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center text-slate-800 font-medium">
+                            <User className="w-4 h-4 mr-2 text-brand-plum" />
+                            {item.promoter_name}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-slate-500 font-mono text-sm">{item.sku || '-'}</td>
+                        <td className="px-6 py-4 font-medium text-slate-800">{item.product_name}</td>
+                        <td className="px-6 py-4">
+                          <span className="inline-flex items-center justify-center px-2 py-1 rounded bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200">
+                            {item.size}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 capitalize text-slate-600">
+                          {item.color}
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-bold bg-brand-plum/10 text-brand-plum">
+                            {item.quantity} un
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
       </div>
 
-      {/* Modal Nova Transferência */}
+      {/* Modal Montar Kit */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl w-full max-w-lg shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
-            <div className="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-              <h3 className="text-xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Transferir do Estoque Geral</h3>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600">
-                ✕
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white rounded-3xl w-full max-w-4xl shadow-xl overflow-hidden my-8">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h2 className="text-xl font-bold text-slate-800 flex items-center">
+                <ShoppingCart className="w-5 h-5 mr-2 text-brand-plum" />
+                Montar Kit para Promotora
+              </h2>
+              <button onClick={() => {
+                setIsModalOpen(false)
+                setKitItems([])
+                setSelectedPromoterId("")
+              }} className="text-slate-400 hover:text-slate-600">
+                <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
             
-            <form onSubmit={handleTransfer} className="p-6 space-y-4">
-              
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Para qual Promotor? *</label>
-                <select
-                  required
-                  value={selectedPromoterId}
-                  onChange={(e) => setSelectedPromoterId(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
-                >
-                  <option value="" disabled>Selecione...</option>
-                  {promoters.map(p => (
-                    <option key={p.id} value={p.id}>{p.nome || p.email || "Sem nome"}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Produto *</label>
-                <select
-                  required
-                  value={selectedProductId}
-                  onChange={(e) => {
-                    setSelectedProductId(e.target.value)
-                    setSelectedColor("")
-                    setSelectedSize("")
-                  }}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
-                >
-                  <option value="" disabled>Selecione o produto...</option>
-                  {products.map(p => (
-                    <option key={p.id} value={p.id}>{p.sku ? `[${p.sku}] ` : ''}{p.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+            <div className="flex flex-col md:flex-row h-full">
+              {/* Lado Esquerdo: Adicionar Produtos */}
+              <div className="w-full md:w-1/2 p-6 border-r border-slate-100 space-y-5 bg-white">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Cor *</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">1. Escolha a Promotora *</label>
                   <select
                     required
-                    value={selectedColor}
-                    onChange={(e) => setSelectedColor(e.target.value)}
-                    disabled={!selectedProductId}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm disabled:opacity-50"
+                    value={selectedPromoterId}
+                    onChange={(e) => setSelectedPromoterId(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
                   >
-                    <option value="" disabled>Selecione...</option>
-                    {selectedProductObj?.colors?.map((c: any, i: number) => (
-                      <option key={i} value={c.name}>{c.name}</option>
+                    <option value="" disabled>Selecione a promotora...</option>
+                    {promoters.map(p => (
+                      <option key={p.id} value={p.id}>{p.nome}</option>
                     ))}
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho *</label>
-                  <select
-                    required
-                    value={selectedSize}
-                    onChange={(e) => setSelectedSize(e.target.value)}
-                    disabled={!selectedProductId}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm disabled:opacity-50"
-                  >
-                    <option value="" disabled>Selecione...</option>
-                    {selectedProductObj?.sizes?.map((s: string, i: number) => (
-                      <option key={i} value={s}>{s}</option>
-                    )) || ["P","M","G","GG"].map(s => <option key={s} value={s}>{s}</option>)}
-                  </select>
+
+                <div className="pt-4 border-t border-slate-100">
+                  <label className="block text-sm font-bold text-slate-700 mb-4">2. Adicionar Peças ao Kit</label>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-medium text-slate-500 mb-1">Produto</label>
+                      <select
+                        value={selectedProductId}
+                        onChange={(e) => {
+                          setSelectedProductId(e.target.value)
+                          setSelectedColor("")
+                          setSelectedSize("")
+                        }}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+                      >
+                        <option value="" disabled>Selecione o produto...</option>
+                        {products.map(p => (
+                          <option key={p.id} value={p.id}>{p.sku ? `[${p.sku}] ` : ''}{p.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Cor</label>
+                        <select
+                          value={selectedColor}
+                          onChange={(e) => setSelectedColor(e.target.value)}
+                          disabled={!selectedProductId}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm disabled:opacity-50"
+                        >
+                          <option value="" disabled>Cor...</option>
+                          {selectedProductObj?.colors?.map((c: any, i: number) => (
+                            <option key={i} value={c.name}>{c.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Tamanho</label>
+                        <select
+                          value={selectedSize}
+                          onChange={(e) => setSelectedSize(e.target.value)}
+                          disabled={!selectedProductId}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm disabled:opacity-50"
+                        >
+                          <option value="" disabled>Tamanho...</option>
+                          {selectedProductObj?.sizes?.map((s: string, i: number) => <option key={i} value={s}>{s}</option>) || ["P", "M", "G", "GG"].map(s => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4 items-end">
+                      <div className="flex-1">
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Quantidade</label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            min="1"
+                            max={maxQuantity}
+                            value={quantity}
+                            onChange={(e) => setQuantity(Number(e.target.value))}
+                            disabled={!selectedProductId || !selectedSize || !selectedColor || maxQuantity === 0}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm font-bold disabled:opacity-50"
+                          />
+                          {maxQuantity > 0 && (
+                            <span className="absolute right-3 top-3 text-xs text-slate-400 font-medium">
+                              Máx: {maxQuantity}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <Button 
+                        type="button" 
+                        onClick={handleAddItemToKit}
+                        disabled={!selectedProductId || !selectedSize || !selectedColor || maxQuantity === 0}
+                        className="bg-brand-plum hover:bg-brand-rose text-white h-[46px] rounded-xl px-6"
+                      >
+                        <Plus className="w-4 h-4 mr-2" /> Incluir
+                      </Button>
+                    </div>
+                    {maxQuantity === 0 && selectedProductId && selectedColor && selectedSize && (
+                      <p className="text-xs text-red-500 font-medium">Sem estoque disponível desta variação.</p>
+                    )}
+                  </div>
                 </div>
               </div>
 
-              <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-800">
-                Disponível no Estoque Geral: <strong>{maxQuantity} unidades</strong>
-              </div>
+              {/* Lado Direito: Carrinho do Kit */}
+              <div className="w-full md:w-1/2 flex flex-col bg-slate-50">
+                <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-white">
+                  <h3 className="font-bold text-slate-800 flex items-center">
+                    <Package className="w-4 h-4 mr-2 text-brand-plum" />
+                    Itens do Kit
+                  </h3>
+                  <span className="bg-brand-plum text-white text-xs font-bold px-2 py-1 rounded-full">
+                    {kitItems.reduce((acc, item) => acc + item.quantity, 0)} peças
+                  </span>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto p-4 min-h-[300px] max-h-[400px]">
+                  {kitItems.length === 0 ? (
+                    <div className="h-full flex flex-col items-center justify-center text-slate-400">
+                      <ShoppingCart className="w-12 h-12 mb-3 opacity-20" />
+                      <p className="text-sm">O kit está vazio.</p>
+                      <p className="text-xs mt-1">Adicione peças ao lado.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {kitItems.map((item) => (
+                        <div key={item.id} className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between group">
+                          <div>
+                            <p className="text-sm font-bold text-slate-800">{item.product_name}</p>
+                            <div className="flex gap-2 mt-1">
+                              <span className="text-xs bg-slate-100 text-slate-600 px-2 py-0.5 rounded border border-slate-200">
+                                {item.sku}
+                              </span>
+                              <span className="text-xs bg-brand-plum/10 text-brand-plum font-medium px-2 py-0.5 rounded">
+                                {item.color}
+                              </span>
+                              <span className="text-xs bg-slate-800 text-white font-bold px-2 py-0.5 rounded">
+                                {item.size}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <span className="font-bold text-slate-700">{item.quantity}x</span>
+                            <button 
+                              onClick={() => handleRemoveFromKit(item.id)}
+                              className="text-slate-300 hover:text-red-500 p-1 transition-colors"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Quantidade a enviar *</label>
-                <input
-                  type="number"
-                  required
-                  min="1"
-                  max={maxQuantity}
-                  value={quantity}
-                  onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
-                  disabled={maxQuantity === 0}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm disabled:opacity-50"
-                />
+                <div className="p-4 bg-white border-t border-slate-200 flex justify-end gap-3">
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    onClick={() => {
+                      setIsModalOpen(false)
+                      setKitItems([])
+                      setSelectedPromoterId("")
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                  <form onSubmit={handleTransfer}>
+                    <Button 
+                      type="submit" 
+                      disabled={submitting || kitItems.length === 0} 
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-md rounded-xl px-8"
+                    >
+                      {submitting ? (
+                        <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...</>
+                      ) : (
+                        <><ArrowRight className="w-4 h-4 mr-2" /> Confirmar Transferência</>
+                      )}
+                    </Button>
+                  </form>
+                </div>
               </div>
-
-              <div className="pt-4 flex justify-end space-x-3">
-                <Button type="button" variant="ghost" onClick={() => setIsModalOpen(false)}>Cancelar</Button>
-                <Button type="submit" disabled={submitting || maxQuantity === 0} className="bg-brand-plum hover:bg-brand-rose text-white rounded-xl px-6">
-                  {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Transferir Peças'}
-                </Button>
-              </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
-
     </div>
   )
 }
