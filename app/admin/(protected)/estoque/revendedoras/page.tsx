@@ -48,11 +48,19 @@ export default function EstoqueRevendedorasPage() {
 
   const fetchPromoters = async () => {
     setLoading(true)
-    const { data: usersData } = await supabase.from('profiles').select('*')
-    if (usersData) {
-      const promotersList = usersData.filter((u: any) => u.role === 'PROMOTER')
-      setPromoters(promotersList)
+    
+    try {
+      const res = await fetch('/api/admin/user')
+      const usersRes = await res.json()
+      
+      if (usersRes.data) {
+        const promotersList = usersRes.data.filter((u: any) => ['CONSULTANT', 'PROMOTOR', 'ADMIN'].includes(u.role))
+        setPromoters(promotersList)
+      }
+    } catch (e) {
+      console.error(e)
     }
+
     const { data: prodData } = await supabase.from('products').select('*')
     if (prodData) setProducts(prodData)
     setLoading(false)
