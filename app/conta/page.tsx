@@ -113,11 +113,7 @@ export default function ContaPage() {
           </div>
           
           <div className="flex flex-col gap-3 w-full md:w-auto">
-            {isPromoter && (
-              <Button onClick={() => router.push('/area-promotora/kits')} className="bg-brand-plum hover:bg-brand-rose text-white rounded-full w-full md:w-auto shadow-md">
-                <Package className="w-4 h-4 mr-2" /> Minha Área de Kits
-              </Button>
-            )}
+
             {role === 'ADMIN' && (
               <Button onClick={() => router.push('/admin')} variant="outline" className="border-brand-plum text-brand-plum hover:bg-brand-plum hover:text-white rounded-full w-full md:w-auto">
                 Acessar Painel Admin
