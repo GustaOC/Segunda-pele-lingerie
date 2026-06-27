@@ -76,7 +76,7 @@ export default function ContaPage() {
 
   if (!user) return null
 
-  const isPromoter = role === 'PROMOTER' || role === 'CONSULTANT' || role === 'ADMIN'
+  const isPromoter = role === 'PROMOTOR' || role === 'CONSULTANT' || role === 'ADMIN'
 
   return (
     <div className={`min-h-screen bg-slate-50 ${inter.variable} ${playfair.variable} font-sans pt-12 pb-24`}>
