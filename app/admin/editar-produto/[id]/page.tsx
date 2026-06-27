@@ -107,9 +107,20 @@ export default function EditarProdutoPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-
     const priceNum = parseFloat(price.replace(',', '.'))
     const oldPriceNum = oldPrice ? parseFloat(oldPrice.replace(',', '.')) : null
+
+    if (images.length === 0 && imagePreviews.length === 0) {
+      alert("É obrigatório ter pelo menos uma imagem geral do produto.")
+      setIsSubmitting(false)
+      return
+    }
+
+    if (!description.trim()) {
+      alert("É obrigatório adicionar a descrição do produto.")
+      setIsSubmitting(false)
+      return
+    }
 
     let finalImages = imagePreviews // by default use the existing ones if no new files
     let finalMainImage = imagePreviews.length > 0 ? imagePreviews[0] : ""
@@ -536,8 +547,9 @@ export default function EditarProdutoPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Descrição</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Descrição *</label>
               <textarea 
+                required
                 rows={4}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
