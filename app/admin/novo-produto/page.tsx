@@ -241,7 +241,7 @@ export default function AtivarEcommercePage() {
       console.error(error)
       alert("Erro ao ativar produto no e-commerce.")
     } else {
-      router.push("/admin/produtos")
+      router.push("/admin")
     }
     
     setIsSubmitting(false)
@@ -256,7 +256,7 @@ export default function AtivarEcommercePage() {
   return (
     <div className={`min-h-screen bg-slate-50 relative overflow-hidden ${inter.variable} ${playfair.variable} font-sans pb-20`}>
       <div className="container mx-auto px-4 py-8">
-        <Link href="/admin/produtos" className="inline-flex items-center text-slate-500 hover:text-brand-plum mb-6 transition-colors font-medium">
+        <Link href="/admin" className="inline-flex items-center text-slate-500 hover:text-brand-plum mb-6 transition-colors font-medium">
           <ArrowLeft className="w-4 h-4 mr-2" />
           Voltar para Produtos
         </Link>
