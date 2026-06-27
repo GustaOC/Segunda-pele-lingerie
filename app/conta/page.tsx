@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, LogOut, Loader2, User } from "lucide-react"
+import { ArrowLeft, LogOut, Loader2, User, Package } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Playfair_Display, Inter } from "next/font/google"
@@ -13,6 +13,7 @@ const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variabl
 
 export default function ContaPage() {
   const [user, setUser] = useState<any>(null)
+  const [role, setRole] = useState<string>("USER")
   const [isLoading, setIsLoading] = useState(true)
   const [favorites, setFavorites] = useState<any[]>([])
   const supabase = createClient()
@@ -25,6 +26,16 @@ export default function ContaPage() {
         router.push("/login")
       } else {
         setUser(session.user)
+        
+        // Fetch role
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', session.user.id)
+          .single()
+          
+        if (profile) setRole(profile.role)
+
         const fetchFavorites = async () => {
           const { data } = await supabase
             .from('favorites')
@@ -65,6 +76,8 @@ export default function ContaPage() {
 
   if (!user) return null
 
+  const isPromoter = role === 'PROMOTER' || role === 'CONSULTANT' || role === 'ADMIN'
+
   return (
     <div className={`min-h-screen bg-slate-50 ${inter.variable} ${playfair.variable} font-sans pt-12 pb-24`}>
       <div className="max-w-4xl mx-auto px-6">
@@ -76,24 +89,41 @@ export default function ContaPage() {
           Minha Conta
         </h1>
 
-        <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 mb-8 flex items-center justify-between">
+        <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-100 mb-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
           <div className="flex items-center space-x-6">
             {user.user_metadata?.avatar_url ? (
               <img src={user.user_metadata.avatar_url} alt="Avatar" className="w-20 h-20 rounded-full shadow-md" />
             ) : (
-              <div className="w-20 h-20 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 shadow-md">
+              <div className="w-20 h-20 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 shadow-md shrink-0">
                 <User className="w-8 h-8" />
               </div>
             )}
             <div>
               <h2 className="text-2xl font-bold text-slate-900">{user.user_metadata?.full_name || "Cliente Segunda Pele"}</h2>
               <p className="text-slate-500">{user.email}</p>
+              {isPromoter && (
+                <span className="inline-block mt-2 bg-brand-plum/10 text-brand-plum text-xs font-bold px-2 py-1 rounded">
+                  {role === 'ADMIN' ? 'Administrador' : 'Promotora / Consultora'}
+                </span>
+              )}
             </div>
           </div>
           
-          <Button onClick={handleLogout} variant="outline" className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600 rounded-full">
-            <LogOut className="w-4 h-4 mr-2" /> Sair
-          </Button>
+          <div className="flex flex-col gap-3 w-full md:w-auto">
+            {isPromoter && (
+              <Button onClick={() => router.push('/area-promotora/kits')} className="bg-brand-plum hover:bg-brand-rose text-white rounded-full w-full md:w-auto shadow-md">
+                <Package className="w-4 h-4 mr-2" /> Minha Área de Kits
+              </Button>
+            )}
+            {role === 'ADMIN' && (
+              <Button onClick={() => router.push('/admin')} variant="outline" className="border-brand-plum text-brand-plum hover:bg-brand-plum hover:text-white rounded-full w-full md:w-auto">
+                Acessar Painel Admin
+              </Button>
+            )}
+            <Button onClick={handleLogout} variant="outline" className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600 rounded-full w-full md:w-auto">
+              <LogOut className="w-4 h-4 mr-2" /> Sair
+            </Button>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
