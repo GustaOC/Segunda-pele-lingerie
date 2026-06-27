@@ -5,7 +5,7 @@ import { Playfair_Display, Inter } from "next/font/google"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { Loader2, Plus, ArrowRight, User, ShoppingCart, Trash2, Package } from "lucide-react"
+import { Loader2, Plus, ArrowRight, User, ShoppingCart, Trash2, Package, X } from "lucide-react"
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" })
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inter" })
@@ -41,6 +41,9 @@ export default function EstoquePromotoresPage() {
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [products, setProducts] = useState<any[]>([])
+  const [isResellerModalOpen, setIsResellerModalOpen] = useState(false)
+  const [resellerName, setResellerName] = useState("")
+  const [resellerPromoterId, setResellerPromoterId] = useState("")
   
   // Transfer state
   const [selectedPromoterId, setSelectedPromoterId] = useState("")
@@ -267,6 +270,28 @@ export default function EstoquePromotoresPage() {
     }
   }
 
+  const handleCreateReseller = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!resellerName || !resellerPromoterId) return alert("Preencha todos os campos")
+    setSubmitting(true)
+    try {
+      const { error } = await supabase.from('resellers').insert({
+        name: resellerName,
+        promoter_id: resellerPromoterId
+      })
+      if (error) throw error
+      alert("Revendedora cadastrada com sucesso!")
+      setIsResellerModalOpen(false)
+      setResellerName("")
+      setResellerPromoterId("")
+    } catch (err: any) {
+      console.error(err)
+      alert(err.message || "Erro ao cadastrar revendedora.")
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
   const selectedProductObj = products.find(p => p.id === selectedProductId)
 
   return (
@@ -280,7 +305,14 @@ export default function EstoquePromotoresPage() {
             </h1>
             <p className="text-slate-500 mt-1">Veja quais peças estão com cada promotor / revendedora.</p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
+            <Button 
+              onClick={() => setIsResellerModalOpen(true)}
+              variant="outline"
+              className="border-slate-300 text-slate-700 hover:bg-slate-100 rounded-full px-6 shadow-sm transition-colors"
+            >
+              <User className="w-4 h-4 mr-2" /> Cadastrar Revendedora
+            </Button>
             <Button 
               onClick={() => router.push('/area-promotora/kits')}
               variant="outline"
@@ -356,6 +388,59 @@ export default function EstoquePromotoresPage() {
         )}
 
       </div>
+
+      {/* Modal Cadastro de Revendedora */}
+      {isResellerModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl w-full max-w-md shadow-xl overflow-hidden">
+            <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <h2 className="text-xl font-bold text-slate-800 flex items-center">
+                <User className="w-5 h-5 mr-2 text-brand-plum" />
+                Cadastrar Revendedora
+              </h2>
+              <button onClick={() => setIsResellerModalOpen(false)} className="text-slate-400 hover:text-slate-600">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <form onSubmit={handleCreateReseller} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Nome da Revendedora *</label>
+                <input
+                  required
+                  type="text"
+                  value={resellerName}
+                  onChange={(e) => setResellerName(e.target.value)}
+                  placeholder="Ex: Maria da Silva"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Vincular a qual Promotor? *</label>
+                <select
+                  required
+                  value={resellerPromoterId}
+                  onChange={(e) => setResellerPromoterId(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+                >
+                  <option value="" disabled>Selecione o promotor...</option>
+                  {promoters.map(p => (
+                    <option key={p.id} value={p.id}>{p.nome}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
+                <Button type="button" variant="ghost" onClick={() => setIsResellerModalOpen(false)}>
+                  Cancelar
+                </Button>
+                <Button type="submit" disabled={submitting} className="bg-brand-plum hover:bg-brand-rose text-white rounded-xl">
+                  {submitting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
+                  Cadastrar
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Modal Transferência em Lote */}
       {isModalOpen && (

@@ -698,6 +698,15 @@ export default function DashboardClient({ user }: { user: User }) {
                                             </div>
                                         </Button>
                                     </Link>
+                                    <Link href="/admin/estoque/revendedoras">
+                                        <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
+                                            <Package className="w-4 h-4 mr-3" style={{ color: "#5D3A5B" }} />
+                                            <div className="text-left">
+                                                <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>Estoque Revendedoras</div>
+                                                <div className="text-xs text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>Peças com revendedoras</div>
+                                            </div>
+                                        </Button>
+                                    </Link>
                                     <Link href="/admin/vendas">
                                         <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
                                             <ShoppingCart className="w-4 h-4 mr-3" style={{ color: "#5D3A5B" }} />
