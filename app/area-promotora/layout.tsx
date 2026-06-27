@@ -21,7 +21,7 @@ export default async function AreaPromotoraLayout({
     .eq('id', session.user.id)
     .single()
 
-  if (!profile || (profile.role !== 'PROMOTER' && profile.role !== 'CONSULTANT' && profile.role !== 'ADMIN')) {
+  if (!profile || (profile.role !== 'PROMOTOR' && profile.role !== 'CONSULTANT' && profile.role !== 'ADMIN')) {
     redirect("/conta")
   }
 
