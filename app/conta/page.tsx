@@ -34,8 +34,11 @@ export default function ContaPage() {
           .eq('id', session.user.id)
           .single()
           
-        if (profile) setRole(profile.role)
-
+        if (profile && profile.role) {
+          setRole(profile.role)
+        } else if (session.user?.user_metadata?.role) {
+          setRole(session.user.user_metadata.role)
+        }
         const fetchFavorites = async () => {
           const { data } = await supabase
             .from('favorites')
