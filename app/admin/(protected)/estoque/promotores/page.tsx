@@ -163,12 +163,12 @@ export default function EstoquePromotoresPage() {
     e.preventDefault()
     
     if (!selectedPromoterId) {
-      alert("Selecione a promotora que receberá o Kit.")
+      alert("Selecione a promotora que receberá as peças.")
       return
     }
 
     if (kitItems.length === 0) {
-      alert("O kit está vazio. Adicione pelo menos um produto.")
+      alert("A lista está vazia. Adicione pelo menos um produto.")
       return
     }
 
@@ -241,7 +241,7 @@ export default function EstoquePromotoresPage() {
           color: item.color,
           quantity: item.quantity,
           promoter_id: selectedPromoterId,
-          notes: `Kit de peças alocado (Lote)`
+          notes: `Transferência em Lote (Admin)`
         })
       }
 
@@ -341,7 +341,7 @@ export default function EstoquePromotoresPage() {
 
       </div>
 
-      {/* Modal Montar Kit */}
+      {/* Modal Transferência em Lote */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm overflow-y-auto">
           <div className="bg-white rounded-3xl w-full max-w-4xl shadow-xl overflow-hidden my-8">
@@ -380,7 +380,7 @@ export default function EstoquePromotoresPage() {
                 </div>
 
                 <div className="pt-4 border-t border-slate-100">
-                  <label className="block text-sm font-bold text-slate-700 mb-4">2. Adicionar Peças ao Kit</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-4">2. Adicionar Peças à Lista</label>
                   
                   <div className="space-y-4">
                     <div>
@@ -467,12 +467,12 @@ export default function EstoquePromotoresPage() {
                 </div>
               </div>
 
-              {/* Lado Direito: Carrinho do Kit */}
+              {/* Lado Direito: Carrinho */}
               <div className="w-full md:w-1/2 flex flex-col bg-slate-50">
                 <div className="p-4 border-b border-slate-200 flex justify-between items-center bg-white">
                   <h3 className="font-bold text-slate-800 flex items-center">
                     <Package className="w-4 h-4 mr-2 text-brand-plum" />
-                    Itens do Kit
+                    Itens Selecionados
                   </h3>
                   <span className="bg-brand-plum text-white text-xs font-bold px-2 py-1 rounded-full">
                     {kitItems.reduce((acc, item) => acc + item.quantity, 0)} peças
@@ -483,7 +483,7 @@ export default function EstoquePromotoresPage() {
                   {kitItems.length === 0 ? (
                     <div className="h-full flex flex-col items-center justify-center text-slate-400">
                       <ShoppingCart className="w-12 h-12 mb-3 opacity-20" />
-                      <p className="text-sm">O kit está vazio.</p>
+                      <p className="text-sm">A lista está vazia.</p>
                       <p className="text-xs mt-1">Adicione peças ao lado.</p>
                     </div>
                   ) : (
