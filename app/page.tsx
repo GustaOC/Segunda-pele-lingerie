@@ -129,7 +129,7 @@ export default function EcommerceHome() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-4">
-              <Link href="/lingeries" className="w-full sm:w-auto">
+              <Link href="/destaques" className="w-full sm:w-auto">
                 <Button size="lg" className="rounded-full bg-brand-plum hover:bg-brand-rose text-white px-8 h-14 text-base shadow-xl hover:shadow-2xl transition-all hover:-translate-y-1 w-full">
                   Ver Lançamentos
                 </Button>
