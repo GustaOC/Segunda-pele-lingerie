@@ -148,6 +148,15 @@ export default function KitsPromotoraPage() {
     setKitItems(kitItems.filter(item => item.id !== id))
   }
 
+  const handleDecrementItem = (id: string) => {
+    setKitItems(kitItems.map(item => {
+      if (item.id === id) {
+        return { ...item, quantity: item.quantity - 1 }
+      }
+      return item
+    }).filter(item => item.quantity > 0))
+  }
+
   const handleEditKit = (kit: Kit) => {
     setKitName(kit.name)
     setEditingKitId(kit.id)
@@ -227,7 +236,7 @@ export default function KitsPromotoraPage() {
 
       // Group identical items just in case
       const groupedItems = kitItems.reduce((acc, item) => {
-        const key = item.inventory_id
+        const key = `${item.product_id}_${item.size}_${item.color}`
         if (!acc[key]) acc[key] = { ...item }
         else acc[key].quantity += item.quantity
         return acc
@@ -290,7 +299,7 @@ export default function KitsPromotoraPage() {
         // Check if enough inventory exists for the multiplier
         for (const key of Object.keys(groupedItems)) {
           const item = groupedItems[key]
-          const invItem = inventory.find(i => i.id === item.inventory_id)
+          const invItem = inventory.find(i => i.product_id === item.product_id && i.size === item.size && i.color === item.color)
           if (!invItem || invItem.quantity < (item.quantity * kitMultiplier)) {
             alert(`Estoque insuficiente para criar ${kitMultiplier} kits. Peças indisponíveis de ${item.product_name} - ${item.color} ${item.size}.`)
             setSubmitting(false)
@@ -329,12 +338,12 @@ export default function KitsPromotoraPage() {
         // Update inventory ONCE after creating all kits
         for (const key of Object.keys(groupedItems)) {
           const item = groupedItems[key]
-          const invItem = inventory.find(i => i.id === item.inventory_id)
+          const invItem = inventory.find(i => i.product_id === item.product_id && i.size === item.size && i.color === item.color)
           if (invItem) {
             await supabase
               .from('promoter_inventory')
               .update({ quantity: invItem.quantity - (item.quantity * kitMultiplier), updated_at: new Date().toISOString() })
-              .eq('id', item.inventory_id)
+              .eq('id', invItem.id)
           }
         }
 
@@ -519,9 +528,14 @@ export default function KitsPromotoraPage() {
                             <span className="block font-bold text-slate-700">{item.quantity}x</span>
                             <span className="block text-xs text-slate-500">R$ {item.price?.toFixed(2).replace('.', ',')}</span>
                           </div>
-                          <button onClick={() => handleRemoveItem(item.id)} className="text-slate-300 hover:text-red-500 transition-colors p-1">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          <div className="flex flex-col gap-1 border-l border-slate-100 pl-3">
+                            <button onClick={() => handleDecrementItem(item.id)} className="text-slate-400 hover:text-orange-500 transition-colors p-1 flex items-center justify-center bg-slate-50 rounded" title="Tirar 1 peça">
+                              <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4"></path></svg>
+                            </button>
+                            <button onClick={() => handleRemoveItem(item.id)} className="text-slate-300 hover:text-red-500 transition-colors p-1 flex items-center justify-center bg-slate-50 rounded" title="Remover item">
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          </div>
                         </div>
                       </div>
                     ))
@@ -565,15 +579,15 @@ export default function KitsPromotoraPage() {
                       <h3 className="font-bold text-lg text-slate-800">{kit.name}</h3>
                       <p className="text-xs text-slate-400 mt-1">{new Date(kit.created_at).toLocaleDateString('pt-BR')}</p>
                     </div>
-                    <div className="flex gap-2">
-                      <span className="bg-brand-plum/10 text-brand-plum font-bold px-3 py-1 rounded-full text-sm shrink-0">
+                    <div className="flex items-center gap-3">
+                      <span className="bg-brand-plum/10 text-brand-plum font-bold px-3 py-1 rounded-full text-sm whitespace-nowrap">
                         R$ {kit.total_price.toFixed(2).replace('.', ',')}
                       </span>
-                      <div className="flex flex-col gap-1 ml-2">
-                        <button onClick={() => handleEditKit(kit)} className="text-slate-400 hover:text-brand-plum transition-colors p-1" title="Editar">
+                      <div className="flex gap-1">
+                        <button onClick={() => handleEditKit(kit)} className="text-slate-400 hover:text-brand-plum transition-colors p-1.5 bg-slate-50 rounded-full hover:bg-brand-plum/10" title="Editar">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                         </button>
-                        <button onClick={() => handleDeleteKit(kit)} className="text-slate-400 hover:text-red-500 transition-colors p-1" title="Excluir">
+                        <button onClick={() => handleDeleteKit(kit)} className="text-slate-400 hover:text-red-500 transition-colors p-1.5 bg-slate-50 rounded-full hover:bg-red-50" title="Excluir">
                           <Trash2 className="w-4 h-4" />
                         </button>
                       </div>
