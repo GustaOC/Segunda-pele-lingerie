@@ -62,7 +62,7 @@ export default function EstoquePromotoresPage() {
     
     const [prodRes, promRes, invRes] = await Promise.all([
       supabase.from('products').select('id, name, sku, colors, sizes'),
-      supabase.from('profiles').select('id, nome').in('role', ['CONSULTANT', 'USER', 'ADMIN']),
+      supabase.from('profiles').select('id, nome').in('role', ['CONSULTANT', 'PROMOTOR', 'ADMIN', 'USER']),
       supabase.from('promoter_inventory').select('*').order('updated_at', { ascending: false })
     ])
 
