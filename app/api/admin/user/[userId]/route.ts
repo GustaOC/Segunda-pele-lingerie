@@ -5,7 +5,7 @@ import { z } from "zod";
 
 const updateUserSchema = z.object({
   nome: z.string().min(3),
-  role: z.enum(["ADMIN", "USER", "CONSULTANT"]),
+  role: z.enum(["ADMIN", "USER", "CONSULTANT", "TRIAGEM", "PROMOTOR", "VISUALIZADOR"]),
   telefone: z.string().optional(),
 });
 
