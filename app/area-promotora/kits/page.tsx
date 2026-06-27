@@ -70,10 +70,10 @@ export default function KitsPromotoraPage() {
     setUser(session.user)
 
     // 1. Fetch Promoter Inventory & Products
-    const [invRes, prodRes, kitsRes] = await Promise.all([
+    const [prodRes, invRes, kitsRes] = await Promise.all([
+      supabase.from('products').select('*'),
       supabase.from('promoter_inventory').select('*').eq('promoter_id', session.user.id).gt('quantity', 0),
-      supabase.from('products').select('id, name, sku, price'),
-      supabase.from('promoter_kits').select('*, items:promoter_kit_items(*)').eq('promoter_id', session.user.id).order('created_at', { ascending: false })
+      supabase.from('promoter_kits').select('*, items:promoter_kit_items(*)').eq('promoter_id', session.user.id).is('reseller_id', null).order('created_at', { ascending: false })
     ])
 
     const products = prodRes.data || []
