@@ -51,6 +51,8 @@ export default function KitsPromotoraPage() {
   const [isCreatingKit, setIsCreatingKit] = useState(false)
   const [kitName, setKitName] = useState("")
   const [kitItems, setKitItems] = useState<KitItem[]>([])
+  const [kitMultiplier, setKitMultiplier] = useState(1)
+  const [editingKitId, setEditingKitId] = useState<string | null>(null)
   
   // Item Selection
   const [selectedInvId, setSelectedInvId] = useState("")
@@ -146,6 +148,64 @@ export default function KitsPromotoraPage() {
     setKitItems(kitItems.filter(item => item.id !== id))
   }
 
+  const handleEditKit = (kit: Kit) => {
+    setKitName(kit.name)
+    setEditingKitId(kit.id)
+    setKitMultiplier(1)
+    
+    const mappedItems = (kit.items || []).map(item => {
+      // Find matching inventory to get the inventory_id
+      const invMatch = inventory.find(i => i.product_id === item.product_id && i.size === item.size && i.color === item.color)
+      return {
+        id: Math.random().toString(36).substr(2, 9),
+        inventory_id: invMatch ? invMatch.id : 'unknown',
+        product_id: item.product_id,
+        product_name: item.product_name,
+        sku: item.sku,
+        size: item.size,
+        color: item.color,
+        quantity: item.quantity,
+        price: item.price || 0
+      }
+    })
+    setKitItems(mappedItems)
+    setIsCreatingKit(true)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  const handleDeleteKit = async (kit: Kit) => {
+    if (!confirm(`Tem certeza que deseja excluir o kit "${kit.name}"? As peças voltarão para o seu estoque.`)) return
+    setLoading(true)
+    try {
+      const { data: items } = await supabase.from('promoter_kit_items').select('*').eq('kit_id', kit.id)
+      
+      if (items && items.length > 0) {
+        for (const item of items) {
+          const { data: invRow } = await supabase.from('promoter_inventory').select('*')
+            .eq('promoter_id', user.id).eq('product_id', item.product_id).eq('size', item.size).eq('color', item.color).single()
+            
+          if (invRow) {
+            await supabase.from('promoter_inventory').update({ quantity: invRow.quantity + item.quantity }).eq('id', invRow.id)
+          } else {
+            await supabase.from('promoter_inventory').insert({
+              promoter_id: user.id, product_id: item.product_id, size: item.size, color: item.color, quantity: item.quantity
+            })
+          }
+        }
+      }
+
+      await supabase.from('promoter_kit_items').delete().eq('kit_id', kit.id)
+      await supabase.from('promoter_kits').delete().eq('id', kit.id)
+      
+      alert("Kit excluído e peças devolvidas ao estoque!")
+      fetchData()
+    } catch (err: any) {
+      console.error(err)
+      alert("Erro ao excluir: " + err.message)
+      setLoading(false)
+    }
+  }
+
   const handleSaveKit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -165,19 +225,6 @@ export default function KitsPromotoraPage() {
       // Calculate total price
       const totalPrice = kitItems.reduce((acc, item) => acc + (item.price * item.quantity), 0)
 
-      // 1. Create Kit
-      const { data: newKit, error: kitError } = await supabase
-        .from('promoter_kits')
-        .insert({
-          promoter_id: user.id,
-          name: kitName,
-          total_price: totalPrice
-        })
-        .select()
-        .single()
-
-      if (kitError) throw kitError
-
       // Group identical items just in case
       const groupedItems = kitItems.reduce((acc, item) => {
         const key = item.inventory_id
@@ -186,32 +233,118 @@ export default function KitsPromotoraPage() {
         return acc
       }, {} as Record<string, KitItem>)
 
-      // 2. Insert items and update inventory
-      for (const key of Object.keys(groupedItems)) {
-        const item = groupedItems[key]
-
-        await supabase.from('promoter_kit_items').insert({
-          kit_id: newKit.id,
-          product_id: item.product_id,
-          size: item.size,
-          color: item.color,
-          quantity: item.quantity
-        })
-
-        // Deduct from promoter_inventory
-        const invItem = inventory.find(i => i.id === item.inventory_id)
-        if (invItem) {
-          await supabase
-            .from('promoter_inventory')
-            .update({ quantity: invItem.quantity - item.quantity, updated_at: new Date().toISOString() })
-            .eq('id', item.inventory_id)
+      if (editingKitId) {
+        // --- MODO DE EDIÇÃO ---
+        const { data: oldItems } = await supabase.from('promoter_kit_items').select('*').eq('kit_id', editingKitId)
+        
+        // 1. Restaurar os itens antigos para o estoque
+        if (oldItems) {
+          for (const old of oldItems) {
+            const { data: invRow } = await supabase.from('promoter_inventory')
+              .select('*').eq('promoter_id', user.id).eq('product_id', old.product_id)
+              .eq('size', old.size).eq('color', old.color).single()
+            if (invRow) {
+              await supabase.from('promoter_inventory').update({ quantity: invRow.quantity + old.quantity }).eq('id', invRow.id)
+            } else {
+              await supabase.from('promoter_inventory').insert({
+                promoter_id: user.id, product_id: old.product_id, size: old.size, color: old.color, quantity: old.quantity
+              })
+            }
+          }
         }
+
+        // 2. Apagar itens antigos
+        await supabase.from('promoter_kit_items').delete().eq('kit_id', editingKitId)
+
+        // 3. Checar novo estoque após a restauração e inserir os novos itens
+        const { data: freshInv } = await supabase.from('promoter_inventory').select('*').eq('promoter_id', user.id)
+        
+        for (const key of Object.keys(groupedItems)) {
+          const item = groupedItems[key]
+          const invItem = freshInv?.find(i => i.product_id === item.product_id && i.size === item.size && i.color === item.color)
+          if (!invItem || invItem.quantity < item.quantity) {
+             alert(`Estoque insuficiente após edição para ${item.product_name}. Recarregue a página e tente novamente.`)
+             setSubmitting(false)
+             return
+          }
+        }
+
+        await supabase.from('promoter_kits').update({ name: kitName, total_price: totalPrice }).eq('id', editingKitId)
+
+        for (const key of Object.keys(groupedItems)) {
+          const item = groupedItems[key]
+          await supabase.from('promoter_kit_items').insert({
+            kit_id: editingKitId, product_id: item.product_id, size: item.size, color: item.color, quantity: item.quantity
+          })
+          
+          const invItem = freshInv?.find(i => i.product_id === item.product_id && i.size === item.size && i.color === item.color)
+          if (invItem) {
+            await supabase.from('promoter_inventory').update({ quantity: invItem.quantity - item.quantity }).eq('id', invItem.id)
+          }
+        }
+
+        alert("Kit atualizado com sucesso!")
+        setEditingKitId(null)
+      } else {
+        // --- MODO DE CRIAÇÃO (COM MULTIPLICADOR) ---
+        // Check if enough inventory exists for the multiplier
+        for (const key of Object.keys(groupedItems)) {
+          const item = groupedItems[key]
+          const invItem = inventory.find(i => i.id === item.inventory_id)
+          if (!invItem || invItem.quantity < (item.quantity * kitMultiplier)) {
+            alert(`Estoque insuficiente para criar ${kitMultiplier} kits. Peças indisponíveis de ${item.product_name} - ${item.color} ${item.size}.`)
+            setSubmitting(false)
+            return
+          }
+        }
+
+        // Loop to create multiple kits
+        for (let i = 0; i < kitMultiplier; i++) {
+          const finalKitName = kitMultiplier > 1 ? `${kitName} #${i + 1}` : kitName;
+          
+          const { data: newKit, error: kitError } = await supabase
+            .from('promoter_kits')
+            .insert({
+              promoter_id: user.id,
+              name: finalKitName,
+              total_price: totalPrice
+            })
+            .select()
+            .single()
+
+          if (kitError) throw kitError
+
+          for (const key of Object.keys(groupedItems)) {
+            const item = groupedItems[key]
+            await supabase.from('promoter_kit_items').insert({
+              kit_id: newKit.id,
+              product_id: item.product_id,
+              size: item.size,
+              color: item.color,
+              quantity: item.quantity
+            })
+          }
+        }
+
+        // Update inventory ONCE after creating all kits
+        for (const key of Object.keys(groupedItems)) {
+          const item = groupedItems[key]
+          const invItem = inventory.find(i => i.id === item.inventory_id)
+          if (invItem) {
+            await supabase
+              .from('promoter_inventory')
+              .update({ quantity: invItem.quantity - (item.quantity * kitMultiplier), updated_at: new Date().toISOString() })
+              .eq('id', item.inventory_id)
+          }
+        }
+
+        alert(kitMultiplier > 1 ? `${kitMultiplier} kits montados com sucesso!` : "Kit montado com sucesso!")
       }
 
-      alert("Kit montado com sucesso!")
       setIsCreatingKit(false)
       setKitName("")
       setKitItems([])
+      setKitMultiplier(1)
       fetchData()
       
     } catch (err: any) {
@@ -248,36 +381,60 @@ export default function KitsPromotoraPage() {
           </div>
           {!isCreatingKit && (
             <Button 
-              onClick={() => setIsCreatingKit(true)}
-              className="bg-brand-plum hover:bg-brand-rose text-white rounded-full px-6 shadow-md"
+              onClick={() => {
+                setIsCreatingKit(true)
+                setEditingKitId(null)
+                setKitName("")
+                setKitItems([])
+                setKitMultiplier(1)
+              }} 
+              className="bg-brand-plum hover:bg-brand-rose text-white rounded-full px-6 h-12 shadow-md transition-colors w-full md:w-auto"
             >
-              <Package className="w-4 h-4 mr-2" /> Montar Novo Kit
+              <Plus className="w-4 h-4 mr-2" /> 
+              Montar Novo Kit
             </Button>
           )}
         </div>
 
-        {isCreatingKit ? (
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-            <div className="p-6 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-slate-800">Criação de Kit</h2>
-              <button onClick={() => setIsCreatingKit(false)} className="text-slate-400 hover:text-slate-600 text-sm font-medium">
-                Cancelar
-              </button>
-            </div>
+        {isCreatingKit ? <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-12">
+              <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                <h2 className="text-xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
+                  {editingKitId ? "Editando Kit" : "Criar Novo Kit"}
+                </h2>
+                <button onClick={() => {
+                  setIsCreatingKit(false)
+                  setEditingKitId(null)
+                }} className="text-slate-400 hover:text-slate-600 text-sm font-medium">
+                  Cancelar
+                </button>
+              </div>
             
             <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
               {/* Seleção */}
               <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-1">Nome do Kit *</label>
-                  <input
-                    type="text"
-                    required
-                    value={kitName}
-                    onChange={(e) => setKitName(e.target.value)}
-                    placeholder="Ex: Kit Verão 3 Peças"
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm font-medium"
-                  />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Nome do Kit</label>
+                    <input
+                      type="text"
+                      placeholder="Ex: Kit Especial Dia das Mães"
+                      value={kitName}
+                      onChange={(e) => setKitName(e.target.value)}
+                      className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-plum/50"
+                    />
+                  </div>
+                  {!editingKitId && (
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-700 mb-2">Multiplicador (Quantos kits iguais?)</label>
+                      <input
+                        type="number"
+                        min="1"
+                        value={kitMultiplier}
+                        onChange={(e) => setKitMultiplier(parseInt(e.target.value) || 1)}
+                        className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-plum/50"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <div className="border border-slate-200 rounded-xl p-5 bg-slate-50/50 space-y-4">
@@ -375,7 +532,7 @@ export default function KitsPromotoraPage() {
                   <div className="flex justify-between items-center mb-4">
                     <span className="font-medium text-slate-500">Valor Total do Kit:</span>
                     <span className="text-xl font-bold text-brand-plum">
-                      R$ {kitItems.reduce((acc, item) => acc + (item.price * item.quantity), 0).toFixed(2).replace('.', ',')}
+                      R$ {(kitItems.reduce((acc, item) => acc + (item.price * item.quantity), 0) * kitMultiplier).toFixed(2).replace('.', ',')}
                     </span>
                   </div>
                   <Button 
@@ -383,7 +540,7 @@ export default function KitsPromotoraPage() {
                     disabled={submitting || kitItems.length === 0} 
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white h-12 text-lg shadow-md"
                   >
-                    {submitting ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : "Salvar Kit"}
+                    {submitting ? <Loader2 className="w-5 h-5 mr-2 animate-spin" /> : (editingKitId ? "Salvar Edição" : (kitMultiplier > 1 ? `Salvar ${kitMultiplier} Kits` : "Salvar Kit"))}
                   </Button>
                 </div>
               </div>
@@ -408,9 +565,19 @@ export default function KitsPromotoraPage() {
                       <h3 className="font-bold text-lg text-slate-800">{kit.name}</h3>
                       <p className="text-xs text-slate-400 mt-1">{new Date(kit.created_at).toLocaleDateString('pt-BR')}</p>
                     </div>
-                    <span className="bg-brand-plum/10 text-brand-plum font-bold px-3 py-1 rounded-full text-sm">
-                      R$ {kit.total_price.toFixed(2).replace('.', ',')}
-                    </span>
+                    <div className="flex gap-2">
+                      <span className="bg-brand-plum/10 text-brand-plum font-bold px-3 py-1 rounded-full text-sm shrink-0">
+                        R$ {kit.total_price.toFixed(2).replace('.', ',')}
+                      </span>
+                      <div className="flex flex-col gap-1 ml-2">
+                        <button onClick={() => handleEditKit(kit)} className="text-slate-400 hover:text-brand-plum transition-colors p-1" title="Editar">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                        </button>
+                        <button onClick={() => handleDeleteKit(kit)} className="text-slate-400 hover:text-red-500 transition-colors p-1" title="Excluir">
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                   
                   <div className="space-y-3">
