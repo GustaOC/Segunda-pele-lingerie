@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Playfair_Display, Inter } from "next/font/google"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 import { Loader2, Plus, ArrowRight, User, ShoppingCart, Trash2, Package } from "lucide-react"
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" })
@@ -35,6 +36,7 @@ export default function EstoquePromotoresPage() {
   const [loading, setLoading] = useState(true)
   const [inventory, setInventory] = useState<PromoterInventoryRow[]>([])
   const [promoters, setPromoters] = useState<any[]>([])
+  const router = useRouter()
   
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -278,12 +280,21 @@ export default function EstoquePromotoresPage() {
             </h1>
             <p className="text-slate-500 mt-1">Veja quais peças estão com cada promotor / revendedora.</p>
           </div>
-          <Button 
-            onClick={() => setIsModalOpen(true)}
-            className="bg-brand-plum hover:bg-brand-rose text-white rounded-full px-6 shadow-md"
-          >
-            <Package className="w-4 h-4 mr-2" /> Transferir Peças
-          </Button>
+          <div className="flex gap-3">
+            <Button 
+              onClick={() => router.push('/area-promotora/kits')}
+              variant="outline"
+              className="border-brand-plum text-brand-plum hover:bg-brand-plum hover:text-white rounded-full px-6 shadow-md transition-colors"
+            >
+              <ShoppingCart className="w-4 h-4 mr-2" /> Minha Área de Kits
+            </Button>
+            <Button 
+              onClick={() => setIsModalOpen(true)}
+              className="bg-brand-plum hover:bg-brand-rose text-white rounded-full px-6 shadow-md transition-colors"
+            >
+              <Package className="w-4 h-4 mr-2" /> Transferir Peças
+            </Button>
+          </div>
         </div>
 
         {loading ? (
