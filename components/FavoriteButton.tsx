@@ -20,7 +20,7 @@ export function FavoriteButton({ productId, className }: { productId: string, cl
           .select('*')
           .eq('user_id', session.user.id)
           .eq('product_id', productId)
-          .single()
+          .maybeSingle()
         
         if (data) {
           setIsFavorite(true)

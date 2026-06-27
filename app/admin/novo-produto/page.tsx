@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Save, Loader2, Image as ImageIcon, Search } from "lucide-react"
+import { ArrowLeft, Save, Loader2, Image as ImageIcon, Search, Plus } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
