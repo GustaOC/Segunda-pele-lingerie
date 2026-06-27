@@ -546,7 +546,7 @@ export default function KitsPromotoraPage() {
               </div>
             </div>
           </div>
-        ) : null}
+         : null}
 
         {/* Exibição dos Kits */}
         <div className="mb-12">
