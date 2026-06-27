@@ -60,19 +60,24 @@ export default function EstoquePromotoresPage() {
   const fetchData = async () => {
     setLoading(true)
     
-    const [prodRes, promRes, invRes] = await Promise.all([
+    const [prodRes, invRes, usersRes] = await Promise.all([
       supabase.from('products').select('id, name, sku, colors, sizes'),
-      supabase.from('profiles').select('id, nome').in('role', ['CONSULTANT', 'PROMOTOR', 'ADMIN', 'USER']),
-      supabase.from('promoter_inventory').select('*').order('updated_at', { ascending: false })
+      supabase.from('promoter_inventory').select('*').order('updated_at', { ascending: false }),
+      fetch('/api/admin/user').then(res => res.json())
     ])
 
     if (prodRes.data) setProducts(prodRes.data)
-    if (promRes.data) setPromoters(promRes.data)
     
-    if (invRes.data && prodRes.data && promRes.data) {
+    let promData = []
+    if (usersRes.data) {
+      promData = usersRes.data.filter((u: any) => ['CONSULTANT', 'PROMOTOR', 'ADMIN', 'USER'].includes(u.role))
+      setPromoters(promData)
+    }
+    
+    if (invRes.data && prodRes.data && promData) {
       const mapped = invRes.data.map(inv => {
         const p = prodRes.data.find(p => p.id === inv.product_id)
-        const pr = promRes.data.find(pr => pr.id === inv.promoter_id)
+        const pr = promData.find((pr: any) => pr.id === inv.promoter_id)
         return {
           ...inv,
           product_name: p ? p.name : 'Produto Desconhecido',
