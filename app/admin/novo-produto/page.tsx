@@ -80,6 +80,18 @@ export default function NovoProdutoPage() {
     const priceNum = parseFloat(price.replace(',', '.'))
     const oldPriceNum = oldPrice ? parseFloat(oldPrice.replace(',', '.')) : null
 
+    if (images.length === 0) {
+      alert("É obrigatório adicionar pelo menos uma imagem geral do produto.")
+      setIsSubmitting(false)
+      return
+    }
+
+    if (!description.trim()) {
+      alert("É obrigatório adicionar a descrição do produto.")
+      setIsSubmitting(false)
+      return
+    }
+
     let uploadedUrls: string[] = []
     
     for (const file of images) {
@@ -493,8 +505,9 @@ export default function NovoProdutoPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">Descrição</label>
+              <label className="block text-sm font-medium text-slate-700 mb-2">Descrição *</label>
               <textarea 
+                required
                 rows={4}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
