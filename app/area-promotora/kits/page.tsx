@@ -101,6 +101,7 @@ export default function KitsPromotoraPage() {
             ...item,
             product_name: p ? p.name : 'Produto Desconhecido',
             sku: p ? p.sku : '-',
+            price: p ? p.price : 0,
           }
         })
       }))
