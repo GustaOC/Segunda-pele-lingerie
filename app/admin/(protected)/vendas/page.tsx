@@ -31,6 +31,10 @@ export default function VendasPage() {
   const [exchangeSourceType, setExchangeSourceType] = useState<'OUT_RETAIL' | 'OUT_WHOLESALE' | 'OUT_PROMOTER' | ''>('')
   const [selectedTransactionId, setSelectedTransactionId] = useState("")
   const [recentTransactions, setRecentTransactions] = useState<any[]>([])
+  const [exchangePromoterId, setExchangePromoterId] = useState("")
+  const [exchangeResellerId, setExchangeResellerId] = useState("")
+  const [resellers, setResellers] = useState<any[]>([])
+  const [resellerInventory, setResellerInventory] = useState<any[]>([])
 
   const [returnProductId, setReturnProductId] = useState("")
   const [returnSize, setReturnSize] = useState("")
@@ -44,21 +48,23 @@ export default function VendasPage() {
   useEffect(() => {
     async function init() {
       setLoading(true)
-      const [prodRes, promRes, transRes] = await Promise.all([
+      const [prodRes, promRes, transRes, reselRes] = await Promise.all([
         supabase.from('products').select('id, name, sku, colors, sizes'),
         supabase.from('profiles').select('id, nome').in('role', ['CONSULTANT', 'USER', 'ADMIN', 'PROMOTOR']),
-        supabase.from('inventory_transactions').select('*, products(id, name, sku)').in('type', ['OUT_RETAIL', 'OUT_WHOLESALE', 'OUT_PROMOTER']).order('created_at', { ascending: false }).limit(200)
+        supabase.from('inventory_transactions').select('*, products(id, name, sku)').in('type', ['OUT_RETAIL', 'OUT_WHOLESALE']).order('created_at', { ascending: false }).limit(200),
+        supabase.from('resellers').select('*').order('name')
       ])
       if (prodRes.data) setProducts(prodRes.data)
       if (promRes.data) setPromoters(promRes.data)
       if (transRes.data) setRecentTransactions(transRes.data)
+      if (reselRes.data) setResellers(reselRes.data)
       setLoading(false)
     }
     init()
   }, [])
 
   useEffect(() => {
-    if (selectedTransactionId) {
+    if (selectedTransactionId && (exchangeSourceType === 'OUT_RETAIL' || exchangeSourceType === 'OUT_WHOLESALE')) {
       const tx = recentTransactions.find(t => t.id === selectedTransactionId)
       if (tx) {
         setReturnProductId(tx.product_id)
@@ -66,7 +72,19 @@ export default function VendasPage() {
         setReturnSize(tx.size)
       }
     }
-  }, [selectedTransactionId, recentTransactions])
+  }, [selectedTransactionId, recentTransactions, exchangeSourceType])
+
+  useEffect(() => {
+    async function fetchResellerInv() {
+      if (!exchangeResellerId) {
+        setResellerInventory([])
+        return
+      }
+      const { data } = await supabase.from('reseller_inventory').select('*, products(name, sku)').eq('reseller_id', exchangeResellerId)
+      if (data) setResellerInventory(data)
+    }
+    fetchResellerInv()
+  }, [exchangeResellerId, supabase])
 
   // Check max quantity based on mode (Geral vs Promotor)
   useEffect(() => {
@@ -149,27 +167,66 @@ export default function VendasPage() {
           })
         }
       } else if (mode === 'EXCHANGE') {
-        // 1. Remove new piece from inventory
-        const { data: invOut } = await supabase.from('inventory').select('id, quantity').eq('product_id', selectedProductId).eq('size', selectedSize).eq('color', selectedColor).single()
-        if (invOut) {
-          await supabase.from('inventory').update({ quantity: invOut.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', invOut.id)
+        if (exchangeSourceType === 'OUT_PROMOTER') {
+          // 1. New Piece: Remove from general inventory, Add to Reseller Inventory
+          const { data: invOut } = await supabase.from('inventory').select('id, quantity').eq('product_id', selectedProductId).eq('size', selectedSize).eq('color', selectedColor).single()
+          if (invOut) {
+            await supabase.from('inventory').update({ quantity: invOut.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', invOut.id)
+            await supabase.from('inventory_transactions').insert({
+              type: 'EXCHANGE_OUT', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: `Saída para Troca de Revendedora`, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
+            })
+          }
+          
+          const { data: resInv } = await supabase.from('reseller_inventory').select('*').eq('reseller_id', exchangeResellerId).eq('product_id', selectedProductId).eq('color', selectedColor).eq('size', selectedSize).single()
+          if (resInv) {
+            await supabase.from('reseller_inventory').update({ quantity: resInv.quantity + quantity, updated_at: new Date().toISOString() }).eq('id', resInv.id)
+          } else {
+            await supabase.from('reseller_inventory').insert({
+              reseller_id: exchangeResellerId, product_id: selectedProductId, color: selectedColor, size: selectedSize, quantity: quantity
+            })
+          }
+
+          // 2. Returned Piece: Remove from Reseller Inventory, Add to general inventory
+          const { data: resInvIn } = await supabase.from('reseller_inventory').select('*').eq('reseller_id', exchangeResellerId).eq('product_id', returnProductId).eq('color', returnColor).eq('size', returnSize).single()
+          if (resInvIn) {
+            await supabase.from('reseller_inventory').update({ quantity: resInvIn.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', resInvIn.id)
+          }
+
+          const { data: invIn } = await supabase.from('inventory').select('id, quantity').eq('product_id', returnProductId).eq('size', returnSize).eq('color', returnColor).single()
+          if (invIn) {
+            await supabase.from('inventory').update({ quantity: invIn.quantity + quantity, updated_at: new Date().toISOString() }).eq('id', invIn.id)
+          } else {
+            await supabase.from('inventory').insert({
+              product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity
+            })
+          }
           await supabase.from('inventory_transactions').insert({
-            type: 'EXCHANGE_OUT', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: 'Saída por troca', created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
+            type: 'EXCHANGE_IN', product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity, notes: `Entrada de Troca de Revendedora`, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
           })
-        }
-        
-        // 2. Add returned piece to inventory
-        const { data: invIn } = await supabase.from('inventory').select('id, quantity').eq('product_id', returnProductId).eq('size', returnSize).eq('color', returnColor).single()
-        if (invIn) {
-          await supabase.from('inventory').update({ quantity: invIn.quantity + quantity, updated_at: new Date().toISOString() }).eq('id', invIn.id)
+
         } else {
-          await supabase.from('inventory').insert({
-            product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity
+          // 1. Remove new piece from inventory
+          const { data: invOut } = await supabase.from('inventory').select('id, quantity').eq('product_id', selectedProductId).eq('size', selectedSize).eq('color', selectedColor).single()
+          if (invOut) {
+            await supabase.from('inventory').update({ quantity: invOut.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', invOut.id)
+            await supabase.from('inventory_transactions').insert({
+              type: 'EXCHANGE_OUT', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: 'Saída por troca', created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
+            })
+          }
+          
+          // 2. Add returned piece to inventory
+          const { data: invIn } = await supabase.from('inventory').select('id, quantity').eq('product_id', returnProductId).eq('size', returnSize).eq('color', returnColor).single()
+          if (invIn) {
+            await supabase.from('inventory').update({ quantity: invIn.quantity + quantity, updated_at: new Date().toISOString() }).eq('id', invIn.id)
+          } else {
+            await supabase.from('inventory').insert({
+              product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity
+            })
+          }
+          await supabase.from('inventory_transactions').insert({
+            type: 'EXCHANGE_IN', product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity, notes: notes || 'Entrada por devolução/troca', created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
           })
         }
-        await supabase.from('inventory_transactions').insert({
-          type: 'EXCHANGE_IN', product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity, notes: notes || 'Entrada por devolução/troca', created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
-        })
       }
 
       alert("Transação registrada com sucesso!")
@@ -285,7 +342,7 @@ export default function VendasPage() {
                   </label>
                 </div>
 
-                {exchangeSourceType && (
+                {exchangeSourceType && exchangeSourceType !== 'OUT_PROMOTER' && (
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-slate-700 mb-1">Selecione a Venda *</label>
                     <select required value={selectedTransactionId} onChange={(e) => setSelectedTransactionId(e.target.value)} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm">
@@ -308,29 +365,71 @@ export default function VendasPage() {
                   </div>
                 )}
 
+                {exchangeSourceType === 'OUT_PROMOTER' && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Selecione o Promotor *</label>
+                      <select required value={exchangePromoterId} onChange={(e) => {setExchangePromoterId(e.target.value); setExchangeResellerId(''); setReturnProductId('');}} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm">
+                        <option value="" disabled>Selecione o promotor...</option>
+                        {promoters.map(p => (
+                          <option key={p.id} value={p.id}>{p.nome}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Selecione a Revendedora *</label>
+                      <select required disabled={!exchangePromoterId} value={exchangeResellerId} onChange={(e) => {setExchangeResellerId(e.target.value); setReturnProductId('');}} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-50">
+                        <option value="" disabled>Selecione a revendedora...</option>
+                        {resellers.filter(r => r.promoter_id === exchangePromoterId).map(r => (
+                          <option key={r.id} value={r.id}>{r.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                )}
+
                 <div className="pt-2 border-t border-amber-200/50">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Produto que está voltando *</label>
-                  <select required disabled={!!selectedTransactionId} value={returnProductId} onChange={(e) => { setReturnProductId(e.target.value); setReturnColor(""); setReturnSize("") }} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-70 disabled:bg-slate-100">
-                    <option value="" disabled>Selecione...</option>
-                    {products.map(p => <option key={p.id} value={p.id}>{p.sku ? `[${p.sku}] ` : ''}{p.name}</option>)}
-                  </select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Cor *</label>
-                    <select required disabled={!!selectedTransactionId || !returnProductId} value={returnColor} onChange={(e) => setReturnColor(e.target.value)} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-70 disabled:bg-slate-100">
-                      <option value="" disabled>Selecione...</option>
-                      {returnProductObj?.colors?.map((c:any, i:number) => <option key={i} value={c.name}>{c.name}</option>)}
+                  {exchangeSourceType === 'OUT_PROMOTER' ? (
+                    <select required disabled={!exchangeResellerId} value={returnProductId ? `${returnProductId}|${returnColor}|${returnSize}` : ""} onChange={(e) => { 
+                      const [pId, c, s] = e.target.value.split('|');
+                      setReturnProductId(pId);
+                      setReturnColor(c);
+                      setReturnSize(s);
+                    }} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-50 disabled:bg-slate-100">
+                      <option value="" disabled>Selecione a peça da revendedora...</option>
+                      {resellerInventory.map(inv => (
+                        <option key={inv.id} value={`${inv.product_id}|${inv.color}|${inv.size}`}>
+                          {inv.products?.sku ? `[${inv.products?.sku}] ` : ''}{inv.products?.name} ({inv.color} {inv.size}) - Saldo: {inv.quantity} un
+                        </option>
+                      ))}
                     </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho *</label>
-                    <select required disabled={!!selectedTransactionId || !returnProductId} value={returnSize} onChange={(e) => setReturnSize(e.target.value)} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-70 disabled:bg-slate-100">
+                  ) : (
+                    <select required disabled={!!selectedTransactionId} value={returnProductId} onChange={(e) => { setReturnProductId(e.target.value); setReturnColor(""); setReturnSize("") }} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-70 disabled:bg-slate-100">
                       <option value="" disabled>Selecione...</option>
-                      {returnProductObj?.sizes?.map((s:any, i:number) => <option key={i} value={s}>{s}</option>) || ["P","M","G","GG"].map(s => <option key={s} value={s}>{s}</option>)}
+                      {products.map(p => <option key={p.id} value={p.id}>{p.sku ? `[${p.sku}] ` : ''}{p.name}</option>)}
                     </select>
-                  </div>
+                  )}
                 </div>
+                
+                {exchangeSourceType !== 'OUT_PROMOTER' && (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Cor *</label>
+                      <select required disabled={!!selectedTransactionId || !returnProductId} value={returnColor} onChange={(e) => setReturnColor(e.target.value)} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-70 disabled:bg-slate-100">
+                        <option value="" disabled>Selecione...</option>
+                        {returnProductObj?.colors?.map((c:any, i:number) => <option key={i} value={c.name}>{c.name}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho *</label>
+                      <select required disabled={!!selectedTransactionId || !returnProductId} value={returnSize} onChange={(e) => setReturnSize(e.target.value)} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-70 disabled:bg-slate-100">
+                        <option value="" disabled>Selecione...</option>
+                        {returnProductObj?.sizes?.map((s:any, i:number) => <option key={i} value={s}>{s}</option>) || ["P","M","G","GG"].map(s => <option key={s} value={s}>{s}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -405,15 +504,20 @@ export default function VendasPage() {
                       type="number"
                       required
                       min="1"
-                      max={mode === 'EXCHANGE' && selectedTransactionId ? Math.min(maxQuantity, Math.abs(recentTransactions.find(t => t.id === selectedTransactionId)?.quantity || 999)) : maxQuantity}
+                      max={mode === 'EXCHANGE' ? Math.min(maxQuantity, (exchangeSourceType === 'OUT_PROMOTER' && returnProductId && returnColor && returnSize ? (resellerInventory.find(i => i.product_id === returnProductId && i.color === returnColor && i.size === returnSize)?.quantity || 999) : (selectedTransactionId ? Math.abs(recentTransactions.find(t => t.id === selectedTransactionId)?.quantity || 999) : 999))) : maxQuantity}
                       value={quantity}
                       onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
                       disabled={maxQuantity === 0}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm disabled:opacity-50"
                     />
-                    {mode === 'EXCHANGE' && selectedTransactionId && (
+                    {mode === 'EXCHANGE' && exchangeSourceType !== 'OUT_PROMOTER' && selectedTransactionId && (
                       <p className="text-xs text-amber-600 mt-1">
                         Limite da devolução: {Math.abs(recentTransactions.find(t => t.id === selectedTransactionId)?.quantity || 999)} un.
+                      </p>
+                    )}
+                    {mode === 'EXCHANGE' && exchangeSourceType === 'OUT_PROMOTER' && returnProductId && returnColor && returnSize && (
+                      <p className="text-xs text-amber-600 mt-1">
+                        Limite da devolução: {resellerInventory.find(i => i.product_id === returnProductId && i.color === returnColor && i.size === returnSize)?.quantity || 999} un.
                       </p>
                     )}
                   </div>
