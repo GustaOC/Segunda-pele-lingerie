@@ -217,10 +217,12 @@ export default function EstoquePromotoresPage() {
           throw new Error(`Estoque insuficiente para ${item.product_name} (${item.color}, ${item.size}).`)
         }
 
-        await supabase
+        const { error: updateGeneralError } = await supabase
           .from('inventory')
           .update({ quantity: generalInv.quantity - item.quantity, updated_at: new Date().toISOString() })
           .eq('id', generalInv.id)
+
+        if (updateGeneralError) throw new Error(updateGeneralError.message)
 
         // 2. Adicionar no estoque do promotor
         const query = supabase
@@ -237,15 +239,22 @@ export default function EstoquePromotoresPage() {
           query.is('period', null)
         }
 
-        const { data: existingPromInv } = await query.single()
+        const { data: existingPromInv, error: existingError } = await query.single()
+        
+        if (existingError && existingError.code !== 'PGRST116') {
+          // Ignore "Row not found" error, but throw others (like column doesn't exist)
+          throw new Error(existingError.message)
+        }
 
         if (existingPromInv) {
-          await supabase
+          const { error: updatePromError } = await supabase
             .from('promoter_inventory')
             .update({ quantity: existingPromInv.quantity + item.quantity, updated_at: new Date().toISOString() })
             .eq('id', existingPromInv.id)
+            
+          if (updatePromError) throw new Error(updatePromError.message)
         } else {
-          await supabase
+          const { error: insertPromError } = await supabase
             .from('promoter_inventory')
             .insert({
               promoter_id: selectedPromoterId,
@@ -255,6 +264,8 @@ export default function EstoquePromotoresPage() {
               quantity: item.quantity,
               period: weeklyPeriod || null
             })
+            
+          if (insertPromError) throw new Error(insertPromError.message)
         }
 
         // 3. Log transaction
