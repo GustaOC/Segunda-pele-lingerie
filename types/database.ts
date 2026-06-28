@@ -208,6 +208,7 @@ export interface Database {
           quantity: number
           promoter_id?: string | null
           notes?: string | null
+          created_at?: string
         }
         Update: {
           notes?: string | null
