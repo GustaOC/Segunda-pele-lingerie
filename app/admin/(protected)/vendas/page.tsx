@@ -41,6 +41,10 @@ export default function VendasPage() {
   const [returnColor, setReturnColor] = useState("")
   const [returnPeriod, setReturnPeriod] = useState("")
   const [returnAvailablePeriods, setReturnAvailablePeriods] = useState<any[]>([])
+  const [exchangeResellerSourceType, setExchangeResellerSourceType] = useState<'LOOSE' | 'KIT'>('LOOSE')
+  const [exchangeResellerInventory, setExchangeResellerInventory] = useState<any[]>([])
+  const [exchangeResellerKits, setExchangeResellerKits] = useState<any[]>([])
+  const [exchangeKitId, setExchangeKitId] = useState("")
   
   const [selectedPeriod, setSelectedPeriod] = useState("")
   const [availablePeriods, setAvailablePeriods] = useState<any[]>([])
@@ -114,6 +118,41 @@ export default function VendasPage() {
     }
     fetchPromoterInv()
   }, [exchangePromoterId, exchangePeriod, supabase])
+
+  useEffect(() => {
+    async function fetchResellerInv() {
+      if (!exchangeResellerId || !returnPeriod) {
+        setExchangeResellerInventory([])
+        setExchangeResellerKits([])
+        return
+      }
+
+      const pQ = returnPeriod === 'null' ? null : returnPeriod
+
+      const { data: loose } = await supabase
+        .from('reseller_inventory')
+        .select('*, products(name, sku)')
+        .eq('reseller_id', exchangeResellerId)
+        .is('period', pQ ? undefined : null)
+      
+      let invQuery = loose
+      if (pQ) invQuery = loose?.filter((l: any) => l.period === pQ) || []
+      
+      setExchangeResellerInventory(invQuery || [])
+
+      const { data: kits } = await supabase
+        .from('promoter_kits')
+        .select('*, items:promoter_kit_items(*, products(name, sku))')
+        .eq('reseller_id', exchangeResellerId)
+        .is('period', pQ ? undefined : null)
+        
+      let kitQuery = kits
+      if (pQ) kitQuery = kits?.filter((k: any) => k.period === pQ) || []
+
+      setExchangeResellerKits(kitQuery || [])
+    }
+    fetchResellerInv()
+  }, [exchangeResellerId, returnPeriod, supabase])
 
   // Check max quantity based on mode (Geral vs Promotor)
   useEffect(() => {
@@ -220,39 +259,101 @@ export default function VendasPage() {
         }
       } else if (mode === 'EXCHANGE') {
         if (exchangeSourceType === 'OUT_PROMOTER') {
-          // 1. New Piece: Remove from general inventory, Add to Promoter Inventory
+          const pQ = returnPeriod === 'null' ? null : returnPeriod
+
+          // 1. New Piece: Remove from general inventory
           const { data: invOut } = await supabase.from('inventory').select('id, quantity').eq('product_id', selectedProductId).eq('size', selectedSize).eq('color', selectedColor).single()
           if (invOut) {
             await supabase.from('inventory').update({ quantity: invOut.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', invOut.id)
             await supabase.from('inventory_transactions').insert({
-              type: 'EXCHANGE_OUT', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: `Saída para Troca de Promotor`, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
+              type: 'EXCHANGE_OUT', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: `Saída para Troca de Promotor/Revenda`, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
             })
           }
 
-          // Add to promoter inventory (new piece)
-          let promOutQuery = supabase.from('promoter_inventory').select('*').eq('promoter_id', exchangePromoterId).eq('product_id', selectedProductId).eq('color', selectedColor).eq('size', selectedSize)
-          if (exchangePeriod) promOutQuery = promOutQuery.eq('period', exchangePeriod)
-          else promOutQuery = promOutQuery.is('period', null)
-          
-          const { data: promInvOut } = await promOutQuery.single()
-          if (promInvOut) {
-            await supabase.from('promoter_inventory').update({ quantity: promInvOut.quantity + quantity, updated_at: new Date().toISOString() }).eq('id', promInvOut.id)
+          // Add new piece to appropriate destination
+          if (!exchangeResellerId) {
+            // Add to promoter_inventory
+            let promOutQuery = supabase.from('promoter_inventory').select('*').eq('promoter_id', exchangePromoterId).eq('product_id', selectedProductId).eq('color', selectedColor).eq('size', selectedSize)
+            if (pQ) promOutQuery = promOutQuery.eq('period', pQ)
+            else promOutQuery = promOutQuery.is('period', null)
+            
+            const { data: promInvOut } = await promOutQuery.single()
+            if (promInvOut) {
+              await supabase.from('promoter_inventory').update({ quantity: promInvOut.quantity + quantity, updated_at: new Date().toISOString() }).eq('id', promInvOut.id)
+            } else {
+              await supabase.from('promoter_inventory').insert({
+                promoter_id: exchangePromoterId, product_id: selectedProductId, color: selectedColor, size: selectedSize, quantity: quantity, period: pQ
+              })
+            }
           } else {
-            await supabase.from('promoter_inventory').insert({
-              promoter_id: exchangePromoterId, product_id: selectedProductId, color: selectedColor, size: selectedSize, quantity: quantity, period: exchangePeriod || null
-            })
+            if (exchangeResellerSourceType === 'KIT' && exchangeKitId) {
+              // Add to kit items
+              const { data: kitItem } = await supabase.from('promoter_kit_items')
+                .select('*')
+                .eq('kit_id', exchangeKitId)
+                .eq('product_id', selectedProductId)
+                .eq('color', selectedColor)
+                .eq('size', selectedSize)
+                .single()
+                
+              if (kitItem) {
+                await supabase.from('promoter_kit_items').update({ quantity: kitItem.quantity + quantity }).eq('id', kitItem.id)
+              } else {
+                await supabase.from('promoter_kit_items').insert({
+                  kit_id: exchangeKitId, product_id: selectedProductId, color: selectedColor, size: selectedSize, quantity: quantity
+                })
+              }
+            } else {
+              // Add to reseller_inventory
+              let resOutQuery = supabase.from('reseller_inventory').select('*').eq('reseller_id', exchangeResellerId).eq('product_id', selectedProductId).eq('color', selectedColor).eq('size', selectedSize)
+              if (pQ) resOutQuery = resOutQuery.eq('period', pQ)
+              else resOutQuery = resOutQuery.is('period', null)
+              
+              const { data: resInvOut } = await resOutQuery.single()
+              if (resInvOut) {
+                await supabase.from('reseller_inventory').update({ quantity: resInvOut.quantity + quantity, updated_at: new Date().toISOString() }).eq('id', resInvOut.id)
+              } else {
+                await supabase.from('reseller_inventory').insert({
+                  reseller_id: exchangeResellerId, product_id: selectedProductId, color: selectedColor, size: selectedSize, quantity: quantity, period: pQ
+                })
+              }
+            }
           }
 
-          // 2. Returned Piece: Add to general inventory, Remove from Promoter Inventory
+          // 2. Returned Piece: Remove from Source, Add to General Inventory
 
-          // Remove from promoter inventory (returned piece)
-          let promInQuery = supabase.from('promoter_inventory').select('*').eq('promoter_id', exchangePromoterId).eq('product_id', returnProductId).eq('color', returnColor).eq('size', returnSize)
-          if (exchangePeriod) promInQuery = promInQuery.eq('period', exchangePeriod)
-          else promInQuery = promInQuery.is('period', null)
-          
-          const { data: promInvIn } = await promInQuery.single()
-          if (promInvIn) {
-            await supabase.from('promoter_inventory').update({ quantity: promInvIn.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', promInvIn.id)
+          // Remove from source
+          if (!exchangeResellerId) {
+            let promInQuery = supabase.from('promoter_inventory').select('*').eq('promoter_id', exchangePromoterId).eq('product_id', returnProductId).eq('color', returnColor).eq('size', returnSize)
+            if (pQ) promInQuery = promInQuery.eq('period', pQ)
+            else promInQuery = promInQuery.is('period', null)
+            
+            const { data: promInvIn } = await promInQuery.single()
+            if (promInvIn) {
+              await supabase.from('promoter_inventory').update({ quantity: promInvIn.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', promInvIn.id)
+            }
+          } else {
+            if (exchangeResellerSourceType === 'KIT' && exchangeKitId) {
+              const { data: kitItem } = await supabase.from('promoter_kit_items')
+                .select('*')
+                .eq('kit_id', exchangeKitId)
+                .eq('product_id', returnProductId)
+                .eq('color', returnColor)
+                .eq('size', returnSize)
+                .single()
+              if (kitItem) {
+                await supabase.from('promoter_kit_items').update({ quantity: kitItem.quantity - quantity }).eq('id', kitItem.id)
+              }
+            } else {
+              let resInQuery = supabase.from('reseller_inventory').select('*').eq('reseller_id', exchangeResellerId).eq('product_id', returnProductId).eq('color', returnColor).eq('size', returnSize)
+              if (pQ) resInQuery = resInQuery.eq('period', pQ)
+              else resInQuery = resInQuery.is('period', null)
+              
+              const { data: resInvIn } = await resInQuery.single()
+              if (resInvIn) {
+                await supabase.from('reseller_inventory').update({ quantity: resInvIn.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', resInvIn.id)
+              }
+            }
           }
 
           const { data: invIn } = await supabase.from('inventory').select('id, quantity').eq('product_id', returnProductId).eq('size', returnSize).eq('color', returnColor).single()
@@ -484,6 +585,59 @@ export default function VendasPage() {
                   </div>
                 )}
 
+                {exchangeSourceType === 'OUT_PROMOTER' && exchangePromoterId && (
+                  <div className="mb-4 pt-2 border-t border-amber-200/50">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Revendedora (Opcional)</label>
+                    <select
+                      value={exchangeResellerId}
+                      onChange={(e) => {
+                        setExchangeResellerId(e.target.value)
+                        setReturnProductId('')
+                        setExchangeKitId('')
+                      }}
+                      className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm mb-3"
+                    >
+                      <option value="">Sem revendedora (Troca do promotor)</option>
+                      {resellers.map(r => (
+                        <option key={r.id} value={r.id}>{r.name}</option>
+                      ))}
+                    </select>
+
+                    {exchangeResellerId && (
+                      <div className="flex gap-4 mb-4">
+                        <label className="flex items-center text-sm">
+                          <input type="radio" checked={exchangeResellerSourceType === 'LOOSE'} onChange={() => {setExchangeResellerSourceType('LOOSE'); setReturnProductId('');}} className="mr-2" />
+                          Peças soltas
+                        </label>
+                        <label className="flex items-center text-sm">
+                          <input type="radio" checked={exchangeResellerSourceType === 'KIT'} onChange={() => {setExchangeResellerSourceType('KIT'); setReturnProductId(''); setExchangeKitId('');}} className="mr-2" />
+                          Peças de Kits
+                        </label>
+                      </div>
+                    )}
+                    
+                    {exchangeResellerId && exchangeResellerSourceType === 'KIT' && (
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-slate-700 mb-1">Selecione o Kit *</label>
+                        <select
+                          required
+                          value={exchangeKitId}
+                          onChange={(e) => {
+                            setExchangeKitId(e.target.value)
+                            setReturnProductId('')
+                          }}
+                          className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm"
+                        >
+                          <option value="" disabled>Selecione um kit...</option>
+                          {exchangeResellerKits.map(k => (
+                            <option key={k.id} value={k.id}>{k.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 <div className="pt-2 border-t border-amber-200/50">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Produto que está voltando *</label>
                   {exchangeSourceType === 'OUT_PROMOTER' ? (
@@ -494,7 +648,7 @@ export default function VendasPage() {
                       setReturnSize(s);
                     }} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-50 disabled:bg-slate-100">
                       <option value="" disabled>Selecione a peça...</option>
-                      {exchangePromoterInventory.map(inv => (
+                      {(!exchangeResellerId ? exchangePromoterInventory : (exchangeResellerSourceType === 'LOOSE' ? exchangeResellerInventory : exchangeResellerKits.find(k => k.id === exchangeKitId)?.items || [])).map((inv: any) => (
                         <option key={inv.id} value={`${inv.product_id}|${inv.color}|${inv.size}`}>
                           {inv.products?.sku ? `[${inv.products?.sku}] ` : ''}{inv.products?.name} ({inv.color} {inv.size}) - Saldo: {inv.quantity} un
                         </option>
