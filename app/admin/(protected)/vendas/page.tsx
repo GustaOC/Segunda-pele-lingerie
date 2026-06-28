@@ -45,6 +45,8 @@ export default function VendasPage() {
   const [selectedPeriod, setSelectedPeriod] = useState("")
   const [availablePeriods, setAvailablePeriods] = useState<any[]>([])
 
+  const [exchangePeriod, setExchangePeriod] = useState("")
+
   const [submitting, setSubmitting] = useState(false)
   const [maxQuantity, setMaxQuantity] = useState(0)
 
@@ -206,7 +208,7 @@ export default function VendasPage() {
         }
       } else if (mode === 'EXCHANGE') {
         if (exchangeSourceType === 'OUT_PROMOTER') {
-          // 1. New Piece: Remove from general inventory, Add to Reseller Inventory
+          // 1. New Piece: Remove from general inventory, Add to Reseller Inventory, Add to Promoter Inventory
           const { data: invOut } = await supabase.from('inventory').select('id, quantity').eq('product_id', selectedProductId).eq('size', selectedSize).eq('color', selectedColor).single()
           if (invOut) {
             await supabase.from('inventory').update({ quantity: invOut.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', invOut.id)
@@ -224,10 +226,34 @@ export default function VendasPage() {
             })
           }
 
-          // 2. Returned Piece: Remove from Reseller Inventory, Add to general inventory
+          // Add to promoter inventory (new piece)
+          let promOutQuery = supabase.from('promoter_inventory').select('*').eq('promoter_id', exchangePromoterId).eq('product_id', selectedProductId).eq('color', selectedColor).eq('size', selectedSize)
+          if (exchangePeriod) promOutQuery = promOutQuery.eq('period', exchangePeriod)
+          else promOutQuery = promOutQuery.is('period', null)
+          
+          const { data: promInvOut } = await promOutQuery.single()
+          if (promInvOut) {
+            await supabase.from('promoter_inventory').update({ quantity: promInvOut.quantity + quantity, updated_at: new Date().toISOString() }).eq('id', promInvOut.id)
+          } else {
+            await supabase.from('promoter_inventory').insert({
+              promoter_id: exchangePromoterId, product_id: selectedProductId, color: selectedColor, size: selectedSize, quantity: quantity, period: exchangePeriod || null
+            })
+          }
+
+          // 2. Returned Piece: Remove from Reseller Inventory, Add to general inventory, Remove from Promoter Inventory
           const { data: resInvIn } = await supabase.from('reseller_inventory').select('*').eq('reseller_id', exchangeResellerId).eq('product_id', returnProductId).eq('color', returnColor).eq('size', returnSize).single()
           if (resInvIn) {
             await supabase.from('reseller_inventory').update({ quantity: resInvIn.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', resInvIn.id)
+          }
+
+          // Remove from promoter inventory (returned piece)
+          let promInQuery = supabase.from('promoter_inventory').select('*').eq('promoter_id', exchangePromoterId).eq('product_id', returnProductId).eq('color', returnColor).eq('size', returnSize)
+          if (exchangePeriod) promInQuery = promInQuery.eq('period', exchangePeriod)
+          else promInQuery = promInQuery.is('period', null)
+          
+          const { data: promInvIn } = await promInQuery.single()
+          if (promInvIn) {
+            await supabase.from('promoter_inventory').update({ quantity: promInvIn.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', promInvIn.id)
           }
 
           const { data: invIn } = await supabase.from('inventory').select('id, quantity').eq('product_id', returnProductId).eq('size', returnSize).eq('color', returnColor).single()
@@ -302,6 +328,7 @@ export default function VendasPage() {
     setReturnPeriod("");
     setQuantity(1);
     setNotes("");
+    setExchangePeriod("");
     setExchangeSourceType("");
     setSelectedTransactionId("");
     setExchangePromoterId("");
@@ -427,6 +454,11 @@ export default function VendasPage() {
 
                 {exchangeSourceType === 'OUT_PROMOTER' && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="md:col-span-2">
+                      <p className="text-xs text-amber-700 bg-amber-100 p-3 rounded-xl">
+                        Atenção: A troca do consignado irá retirar a peça retornada da revendedora e do promotor, e adicionar a nova peça na revendedora e no promotor, dentro do lote/período especificado.
+                      </p>
+                    </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1">Selecione o Promotor *</label>
                       <select required value={exchangePromoterId} onChange={(e) => {setExchangePromoterId(e.target.value); setExchangeResellerId(''); setReturnProductId('');}} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm">
@@ -444,6 +476,18 @@ export default function VendasPage() {
                           <option key={r.id} value={r.id}>{r.name}</option>
                         ))}
                       </select>
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Lote / Período da Troca *</label>
+                      <input 
+                        type="text" 
+                        required 
+                        disabled={!exchangePromoterId}
+                        value={exchangePeriod} 
+                        onChange={(e) => setExchangePeriod(e.target.value)} 
+                        placeholder="Ex: Semana 1, ou deixe em branco para lote padrão" 
+                        className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-50"
+                      />
                     </div>
                   </div>
                 )}
