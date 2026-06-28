@@ -115,6 +115,12 @@ export default function VendasPage() {
       return
     }
 
+    if (mode === 'EXCHANGE' && selectedTransactionId && isExpired) {
+      alert("Esta venda expirou o prazo de troca.")
+      setSubmitting(false)
+      return
+    }
+
     try {
       if (mode === 'PROMOTER_SALE') {
         // Remove from promoter_inventory
@@ -188,6 +194,25 @@ export default function VendasPage() {
 
   const selectedProductObj = products.find(p => p.id === selectedProductId)
   const returnProductObj = products.find(p => p.id === returnProductId)
+
+  const selectedTx = recentTransactions.find(t => t.id === selectedTransactionId);
+  let isExpired = false;
+  let expiredMessage = "";
+
+  if (selectedTx) {
+    const exchangeDate = new Date(transactionDate + 'T12:00:00Z');
+    const originalDate = new Date(selectedTx.created_at);
+    const diffTime = exchangeDate.getTime() - originalDate.getTime();
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)); 
+    
+    if (selectedTx.type === 'OUT_RETAIL' && diffDays > 38) {
+      isExpired = true;
+      expiredMessage = `Esta venda de Varejo ocorreu há mais de 38 dias (${diffDays} dias atrás). O prazo para troca expirou.`;
+    } else if (selectedTx.type === 'OUT_WHOLESALE' && diffDays > 30) {
+      isExpired = true;
+      expiredMessage = `Esta venda de Atacado ocorreu há mais de 30 dias (${diffDays} dias atrás). O prazo para troca expirou.`;
+    }
+  }
 
   if (loading) return (
     <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-brand-plum" /></div>
@@ -275,6 +300,11 @@ export default function VendasPage() {
                         )
                       })}
                     </select>
+                    {isExpired && (
+                      <div className="mt-3 p-4 bg-red-100 text-red-800 rounded-xl text-sm font-medium border border-red-200">
+                        {expiredMessage}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -403,7 +433,7 @@ export default function VendasPage() {
             </div>
 
             <div className="pt-6 border-t border-slate-100 flex justify-end">
-              <Button type="submit" disabled={submitting || maxQuantity === 0} className="bg-brand-plum hover:bg-brand-rose text-white rounded-xl px-8 h-12 text-base font-bold shadow-md hover:shadow-lg transition-all w-full md:w-auto">
+              <Button type="submit" disabled={submitting || maxQuantity === 0 || isExpired} className="bg-brand-plum hover:bg-brand-rose text-white rounded-xl px-8 h-12 text-base font-bold shadow-md hover:shadow-lg transition-all w-full md:w-auto">
                 {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Finalizar Registro'}
               </Button>
             </div>
