@@ -259,6 +259,24 @@ export default function VendasPage() {
     }
   }
 
+  const handleModeChange = (newMode: 'RETAIL' | 'WHOLESALE' | 'PROMOTER_SALE' | 'EXCHANGE') => {
+    setMode(newMode);
+    // Reset all form fields when changing tabs
+    setSelectedProductId("");
+    setSelectedColor("");
+    setSelectedSize("");
+    setReturnProductId("");
+    setReturnColor("");
+    setReturnSize("");
+    setQuantity(1);
+    setNotes("");
+    setExchangeSourceType("");
+    setSelectedTransactionId("");
+    setExchangePromoterId("");
+    setExchangeResellerId("");
+    setSelectedPromoterId("");
+  }
+
   const selectedProductObj = products.find(p => p.id === selectedProductId)
   const returnProductObj = products.find(p => p.id === returnProductId)
 
@@ -299,16 +317,16 @@ export default function VendasPage() {
         <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
           
           <div className="flex border-b border-slate-100 p-4 gap-2 overflow-x-auto">
-            <button onClick={() => setMode('RETAIL')} className={`px-4 py-2 rounded-xl flex items-center font-medium text-sm transition-all whitespace-nowrap ${mode === 'RETAIL' ? 'bg-brand-plum text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
+            <button onClick={() => handleModeChange('RETAIL')} className={`px-4 py-2 rounded-xl flex items-center font-medium text-sm transition-all whitespace-nowrap ${mode === 'RETAIL' ? 'bg-brand-plum text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
               <Tag className="w-4 h-4 mr-2" /> Venda Varejo
             </button>
-            <button onClick={() => setMode('WHOLESALE')} className={`px-4 py-2 rounded-xl flex items-center font-medium text-sm transition-all whitespace-nowrap ${mode === 'WHOLESALE' ? 'bg-brand-plum text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
+            <button onClick={() => handleModeChange('WHOLESALE')} className={`px-4 py-2 rounded-xl flex items-center font-medium text-sm transition-all whitespace-nowrap ${mode === 'WHOLESALE' ? 'bg-brand-plum text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
               <Box className="w-4 h-4 mr-2" /> Venda Atacado
             </button>
-            <button onClick={() => setMode('PROMOTER_SALE')} className={`px-4 py-2 rounded-xl flex items-center font-medium text-sm transition-all whitespace-nowrap ${mode === 'PROMOTER_SALE' ? 'bg-brand-plum text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
+            <button onClick={() => handleModeChange('PROMOTER_SALE')} className={`px-4 py-2 rounded-xl flex items-center font-medium text-sm transition-all whitespace-nowrap ${mode === 'PROMOTER_SALE' ? 'bg-brand-plum text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
               <ShoppingCart className="w-4 h-4 mr-2" /> Venda do Promotor
             </button>
-            <button onClick={() => setMode('EXCHANGE')} className={`px-4 py-2 rounded-xl flex items-center font-medium text-sm transition-all whitespace-nowrap ${mode === 'EXCHANGE' ? 'bg-brand-plum text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
+            <button onClick={() => handleModeChange('EXCHANGE')} className={`px-4 py-2 rounded-xl flex items-center font-medium text-sm transition-all whitespace-nowrap ${mode === 'EXCHANGE' ? 'bg-brand-plum text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
               <RefreshCw className="w-4 h-4 mr-2" /> Troca / Devolução
             </button>
           </div>
