@@ -22,6 +22,7 @@ export default function VendasPage() {
   const [selectedColor, setSelectedColor] = useState("")
   const [quantity, setQuantity] = useState(1)
   const [notes, setNotes] = useState("")
+  const [transactionDate, setTransactionDate] = useState(() => new Date().toISOString().split('T')[0])
   
   // For Promoter mode
   const [selectedPromoterId, setSelectedPromoterId] = useState("")
@@ -112,7 +113,7 @@ export default function VendasPage() {
         if (inv) {
           await supabase.from('promoter_inventory').update({ quantity: inv.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', inv.id)
           await supabase.from('inventory_transactions').insert({
-            type: 'OUT_PROMOTER', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, promoter_id: selectedPromoterId, notes: notes || 'Venda Promotor'
+            type: 'OUT_PROMOTER', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, promoter_id: selectedPromoterId, notes: notes || 'Venda Promotor', created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
           })
         }
       } else if (mode === 'RETAIL' || mode === 'WHOLESALE') {
@@ -121,7 +122,7 @@ export default function VendasPage() {
         if (inv) {
           await supabase.from('inventory').update({ quantity: inv.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', inv.id)
           await supabase.from('inventory_transactions').insert({
-            type: mode === 'RETAIL' ? 'OUT_RETAIL' : 'OUT_WHOLESALE', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: notes || `Venda ${mode}`
+            type: mode === 'RETAIL' ? 'OUT_RETAIL' : 'OUT_WHOLESALE', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: notes || `Venda ${mode}`, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
           })
         }
       } else if (mode === 'EXCHANGE') {
@@ -130,7 +131,7 @@ export default function VendasPage() {
         if (invOut) {
           await supabase.from('inventory').update({ quantity: invOut.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', invOut.id)
           await supabase.from('inventory_transactions').insert({
-            type: 'EXCHANGE_OUT', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: 'Saída por troca'
+            type: 'EXCHANGE_OUT', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: 'Saída por troca', created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
           })
         }
         
@@ -144,7 +145,7 @@ export default function VendasPage() {
           })
         }
         await supabase.from('inventory_transactions').insert({
-          type: 'EXCHANGE_IN', product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity, notes: notes || 'Entrada por devolução/troca'
+          type: 'EXCHANGE_IN', product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity, notes: notes || 'Entrada por devolução/troca', created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
         })
       }
 
@@ -306,18 +307,30 @@ export default function VendasPage() {
                   </div>
                 )}
 
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Quantidade *</label>
-                  <input
-                    type="number"
-                    required
-                    min="1"
-                    max={maxQuantity}
-                    value={quantity}
-                    onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
-                    disabled={maxQuantity === 0}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm disabled:opacity-50"
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Data da Transação *</label>
+                    <input
+                      type="date"
+                      required
+                      value={transactionDate}
+                      onChange={(e) => setTransactionDate(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Quantidade *</label>
+                    <input
+                      type="number"
+                      required
+                      min="1"
+                      max={maxQuantity}
+                      value={quantity}
+                      onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
+                      disabled={maxQuantity === 0}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm disabled:opacity-50"
+                    />
+                  </div>
                 </div>
                 
                 <div>
