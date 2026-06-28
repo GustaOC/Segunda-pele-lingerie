@@ -32,30 +32,6 @@ type KitItem = {
   quantity: number
 }
 
-function getWeekRangeText(weekString: string) {
-  if (!weekString) return "";
-  const [yearStr, weekStr] = weekString.split('-W');
-  if (!yearStr || !weekStr) return "";
-  const year = parseInt(yearStr, 10);
-  const week = parseInt(weekStr, 10);
-
-  const d = new Date(year, 0, 1);
-  const day = d.getDay();
-  const diff = day <= 4 ? 1 - day : 8 - day; 
-  d.setDate(d.getDate() + diff + (week - 1) * 7);
-  
-  const endDate = new Date(d);
-  endDate.setDate(d.getDate() + 6);
-  
-  const months = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
-  
-  if (d.getMonth() === endDate.getMonth()) {
-    return `dia ${d.getDate()} a ${endDate.getDate()}/ ${months[d.getMonth()]}`;
-  } else {
-    return `dia ${d.getDate()} de ${months[d.getMonth()]} a ${endDate.getDate()} de ${months[endDate.getMonth()]}`;
-  }
-}
-
 export default function EstoquePromotoresPage() {
   const [loading, setLoading] = useState(true)
   const [inventory, setInventory] = useState<PromoterInventoryRow[]>([])
@@ -280,7 +256,7 @@ export default function EstoquePromotoresPage() {
           color: item.color,
           quantity: item.quantity,
           promoter_id: selectedPromoterId,
-          notes: weeklyPeriod ? `Transferência em Lote (${getWeekRangeText(weeklyPeriod)})` : `Transferência em Lote (Admin)`
+          notes: weeklyPeriod ? `Transferência em Lote (Período: ${weeklyPeriod})` : `Transferência em Lote (Admin)`
         })
       }
 
@@ -513,16 +489,12 @@ export default function EstoquePromotoresPage() {
                 <div className="pt-4">
                   <label className="block text-sm font-bold text-slate-700 mb-1">2. Período Semanal (Opcional)</label>
                   <input
-                    type="week"
+                    type="text"
+                    placeholder="Ex: 12 a 18/fevereiro"
                     value={weeklyPeriod}
                     onChange={(e) => setWeeklyPeriod(e.target.value)}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
                   />
-                  {weeklyPeriod && (
-                    <p className="text-xs text-brand-plum mt-2 font-medium">
-                      Período selecionado: {getWeekRangeText(weeklyPeriod)}
-                    </p>
-                  )}
                 </div>
 
                 <div className="pt-4 border-t border-slate-100 mt-4">
