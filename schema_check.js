@@ -1,0 +1,2 @@
+const { createClient } = require('@supabase/supabase-js');
+const supabase = createClient('http://127.0.0.1:54321', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRlZmF1bHQiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY3NjMwNjA1NiwiZXhwIjoxOTkyMDY2MDU2fQ'); // Assuming dummy local setup or replace with logic to read from .env if needed. Wait, I should just grep the sql migrations or ts types.

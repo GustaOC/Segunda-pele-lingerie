@@ -19,6 +19,7 @@ type PromoterInventoryRow = {
   quantity: number
   price?: number
   sku?: string
+  period?: string
 }
 
 type KitItem = {
@@ -38,6 +39,7 @@ type Kit = {
   name: string
   total_price: number
   created_at: string
+  period?: string
   items?: KitItem[]
 }
 
@@ -53,6 +55,8 @@ export default function KitsPromotoraPage() {
   const [kitItems, setKitItems] = useState<KitItem[]>([])
   const [kitMultiplier, setKitMultiplier] = useState(1)
   const [editingKitId, setEditingKitId] = useState<string | null>(null)
+  const [kitPeriod, setKitPeriod] = useState("")
+  const [availablePeriods, setAvailablePeriods] = useState<string[]>([])
   
   // Item Selection
   const [selectedInvId, setSelectedInvId] = useState("")
@@ -89,6 +93,8 @@ export default function KitsPromotoraPage() {
         }
       })
       setInventory(mappedInv)
+      const periods = Array.from(new Set(mappedInv.map(i => i.period || 'null')))
+      setAvailablePeriods(periods)
     }
 
     if (kitsRes.data) {
@@ -179,6 +185,7 @@ export default function KitsPromotoraPage() {
       }
     })
     setKitItems(mappedItems)
+    setKitPeriod(kit.period || "")
     setIsCreatingKit(true)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -191,8 +198,13 @@ export default function KitsPromotoraPage() {
       
       if (items && items.length > 0) {
         for (const item of items) {
-          const { data: invRows } = await supabase.from('promoter_inventory').select('*')
-            .eq('promoter_id', user.id).eq('product_id', item.product_id).eq('size', item.size).eq('color', item.color).limit(1)
+          let query = supabase.from('promoter_inventory').select('*')
+            .eq('promoter_id', user.id).eq('product_id', item.product_id).eq('size', item.size).eq('color', item.color)
+            
+          if (kit.period && kit.period !== 'null') query = query.eq('period', kit.period)
+          else query = query.is('period', null)
+
+          const { data: invRows } = await query.limit(1)
             
           const invRow = invRows && invRows.length > 0 ? invRows[0] : null
             
@@ -200,7 +212,7 @@ export default function KitsPromotoraPage() {
             await supabase.from('promoter_inventory').update({ quantity: invRow.quantity + item.quantity }).eq('id', invRow.id)
           } else {
             await supabase.from('promoter_inventory').insert({
-              promoter_id: user.id, product_id: item.product_id, size: item.size, color: item.color, quantity: item.quantity
+              promoter_id: user.id, product_id: item.product_id, size: item.size, color: item.color, quantity: item.quantity, period: kit.period && kit.period !== 'null' ? kit.period : null
             })
           }
         }
@@ -231,6 +243,11 @@ export default function KitsPromotoraPage() {
       return
     }
 
+    if (!kitPeriod) {
+      alert("Por favor, selecione um lote/período para o kit.")
+      return
+    }
+
     setSubmitting(true)
 
     try {
@@ -247,21 +264,29 @@ export default function KitsPromotoraPage() {
 
       if (editingKitId) {
         // --- MODO DE EDIÇÃO ---
+        const { data: kitData } = await supabase.from('promoter_kits').select('period').eq('id', editingKitId).single()
+        const editKitPeriod = kitData?.period
+
         const { data: oldItems } = await supabase.from('promoter_kit_items').select('*').eq('kit_id', editingKitId)
         
         // 1. Restaurar os itens antigos para o estoque
         if (oldItems) {
           for (const old of oldItems) {
-            const { data: invRows } = await supabase.from('promoter_inventory')
-              .select('*').eq('promoter_id', user.id).eq('product_id', old.product_id)
-              .eq('size', old.size).eq('color', old.color).limit(1)
+            let query = supabase.from('promoter_inventory').select('*')
+              .eq('promoter_id', user.id).eq('product_id', old.product_id)
+              .eq('size', old.size).eq('color', old.color)
+
+            if (editKitPeriod && editKitPeriod !== 'null') query = query.eq('period', editKitPeriod)
+            else query = query.is('period', null)
+
+            const { data: invRows } = await query.limit(1)
               
             const invRow = invRows && invRows.length > 0 ? invRows[0] : null
             if (invRow) {
               await supabase.from('promoter_inventory').update({ quantity: invRow.quantity + old.quantity }).eq('id', invRow.id)
             } else {
               await supabase.from('promoter_inventory').insert({
-                promoter_id: user.id, product_id: old.product_id, size: old.size, color: old.color, quantity: old.quantity
+                promoter_id: user.id, product_id: old.product_id, size: old.size, color: old.color, quantity: old.quantity, period: editKitPeriod && editKitPeriod !== 'null' ? editKitPeriod : null
               })
             }
           }
@@ -275,7 +300,7 @@ export default function KitsPromotoraPage() {
         
         for (const key of Object.keys(groupedItems)) {
           const item = groupedItems[key]
-          const invItem = freshInv?.find(i => i.product_id === item.product_id && i.size === item.size && i.color === item.color)
+          const invItem = freshInv?.find(i => i.product_id === item.product_id && i.size === item.size && i.color === item.color && (i.period || 'null') === (kitPeriod || 'null'))
           if (!invItem || invItem.quantity < item.quantity) {
              alert(`Estoque insuficiente após edição para ${item.product_name}. Recarregue a página e tente novamente.`)
              setSubmitting(false)
@@ -283,7 +308,7 @@ export default function KitsPromotoraPage() {
           }
         }
 
-        await supabase.from('promoter_kits').update({ name: kitName, total_price: totalPrice }).eq('id', editingKitId)
+        await supabase.from('promoter_kits').update({ name: kitName, total_price: totalPrice, period: kitPeriod && kitPeriod !== 'null' ? kitPeriod : null }).eq('id', editingKitId)
 
         for (const key of Object.keys(groupedItems)) {
           const item = groupedItems[key]
@@ -291,7 +316,7 @@ export default function KitsPromotoraPage() {
             kit_id: editingKitId, product_id: item.product_id, size: item.size, color: item.color, quantity: item.quantity
           })
           
-          const invItem = freshInv?.find(i => i.product_id === item.product_id && i.size === item.size && i.color === item.color)
+          const invItem = freshInv?.find(i => i.product_id === item.product_id && i.size === item.size && i.color === item.color && (i.period || 'null') === (kitPeriod || 'null'))
           if (invItem) {
             await supabase.from('promoter_inventory').update({ quantity: invItem.quantity - item.quantity }).eq('id', invItem.id)
           }
@@ -304,9 +329,9 @@ export default function KitsPromotoraPage() {
         // Check if enough inventory exists for the multiplier
         for (const key of Object.keys(groupedItems)) {
           const item = groupedItems[key]
-          const invItem = inventory.find(i => i.product_id === item.product_id && i.size === item.size && i.color === item.color)
+          const invItem = inventory.find(i => i.product_id === item.product_id && i.size === item.size && i.color === item.color && (i.period || 'null') === (kitPeriod || 'null'))
           if (!invItem || invItem.quantity < (item.quantity * kitMultiplier)) {
-            alert(`Estoque insuficiente para criar ${kitMultiplier} kits. Peças indisponíveis de ${item.product_name} - ${item.color} ${item.size}.`)
+            alert(`Estoque insuficiente para criar ${kitMultiplier} kits. Peças indisponíveis de ${item.product_name} - ${item.color} ${item.size} no lote selecionado.`)
             setSubmitting(false)
             return
           }
@@ -321,7 +346,8 @@ export default function KitsPromotoraPage() {
             .insert({
               promoter_id: user.id,
               name: finalKitName,
-              total_price: totalPrice
+              total_price: totalPrice,
+              period: kitPeriod && kitPeriod !== 'null' ? kitPeriod : null
             })
             .select()
             .single()
@@ -343,7 +369,7 @@ export default function KitsPromotoraPage() {
         // Update inventory ONCE after creating all kits
         for (const key of Object.keys(groupedItems)) {
           const item = groupedItems[key]
-          const invItem = inventory.find(i => i.product_id === item.product_id && i.size === item.size && i.color === item.color)
+          const invItem = inventory.find(i => i.product_id === item.product_id && i.size === item.size && i.color === item.color && (i.period || 'null') === (kitPeriod || 'null'))
           if (invItem) {
             await supabase
               .from('promoter_inventory')
@@ -359,6 +385,7 @@ export default function KitsPromotoraPage() {
       setKitName("")
       setKitItems([])
       setKitMultiplier(1)
+      setKitPeriod("")
       fetchData()
       
     } catch (err: any) {
@@ -449,9 +476,27 @@ export default function KitsPromotoraPage() {
                       />
                     </div>
                   )}
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Lote / Período *</label>
+                    <select
+                      required
+                      value={kitPeriod}
+                      onChange={(e) => {
+                        setKitPeriod(e.target.value)
+                        setKitItems([]) // clear items because period changed
+                        setSelectedInvId("")
+                      }}
+                      className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-plum/50"
+                    >
+                      <option value="" disabled>Selecione um lote / período...</option>
+                      {availablePeriods.map(p => (
+                        <option key={p} value={p}>{p === 'null' ? 'Lote Padrão' : p}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
-                <div className="border border-slate-200 rounded-xl p-5 bg-slate-50/50 space-y-4">
+                <div className={`border border-slate-200 rounded-xl p-5 space-y-4 ${kitPeriod ? 'bg-slate-50/50' : 'bg-slate-100 opacity-50 pointer-events-none'}`}>
                   <h3 className="font-bold text-slate-700 text-sm">Adicionar Peças do seu Estoque</h3>
                   
                   <div>
@@ -462,7 +507,7 @@ export default function KitsPromotoraPage() {
                       className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-brand-plum text-sm"
                     >
                       <option value="" disabled>Selecione...</option>
-                      {inventory.map(inv => (
+                      {inventory.filter(inv => (inv.period || 'null') === (kitPeriod || 'null')).map(inv => (
                         <option key={inv.id} value={inv.id}>
                           {inv.product_name} - {inv.color} ({inv.size}) - {inv.quantity} disponíveis
                         </option>
