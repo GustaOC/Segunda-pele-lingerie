@@ -304,11 +304,11 @@ export default function VendasPage() {
                 })
               }
               // Update kit price for new item
-              const { data: outProd } = await supabase.from('products').select('sale_price').eq('id', selectedProductId).single()
+              const { data: outProd } = await supabase.from('products').select('price').eq('id', selectedProductId).single()
               const { data: kit } = await supabase.from('promoter_kits').select('total_price').eq('id', exchangeKitId).single()
               if (outProd && kit) {
                 await supabase.from('promoter_kits').update({
-                  total_price: Number(kit.total_price) + (Number(outProd.sale_price) * quantity)
+                  total_price: Number(kit.total_price) + (Number(outProd.price) * quantity)
                 }).eq('id', exchangeKitId)
               }
             } else {
@@ -363,11 +363,11 @@ export default function VendasPage() {
                 }
                 
                 // Update kit price for returned item
-                const { data: inProd } = await supabase.from('products').select('sale_price').eq('id', returnProductId).single()
+                const { data: inProd } = await supabase.from('products').select('price').eq('id', returnProductId).single()
                 const { data: kit } = await supabase.from('promoter_kits').select('total_price').eq('id', exchangeKitId).single()
                 if (inProd && kit) {
                   await supabase.from('promoter_kits').update({
-                    total_price: Number(kit.total_price) - (Number(inProd.sale_price) * quantity)
+                    total_price: Number(kit.total_price) - (Number(inProd.price) * quantity)
                   }).eq('id', exchangeKitId)
                 }
               }
