@@ -449,7 +449,7 @@ export default function VendasPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div className="md:col-span-2">
                       <p className="text-xs text-amber-700 bg-amber-100 p-3 rounded-xl">
-                        Atenção: A troca do consignado irá retirar a peça retornada do promotor, e adicionar a nova peça no promotor, dentro do lote/período especificado.
+                        Atenção: A troca do consignado irá retirar a peça retornada do promotor, e adicionar a nova peça no promotor, dentro do período especificado.
                       </p>
                     </div>
                     <div>
@@ -462,16 +462,18 @@ export default function VendasPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Lote / Período da Troca *</label>
-                      <input 
-                        type="text" 
-                        required 
-                        disabled={!exchangePromoterId}
-                        value={exchangePeriod} 
-                        onChange={(e) => setExchangePeriod(e.target.value)} 
-                        placeholder="Ex: Semana 1, ou deixe em branco para lote padrão" 
-                        className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-50"
-                      />
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Período da Troca *</label>
+                      <select
+                        required
+                        value={returnPeriod}
+                        onChange={(e) => setReturnPeriod(e.target.value)}
+                        className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm"
+                      >
+                        <option value="" disabled>Selecione o período...</option>
+                        {promoterPeriods.map(p => (
+                          <option key={p} value={p}>{p === 'null' ? 'Período Padrão' : p}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
                 )}
@@ -571,14 +573,14 @@ export default function VendasPage() {
 
                 {mode === 'PROMOTER_SALE' && availablePeriods.length > 0 && (
                   <div className="mt-4">
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Lote / Período *</label>
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Período *</label>
                     <select
                       required
                       value={selectedPeriod}
                       onChange={(e) => setSelectedPeriod(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
                     >
-                      <option value="" disabled>Selecione o lote...</option>
+                      <option value="" disabled>Selecione o período...</option>
                       {availablePeriods.map((inv: any) => (
                         <option key={inv.id} value={inv.period || 'null'}>
                           {inv.period || 'Sem Período Registrado'} (Estoque disponível: {inv.quantity} un)
@@ -590,7 +592,7 @@ export default function VendasPage() {
 
                 {(selectedProductId && selectedColor && selectedSize && (mode !== 'PROMOTER_SALE' || selectedPromoterId)) && (
                   <div className={`p-4 rounded-xl text-sm ${maxQuantity > 0 ? 'bg-blue-50 border border-blue-100 text-blue-800' : 'bg-red-50 border border-red-100 text-red-800'}`}>
-                    Estoque atual {mode === 'PROMOTER_SALE' ? 'do promotor neste lote' : 'geral'}: <strong>{maxQuantity} unidades</strong>
+                    Estoque atual {mode === 'PROMOTER_SALE' ? 'do promotor neste período' : 'geral'}: <strong>{maxQuantity} unidades</strong>
                   </div>
                 )}
 

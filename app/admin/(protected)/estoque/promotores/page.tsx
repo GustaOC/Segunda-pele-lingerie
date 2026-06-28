@@ -276,7 +276,7 @@ export default function EstoquePromotoresPage() {
           color: item.color,
           quantity: item.quantity,
           promoter_id: selectedPromoterId,
-          notes: weeklyPeriod ? `Transferência em Lote (Período: ${weeklyPeriod})` : `Transferência em Lote (Admin)`
+          notes: weeklyPeriod ? `Transferência em Lote (Período: ${weeklyPeriod})` : `Transferência em Grupo (Admin)`
         })
       }
 
@@ -483,7 +483,7 @@ export default function EstoquePromotoresPage() {
         </div>
       )}
 
-      {/* Modal Transferência em Lote */}
+      {/* Modal Transferência em Grupo */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm overflow-y-auto">
           <div className="bg-white rounded-3xl w-full max-w-4xl shadow-xl overflow-hidden my-8">

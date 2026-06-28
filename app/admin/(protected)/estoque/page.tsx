@@ -577,7 +577,7 @@ export default function EstoqueGeralPage() {
                   type="text"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder={transactionType === 'IN' ? "Ex: Lote 123, Fornecedor X" : "Ex: Contagem de inventário mensal"}
+                  placeholder={transactionType === 'IN' ? "Ex: Lote 123 (opcional), Fornecedor X" : "Ex: Contagem de inventário mensal"}
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
                 />
               </div>

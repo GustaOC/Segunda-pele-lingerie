@@ -244,7 +244,7 @@ export default function KitsPromotoraPage() {
     }
 
     if (!kitPeriod) {
-      alert("Por favor, selecione um lote/período para o kit.")
+      alert("Por favor, selecione um período para o kit.")
       return
     }
 
@@ -331,7 +331,7 @@ export default function KitsPromotoraPage() {
           const item = groupedItems[key]
           const invItem = inventory.find(i => i.product_id === item.product_id && i.size === item.size && i.color === item.color && (i.period || 'null') === (kitPeriod || 'null'))
           if (!invItem || invItem.quantity < (item.quantity * kitMultiplier)) {
-            alert(`Estoque insuficiente para criar ${kitMultiplier} kits. Peças indisponíveis de ${item.product_name} - ${item.color} ${item.size} no lote selecionado.`)
+            alert(`Estoque insuficiente para criar ${kitMultiplier} kits. Peças indisponíveis de ${item.product_name} - ${item.color} ${item.size} no período selecionado.`)
             setSubmitting(false)
             return
           }
@@ -477,7 +477,7 @@ export default function KitsPromotoraPage() {
                     </div>
                   )}
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Lote / Período *</label>
+                    <label className="block text-sm font-semibold text-slate-700 mb-2">Período *</label>
                     <select
                       required
                       value={kitPeriod}
@@ -488,9 +488,9 @@ export default function KitsPromotoraPage() {
                       }}
                       className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-plum/50"
                     >
-                      <option value="" disabled>Selecione um lote / período...</option>
+                      <option value="" disabled>Selecione um período...</option>
                       {availablePeriods.map(p => (
-                        <option key={p} value={p}>{p === 'null' ? 'Lote Padrão' : p}</option>
+                        <option key={p} value={p}>{p === 'null' ? 'Período Padrão' : p}</option>
                       ))}
                     </select>
                   </div>

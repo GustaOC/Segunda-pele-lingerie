@@ -300,7 +300,7 @@ export default function EstoqueRevendedorasPage() {
                       </div>
                       <div className="mb-4">
                         <span className="text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-1 rounded">
-                          Lote: {kit.period && kit.period !== 'null' ? kit.period : 'Padrão'}
+                          Período: {kit.period && kit.period !== 'null' ? kit.period : 'Padrão'}
                         </span>
                       </div>
                       <div className="space-y-2 mb-4">
@@ -331,7 +331,7 @@ export default function EstoqueRevendedorasPage() {
                         <th className="px-6 py-4">Produto</th>
                         <th className="px-6 py-4">Tamanho</th>
                         <th className="px-6 py-4">Cor</th>
-                        <th className="px-6 py-4">Lote</th>
+                        <th className="px-6 py-4">Período</th>
                         <th className="px-6 py-4 text-right">Quantidade</th>
                       </tr>
                     </thead>
@@ -397,7 +397,7 @@ export default function EstoqueRevendedorasPage() {
                             >
                                 <option value="" disabled>Selecione um Kit...</option>
                                 {promoterKits.map(kit => (
-                                    <option key={kit.id} value={kit.id}>{kit.name} (Lote: {kit.period && kit.period !== 'null' ? kit.period : 'Padrão'}) - R$ {kit.total_price}</option>
+                                    <option key={kit.id} value={kit.id}>{kit.name} (Período: {kit.period && kit.period !== 'null' ? kit.period : 'Padrão'}) - R$ {kit.total_price}</option>
                                 ))}
                             </select>
                         </div>
@@ -435,7 +435,7 @@ export default function EstoqueRevendedorasPage() {
                             >
                                 <option value="" disabled>Selecione a peça...</option>
                                 {promoterInventory.map(item => (
-                                    <option key={item.id} value={item.id}>{item.product_name} - {item.size} - {item.color} (Lote: {item.period && item.period !== 'null' ? item.period : 'Padrão'}) ({item.quantity} disp.)</option>
+                                    <option key={item.id} value={item.id}>{item.product_name} - {item.size} - {item.color} (Período: {item.period && item.period !== 'null' ? item.period : 'Padrão'}) ({item.quantity} disp.)</option>
                                 ))}
                             </select>
                         </div>
