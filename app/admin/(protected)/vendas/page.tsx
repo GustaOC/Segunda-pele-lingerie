@@ -303,6 +303,14 @@ export default function VendasPage() {
                   kit_id: exchangeKitId, product_id: selectedProductId, color: selectedColor, size: selectedSize, quantity: quantity
                 })
               }
+              // Update kit price for new item
+              const { data: outProd } = await supabase.from('products').select('sale_price').eq('id', selectedProductId).single()
+              const { data: kit } = await supabase.from('promoter_kits').select('total_price').eq('id', exchangeKitId).single()
+              if (outProd && kit) {
+                await supabase.from('promoter_kits').update({
+                  total_price: Number(kit.total_price) + (Number(outProd.sale_price) * quantity)
+                }).eq('id', exchangeKitId)
+              }
             } else {
               // Add to reseller_inventory
               let resOutQuery = supabase.from('reseller_inventory').select('*').eq('reseller_id', exchangeResellerId).eq('product_id', selectedProductId).eq('color', selectedColor).eq('size', selectedSize)
@@ -330,7 +338,12 @@ export default function VendasPage() {
             
             const { data: promInvIn } = await promInQuery.single()
             if (promInvIn) {
-              await supabase.from('promoter_inventory').update({ quantity: promInvIn.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', promInvIn.id)
+              const newQ = promInvIn.quantity - quantity
+              if (newQ <= 0) {
+                await supabase.from('promoter_inventory').delete().eq('id', promInvIn.id)
+              } else {
+                await supabase.from('promoter_inventory').update({ quantity: newQ, updated_at: new Date().toISOString() }).eq('id', promInvIn.id)
+              }
             }
           } else {
             if (exchangeResellerSourceType === 'KIT' && exchangeKitId) {
@@ -342,7 +355,21 @@ export default function VendasPage() {
                 .eq('size', returnSize)
                 .single()
               if (kitItem) {
-                await supabase.from('promoter_kit_items').update({ quantity: kitItem.quantity - quantity }).eq('id', kitItem.id)
+                const newQ = kitItem.quantity - quantity
+                if (newQ <= 0) {
+                  await supabase.from('promoter_kit_items').delete().eq('id', kitItem.id)
+                } else {
+                  await supabase.from('promoter_kit_items').update({ quantity: newQ }).eq('id', kitItem.id)
+                }
+                
+                // Update kit price for returned item
+                const { data: inProd } = await supabase.from('products').select('sale_price').eq('id', returnProductId).single()
+                const { data: kit } = await supabase.from('promoter_kits').select('total_price').eq('id', exchangeKitId).single()
+                if (inProd && kit) {
+                  await supabase.from('promoter_kits').update({
+                    total_price: Number(kit.total_price) - (Number(inProd.sale_price) * quantity)
+                  }).eq('id', exchangeKitId)
+                }
               }
             } else {
               let resInQuery = supabase.from('reseller_inventory').select('*').eq('reseller_id', exchangeResellerId).eq('product_id', returnProductId).eq('color', returnColor).eq('size', returnSize)
@@ -351,7 +378,12 @@ export default function VendasPage() {
               
               const { data: resInvIn } = await resInQuery.single()
               if (resInvIn) {
-                await supabase.from('reseller_inventory').update({ quantity: resInvIn.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', resInvIn.id)
+                const newQ = resInvIn.quantity - quantity
+                if (newQ <= 0) {
+                  await supabase.from('reseller_inventory').delete().eq('id', resInvIn.id)
+                } else {
+                  await supabase.from('reseller_inventory').update({ quantity: newQ, updated_at: new Date().toISOString() }).eq('id', resInvIn.id)
+                }
               }
             }
           }
