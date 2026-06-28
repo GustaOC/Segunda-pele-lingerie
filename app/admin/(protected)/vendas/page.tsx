@@ -39,7 +39,12 @@ export default function VendasPage() {
   const [returnProductId, setReturnProductId] = useState("")
   const [returnSize, setReturnSize] = useState("")
   const [returnColor, setReturnColor] = useState("")
+  const [returnPeriod, setReturnPeriod] = useState("")
+  const [returnAvailablePeriods, setReturnAvailablePeriods] = useState<any[]>([])
   
+  const [selectedPeriod, setSelectedPeriod] = useState("")
+  const [availablePeriods, setAvailablePeriods] = useState<any[]>([])
+
   const [submitting, setSubmitting] = useState(false)
   const [maxQuantity, setMaxQuantity] = useState(0)
 
@@ -101,23 +106,39 @@ export default function VendasPage() {
     async function checkMax() {
       if (!selectedProductId || !selectedColor || !selectedSize) {
         setMaxQuantity(0)
+        setAvailablePeriods([])
         return
       }
 
       if (mode === 'PROMOTER_SALE') {
         if (!selectedPromoterId) {
           setMaxQuantity(0)
+          setAvailablePeriods([])
           return
         }
+        
         const { data } = await supabase
           .from('promoter_inventory')
-          .select('quantity')
+          .select('id, quantity, period')
           .eq('product_id', selectedProductId)
           .eq('color', selectedColor)
           .eq('size', selectedSize)
           .eq('promoter_id', selectedPromoterId)
-          .single()
-        setMaxQuantity(data?.quantity || 0)
+          
+        if (data && data.length > 0) {
+          setAvailablePeriods(data)
+          // Se houver apenas 1, já podemos usar
+          if (data.length === 1 && !selectedPeriod) {
+            setSelectedPeriod(data[0].period || 'null')
+            setMaxQuantity(data[0].quantity)
+          } else {
+            const sel = data.find(d => (d.period || 'null') === selectedPeriod)
+            setMaxQuantity(sel ? sel.quantity : 0)
+          }
+        } else {
+          setAvailablePeriods([])
+          setMaxQuantity(0)
+        }
       } else {
         // Geral (Retail, Wholesale, Exchange)
         const { data } = await supabase
@@ -131,7 +152,7 @@ export default function VendasPage() {
       }
     }
     checkMax()
-  }, [selectedProductId, selectedColor, selectedSize, mode, selectedPromoterId])
+  }, [selectedProductId, selectedColor, selectedSize, mode, selectedPromoterId, selectedPeriod])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -152,14 +173,21 @@ export default function VendasPage() {
     try {
       if (mode === 'PROMOTER_SALE') {
         // Remove from promoter_inventory
-        const { data: inv } = await supabase
+        let query = supabase
           .from('promoter_inventory')
           .select('id, quantity')
           .eq('promoter_id', selectedPromoterId)
           .eq('product_id', selectedProductId)
           .eq('size', selectedSize)
           .eq('color', selectedColor)
-          .single()
+          
+        if (selectedPeriod && selectedPeriod !== 'null') {
+          query = query.eq('period', selectedPeriod)
+        } else {
+          query = query.is('period', null)
+        }
+        
+        const { data: inv } = await query.single()
           
         if (inv) {
           await supabase.from('promoter_inventory').update({ quantity: inv.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', inv.id)
@@ -245,9 +273,11 @@ export default function VendasPage() {
       setSelectedProductId("")
       setSelectedColor("")
       setSelectedSize("")
+      setSelectedPeriod("")
       setReturnProductId("")
       setReturnColor("")
       setReturnSize("")
+      setReturnPeriod("")
       setQuantity(1)
       setNotes("")
       
@@ -265,9 +295,11 @@ export default function VendasPage() {
     setSelectedProductId("");
     setSelectedColor("");
     setSelectedSize("");
+    setSelectedPeriod("");
     setReturnProductId("");
     setReturnColor("");
     setReturnSize("");
+    setReturnPeriod("");
     setQuantity(1);
     setNotes("");
     setExchangeSourceType("");
@@ -509,9 +541,28 @@ export default function VendasPage() {
                   </div>
                 </div>
 
+                {mode === 'PROMOTER_SALE' && availablePeriods.length > 0 && (
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Lote / Período *</label>
+                    <select
+                      required
+                      value={selectedPeriod}
+                      onChange={(e) => setSelectedPeriod(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+                    >
+                      <option value="" disabled>Selecione o lote...</option>
+                      {availablePeriods.map((inv: any) => (
+                        <option key={inv.id} value={inv.period || 'null'}>
+                          {inv.period || 'Sem Período Registrado'} (Estoque disponível: {inv.quantity} un)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
                 {(selectedProductId && selectedColor && selectedSize && (mode !== 'PROMOTER_SALE' || selectedPromoterId)) && (
                   <div className={`p-4 rounded-xl text-sm ${maxQuantity > 0 ? 'bg-blue-50 border border-blue-100 text-blue-800' : 'bg-red-50 border border-red-100 text-red-800'}`}>
-                    Estoque atual {mode === 'PROMOTER_SALE' ? 'do promotor' : 'geral'}: <strong>{maxQuantity} unidades</strong>
+                    Estoque atual {mode === 'PROMOTER_SALE' ? 'do promotor neste lote' : 'geral'}: <strong>{maxQuantity} unidades</strong>
                   </div>
                 )}
 

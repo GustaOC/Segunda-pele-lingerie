@@ -191,8 +191,10 @@ export default function KitsPromotoraPage() {
       
       if (items && items.length > 0) {
         for (const item of items) {
-          const { data: invRow } = await supabase.from('promoter_inventory').select('*')
-            .eq('promoter_id', user.id).eq('product_id', item.product_id).eq('size', item.size).eq('color', item.color).single()
+          const { data: invRows } = await supabase.from('promoter_inventory').select('*')
+            .eq('promoter_id', user.id).eq('product_id', item.product_id).eq('size', item.size).eq('color', item.color).limit(1)
+            
+          const invRow = invRows && invRows.length > 0 ? invRows[0] : null
             
           if (invRow) {
             await supabase.from('promoter_inventory').update({ quantity: invRow.quantity + item.quantity }).eq('id', invRow.id)
@@ -250,9 +252,11 @@ export default function KitsPromotoraPage() {
         // 1. Restaurar os itens antigos para o estoque
         if (oldItems) {
           for (const old of oldItems) {
-            const { data: invRow } = await supabase.from('promoter_inventory')
+            const { data: invRows } = await supabase.from('promoter_inventory')
               .select('*').eq('promoter_id', user.id).eq('product_id', old.product_id)
-              .eq('size', old.size).eq('color', old.color).single()
+              .eq('size', old.size).eq('color', old.color).limit(1)
+              
+            const invRow = invRows && invRows.length > 0 ? invRows[0] : null
             if (invRow) {
               await supabase.from('promoter_inventory').update({ quantity: invRow.quantity + old.quantity }).eq('id', invRow.id)
             } else {
