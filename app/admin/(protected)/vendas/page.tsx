@@ -34,7 +34,7 @@ export default function VendasPage() {
   const [exchangePromoterId, setExchangePromoterId] = useState("")
   const [exchangeResellerId, setExchangeResellerId] = useState("")
   const [resellers, setResellers] = useState<any[]>([])
-  const [resellerInventory, setResellerInventory] = useState<any[]>([])
+  const [exchangePromoterInventory, setExchangePromoterInventory] = useState<any[]>([])
 
   const [returnProductId, setReturnProductId] = useState("")
   const [returnSize, setReturnSize] = useState("")
@@ -92,16 +92,22 @@ export default function VendasPage() {
   }, [selectedTransactionId, recentTransactions, exchangeSourceType])
 
   useEffect(() => {
-    async function fetchResellerInv() {
-      if (!exchangeResellerId) {
-        setResellerInventory([])
+    async function fetchPromoterInv() {
+      if (!exchangePromoterId) {
+        setExchangePromoterInventory([])
         return
       }
-      const { data } = await supabase.from('reseller_inventory').select('*, products(name, sku)').eq('reseller_id', exchangeResellerId)
-      if (data) setResellerInventory(data)
+      let query = supabase.from('promoter_inventory').select('*, products(name, sku)').eq('promoter_id', exchangePromoterId)
+      if (exchangePeriod) {
+        query = query.eq('period', exchangePeriod)
+      } else {
+        query = query.is('period', null)
+      }
+      const { data } = await query
+      if (data) setExchangePromoterInventory(data)
     }
-    fetchResellerInv()
-  }, [exchangeResellerId, supabase])
+    fetchPromoterInv()
+  }, [exchangePromoterId, exchangePeriod, supabase])
 
   // Check max quantity based on mode (Geral vs Promotor)
   useEffect(() => {
@@ -208,21 +214,12 @@ export default function VendasPage() {
         }
       } else if (mode === 'EXCHANGE') {
         if (exchangeSourceType === 'OUT_PROMOTER') {
-          // 1. New Piece: Remove from general inventory, Add to Reseller Inventory, Add to Promoter Inventory
+          // 1. New Piece: Remove from general inventory, Add to Promoter Inventory
           const { data: invOut } = await supabase.from('inventory').select('id, quantity').eq('product_id', selectedProductId).eq('size', selectedSize).eq('color', selectedColor).single()
           if (invOut) {
             await supabase.from('inventory').update({ quantity: invOut.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', invOut.id)
             await supabase.from('inventory_transactions').insert({
-              type: 'EXCHANGE_OUT', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: `Saída para Troca de Revendedora`, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
-            })
-          }
-          
-          const { data: resInv } = await supabase.from('reseller_inventory').select('*').eq('reseller_id', exchangeResellerId).eq('product_id', selectedProductId).eq('color', selectedColor).eq('size', selectedSize).single()
-          if (resInv) {
-            await supabase.from('reseller_inventory').update({ quantity: resInv.quantity + quantity, updated_at: new Date().toISOString() }).eq('id', resInv.id)
-          } else {
-            await supabase.from('reseller_inventory').insert({
-              reseller_id: exchangeResellerId, product_id: selectedProductId, color: selectedColor, size: selectedSize, quantity: quantity
+              type: 'EXCHANGE_OUT', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: `Saída para Troca de Promotor`, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
             })
           }
 
@@ -240,11 +237,7 @@ export default function VendasPage() {
             })
           }
 
-          // 2. Returned Piece: Remove from Reseller Inventory, Add to general inventory, Remove from Promoter Inventory
-          const { data: resInvIn } = await supabase.from('reseller_inventory').select('*').eq('reseller_id', exchangeResellerId).eq('product_id', returnProductId).eq('color', returnColor).eq('size', returnSize).single()
-          if (resInvIn) {
-            await supabase.from('reseller_inventory').update({ quantity: resInvIn.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', resInvIn.id)
-          }
+          // 2. Returned Piece: Add to general inventory, Remove from Promoter Inventory
 
           // Remove from promoter inventory (returned piece)
           let promInQuery = supabase.from('promoter_inventory').select('*').eq('promoter_id', exchangePromoterId).eq('product_id', returnProductId).eq('color', returnColor).eq('size', returnSize)
@@ -265,7 +258,7 @@ export default function VendasPage() {
             })
           }
           await supabase.from('inventory_transactions').insert({
-            type: 'EXCHANGE_IN', product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity, notes: `Entrada de Troca de Revendedora`, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
+            type: 'EXCHANGE_IN', product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity, notes: `Entrada de Troca de Promotor`, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
           })
 
         } else {
@@ -456,7 +449,7 @@ export default function VendasPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div className="md:col-span-2">
                       <p className="text-xs text-amber-700 bg-amber-100 p-3 rounded-xl">
-                        Atenção: A troca do consignado irá retirar a peça retornada da revendedora e do promotor, e adicionar a nova peça na revendedora e no promotor, dentro do lote/período especificado.
+                        Atenção: A troca do consignado irá retirar a peça retornada do promotor, e adicionar a nova peça no promotor, dentro do lote/período especificado.
                       </p>
                     </div>
                     <div>
@@ -469,15 +462,6 @@ export default function VendasPage() {
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-1">Selecione a Revendedora *</label>
-                      <select required disabled={!exchangePromoterId} value={exchangeResellerId} onChange={(e) => {setExchangeResellerId(e.target.value); setReturnProductId('');}} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-50">
-                        <option value="" disabled>Selecione a revendedora...</option>
-                        {resellers.filter(r => r.promoter_id === exchangePromoterId).map(r => (
-                          <option key={r.id} value={r.id}>{r.name}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-slate-700 mb-1">Lote / Período da Troca *</label>
                       <input 
                         type="text" 
@@ -495,14 +479,14 @@ export default function VendasPage() {
                 <div className="pt-2 border-t border-amber-200/50">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Produto que está voltando *</label>
                   {exchangeSourceType === 'OUT_PROMOTER' ? (
-                    <select required disabled={!exchangeResellerId} value={returnProductId ? `${returnProductId}|${returnColor}|${returnSize}` : ""} onChange={(e) => { 
+                    <select required disabled={exchangeSourceType === 'OUT_PROMOTER' ? !exchangePromoterId : !!selectedTransactionId} value={returnProductId ? `${returnProductId}|${returnColor}|${returnSize}` : ""} onChange={(e) => { 
                       const [pId, c, s] = e.target.value.split('|');
                       setReturnProductId(pId);
                       setReturnColor(c);
                       setReturnSize(s);
                     }} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-50 disabled:bg-slate-100">
-                      <option value="" disabled>Selecione a peça da revendedora...</option>
-                      {resellerInventory.map(inv => (
+                      <option value="" disabled>Selecione a peça...</option>
+                      {exchangePromoterInventory.map(inv => (
                         <option key={inv.id} value={`${inv.product_id}|${inv.color}|${inv.size}`}>
                           {inv.products?.sku ? `[${inv.products?.sku}] ` : ''}{inv.products?.name} ({inv.color} {inv.size}) - Saldo: {inv.quantity} un
                         </option>
@@ -627,7 +611,7 @@ export default function VendasPage() {
                       type="number"
                       required
                       min="1"
-                      max={mode === 'EXCHANGE' ? Math.min(maxQuantity, (exchangeSourceType === 'OUT_PROMOTER' && returnProductId && returnColor && returnSize ? (resellerInventory.find(i => i.product_id === returnProductId && i.color === returnColor && i.size === returnSize)?.quantity || 999) : (selectedTransactionId ? Math.abs(recentTransactions.find(t => t.id === selectedTransactionId)?.quantity || 999) : 999))) : maxQuantity}
+                      max={mode === 'EXCHANGE' ? Math.min(maxQuantity, (exchangeSourceType === 'OUT_PROMOTER' && returnProductId && returnColor && returnSize ? (exchangePromoterInventory.find(i => i.product_id === returnProductId && i.color === returnColor && i.size === returnSize)?.quantity || 999) : (selectedTransactionId ? Math.abs(recentTransactions.find(t => t.id === selectedTransactionId)?.quantity || 999) : 999))) : maxQuantity}
                       value={quantity}
                       onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
                       disabled={maxQuantity === 0}
@@ -640,7 +624,7 @@ export default function VendasPage() {
                     )}
                     {mode === 'EXCHANGE' && exchangeSourceType === 'OUT_PROMOTER' && returnProductId && returnColor && returnSize && (
                       <p className="text-xs text-amber-600 mt-1">
-                        Limite da devolução: {resellerInventory.find(i => i.product_id === returnProductId && i.color === returnColor && i.size === returnSize)?.quantity || 999} un.
+                        Limite da devolução: {exchangePromoterInventory.find(i => i.product_id === returnProductId && i.color === returnColor && i.size === returnSize)?.quantity || 999} un.
                       </p>
                     )}
                   </div>
