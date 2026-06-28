@@ -105,6 +105,12 @@ export default function VendasPage() {
       }
       const { data } = await query
       if (data) setExchangePromoterInventory(data)
+      
+      const { data: allInv } = await supabase.from('promoter_inventory').select('period').eq('promoter_id', exchangePromoterId)
+      if (allInv) {
+        const unique = Array.from(new Set(allInv.map(i => i.period || 'null')))
+        setReturnAvailablePeriods(unique)
+      }
     }
     fetchPromoterInv()
   }, [exchangePromoterId, exchangePeriod, supabase])
@@ -470,7 +476,7 @@ export default function VendasPage() {
                         className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm"
                       >
                         <option value="" disabled>Selecione o período...</option>
-                        {promoterPeriods.map(p => (
+                        {returnAvailablePeriods.map(p => (
                           <option key={p} value={p}>{p === 'null' ? 'Período Padrão' : p}</option>
                         ))}
                       </select>
