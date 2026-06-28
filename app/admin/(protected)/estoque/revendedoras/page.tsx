@@ -178,10 +178,15 @@ export default function EstoqueRevendedorasPage() {
           // 1. Reduce promoter inventory
           await supabase.from('promoter_inventory').update({ quantity: invItem.quantity - transferQuantity }).eq('id', invItem.id)
           
-          // 2. Check if reseller already has this product/size/color
-          const { data: rInvRow } = await supabase.from('reseller_inventory').select('*')
+          // 2. Check if reseller already has this product/size/color IN THIS PERIOD
+          let rInvQuery = supabase.from('reseller_inventory').select('*')
             .eq('reseller_id', selectedResellerId).eq('product_id', invItem.product_id)
-            .eq('size', invItem.size).eq('color', invItem.color).single()
+            .eq('size', invItem.size).eq('color', invItem.color)
+
+          if (invItem.period && invItem.period !== 'null') rInvQuery = rInvQuery.eq('period', invItem.period)
+          else rInvQuery = rInvQuery.is('period', null)
+
+          const { data: rInvRow } = await rInvQuery.single()
             
           if (rInvRow) {
               await supabase.from('reseller_inventory').update({ quantity: rInvRow.quantity + transferQuantity }).eq('id', rInvRow.id)
@@ -191,7 +196,8 @@ export default function EstoqueRevendedorasPage() {
                   product_id: invItem.product_id,
                   size: invItem.size,
                   color: invItem.color,
-                  quantity: transferQuantity
+                  quantity: transferQuantity,
+                  period: invItem.period && invItem.period !== 'null' ? invItem.period : null
               })
           }
           
@@ -292,6 +298,11 @@ export default function EstoqueRevendedorasPage() {
                           R$ {Number(kit.total_price || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                         </div>
                       </div>
+                      <div className="mb-4">
+                        <span className="text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-1 rounded">
+                          Lote: {kit.period && kit.period !== 'null' ? kit.period : 'Padrão'}
+                        </span>
+                      </div>
                       <div className="space-y-2 mb-4">
                         {kit.items.map((item: any) => (
                           <div key={item.id} className="text-sm text-slate-600 flex justify-between bg-slate-50 p-2 rounded-lg">
@@ -320,6 +331,7 @@ export default function EstoqueRevendedorasPage() {
                         <th className="px-6 py-4">Produto</th>
                         <th className="px-6 py-4">Tamanho</th>
                         <th className="px-6 py-4">Cor</th>
+                        <th className="px-6 py-4">Lote</th>
                         <th className="px-6 py-4 text-right">Quantidade</th>
                       </tr>
                     </thead>
@@ -341,6 +353,11 @@ export default function EstoqueRevendedorasPage() {
                               </span>
                             </td>
                             <td className="px-6 py-4 capitalize text-slate-600">{item.color}</td>
+                            <td className="px-6 py-4">
+                              <span className="text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-1 rounded">
+                                {item.period && item.period !== 'null' ? item.period : 'Padrão'}
+                              </span>
+                            </td>
                             <td className="px-6 py-4 text-right">
                               <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-bold bg-brand-plum/10 text-brand-plum">
                                 {item.quantity} un
@@ -380,7 +397,7 @@ export default function EstoqueRevendedorasPage() {
                             >
                                 <option value="" disabled>Selecione um Kit...</option>
                                 {promoterKits.map(kit => (
-                                    <option key={kit.id} value={kit.id}>{kit.name} - R$ {kit.total_price}</option>
+                                    <option key={kit.id} value={kit.id}>{kit.name} (Lote: {kit.period && kit.period !== 'null' ? kit.period : 'Padrão'}) - R$ {kit.total_price}</option>
                                 ))}
                             </select>
                         </div>
@@ -418,7 +435,7 @@ export default function EstoqueRevendedorasPage() {
                             >
                                 <option value="" disabled>Selecione a peça...</option>
                                 {promoterInventory.map(item => (
-                                    <option key={item.id} value={item.id}>{item.product_name} - {item.size} - {item.color} ({item.quantity} disp.)</option>
+                                    <option key={item.id} value={item.id}>{item.product_name} - {item.size} - {item.color} (Lote: {item.period && item.period !== 'null' ? item.period : 'Padrão'}) ({item.quantity} disp.)</option>
                                 ))}
                             </select>
                         </div>
