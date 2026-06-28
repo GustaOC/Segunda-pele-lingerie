@@ -37,6 +37,11 @@ export default function EstoquePromotoresPage() {
   const [inventory, setInventory] = useState<PromoterInventoryRow[]>([])
   const [promoters, setPromoters] = useState<any[]>([])
   const router = useRouter()
+  const [transferKitId, setTransferKitId] = useState("")
+  const [transferPieceId, setTransferPieceId] = useState("")
+  const [transferQuantity, setTransferQuantity] = useState(1)
+
+  const [weeklyPeriod, setWeeklyPeriod] = useState("")
   
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -251,7 +256,7 @@ export default function EstoquePromotoresPage() {
           color: item.color,
           quantity: item.quantity,
           promoter_id: selectedPromoterId,
-          notes: `Transferência em Lote (Admin)`
+          notes: weeklyPeriod ? `Transferência em Lote (Semana: ${weeklyPeriod})` : `Transferência em Lote (Admin)`
         })
       }
 
@@ -261,6 +266,7 @@ export default function EstoquePromotoresPage() {
       // Reset form
       setKitItems([])
       setSelectedPromoterId("")
+      setWeeklyPeriod("")
       
     } catch (err: any) {
       console.error(err)
@@ -480,8 +486,18 @@ export default function EstoquePromotoresPage() {
                   </select>
                 </div>
 
-                <div className="pt-4 border-t border-slate-100">
-                  <label className="block text-sm font-bold text-slate-700 mb-4">2. Adicionar Peças à Lista</label>
+                <div className="pt-4">
+                  <label className="block text-sm font-bold text-slate-700 mb-1">2. Período Semanal (Opcional)</label>
+                  <input
+                    type="week"
+                    value={weeklyPeriod}
+                    onChange={(e) => setWeeklyPeriod(e.target.value)}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+                  />
+                </div>
+
+                <div className="pt-4 border-t border-slate-100 mt-4">
+                  <label className="block text-sm font-bold text-slate-700 mb-4">3. Adicionar Peças à Lista</label>
                   
                   <div className="space-y-4">
                     <div>
