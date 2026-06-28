@@ -28,6 +28,10 @@ export default function VendasPage() {
   const [selectedPromoterId, setSelectedPromoterId] = useState("")
 
   // For Exchange mode (Troca)
+  const [exchangeSourceType, setExchangeSourceType] = useState<'OUT_RETAIL' | 'OUT_WHOLESALE' | 'OUT_PROMOTER' | ''>('')
+  const [selectedTransactionId, setSelectedTransactionId] = useState("")
+  const [recentTransactions, setRecentTransactions] = useState<any[]>([])
+
   const [returnProductId, setReturnProductId] = useState("")
   const [returnSize, setReturnSize] = useState("")
   const [returnColor, setReturnColor] = useState("")
@@ -40,16 +44,29 @@ export default function VendasPage() {
   useEffect(() => {
     async function init() {
       setLoading(true)
-      const [prodRes, promRes] = await Promise.all([
+      const [prodRes, promRes, transRes] = await Promise.all([
         supabase.from('products').select('id, name, sku, colors, sizes'),
-        supabase.from('profiles').select('id, nome').in('role', ['CONSULTANT', 'USER', 'ADMIN'])
+        supabase.from('profiles').select('id, nome').in('role', ['CONSULTANT', 'USER', 'ADMIN', 'PROMOTOR']),
+        supabase.from('inventory_transactions').select('*, products(id, name, sku)').in('type', ['OUT_RETAIL', 'OUT_WHOLESALE', 'OUT_PROMOTER']).order('created_at', { ascending: false }).limit(200)
       ])
       if (prodRes.data) setProducts(prodRes.data)
       if (promRes.data) setPromoters(promRes.data)
+      if (transRes.data) setRecentTransactions(transRes.data)
       setLoading(false)
     }
     init()
   }, [])
+
+  useEffect(() => {
+    if (selectedTransactionId) {
+      const tx = recentTransactions.find(t => t.id === selectedTransactionId)
+      if (tx) {
+        setReturnProductId(tx.product_id)
+        setReturnColor(tx.color)
+        setReturnSize(tx.size)
+      }
+    }
+  }, [selectedTransactionId, recentTransactions])
 
   // Check max quantity based on mode (Geral vs Promotor)
   useEffect(() => {
@@ -226,10 +243,44 @@ export default function VendasPage() {
 
             {mode === 'EXCHANGE' && (
               <div className="bg-amber-50 p-6 rounded-2xl border border-amber-100 mb-6 space-y-4">
-                <h3 className="font-bold text-amber-900 flex items-center"><RefreshCw className="w-4 h-4 mr-2" /> Peça que ESTÁ VOLTANDO para o estoque</h3>
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Produto *</label>
-                  <select required value={returnProductId} onChange={(e) => { setReturnProductId(e.target.value); setReturnColor(""); setReturnSize("") }} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm">
+                <h3 className="font-bold text-amber-900 flex items-center"><RefreshCw className="w-4 h-4 mr-2" /> Venda Original (O que está voltando)</h3>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-4">
+                  <label className="flex items-center space-x-2 bg-white p-3 rounded-xl border border-amber-200 cursor-pointer hover:bg-amber-50">
+                    <input type="radio" name="exchangeSource" value="OUT_RETAIL" checked={exchangeSourceType === 'OUT_RETAIL'} onChange={() => {setExchangeSourceType('OUT_RETAIL'); setSelectedTransactionId('')}} className="text-amber-500 focus:ring-amber-500" />
+                    <span className="text-sm font-medium">Troca do Varejo</span>
+                  </label>
+                  <label className="flex items-center space-x-2 bg-white p-3 rounded-xl border border-amber-200 cursor-pointer hover:bg-amber-50">
+                    <input type="radio" name="exchangeSource" value="OUT_WHOLESALE" checked={exchangeSourceType === 'OUT_WHOLESALE'} onChange={() => {setExchangeSourceType('OUT_WHOLESALE'); setSelectedTransactionId('')}} className="text-amber-500 focus:ring-amber-500" />
+                    <span className="text-sm font-medium">Troca do Atacado</span>
+                  </label>
+                  <label className="flex items-center space-x-2 bg-white p-3 rounded-xl border border-amber-200 cursor-pointer hover:bg-amber-50">
+                    <input type="radio" name="exchangeSource" value="OUT_PROMOTER" checked={exchangeSourceType === 'OUT_PROMOTER'} onChange={() => {setExchangeSourceType('OUT_PROMOTER'); setSelectedTransactionId('')}} className="text-amber-500 focus:ring-amber-500" />
+                    <span className="text-sm font-medium">Troca do Consignado</span>
+                  </label>
+                </div>
+
+                {exchangeSourceType && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-slate-700 mb-1">Selecione a Venda *</label>
+                    <select required value={selectedTransactionId} onChange={(e) => setSelectedTransactionId(e.target.value)} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm">
+                      <option value="" disabled>Selecione a venda anterior...</option>
+                      {recentTransactions.filter(t => t.type === exchangeSourceType).map(t => {
+                        const dateStr = new Date(t.created_at).toLocaleDateString('pt-BR')
+                        const promoterName = t.promoter_id ? promoters.find(p => p.id === t.promoter_id)?.nome : ''
+                        return (
+                          <option key={t.id} value={t.id}>
+                            {dateStr} - {t.products?.name} ({t.color} {t.size}) - {Math.abs(t.quantity)} un {promoterName ? `- ${promoterName}` : ''}
+                          </option>
+                        )
+                      })}
+                    </select>
+                  </div>
+                )}
+
+                <div className="pt-2 border-t border-amber-200/50">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Produto que está voltando *</label>
+                  <select required disabled={!!selectedTransactionId} value={returnProductId} onChange={(e) => { setReturnProductId(e.target.value); setReturnColor(""); setReturnSize("") }} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-70 disabled:bg-slate-100">
                     <option value="" disabled>Selecione...</option>
                     {products.map(p => <option key={p.id} value={p.id}>{p.sku ? `[${p.sku}] ` : ''}{p.name}</option>)}
                   </select>
@@ -237,14 +288,14 @@ export default function VendasPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Cor *</label>
-                    <select required value={returnColor} onChange={(e) => setReturnColor(e.target.value)} disabled={!returnProductId} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-50">
+                    <select required disabled={!!selectedTransactionId || !returnProductId} value={returnColor} onChange={(e) => setReturnColor(e.target.value)} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-70 disabled:bg-slate-100">
                       <option value="" disabled>Selecione...</option>
                       {returnProductObj?.colors?.map((c:any, i:number) => <option key={i} value={c.name}>{c.name}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho *</label>
-                    <select required value={returnSize} onChange={(e) => setReturnSize(e.target.value)} disabled={!returnProductId} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-50">
+                    <select required disabled={!!selectedTransactionId || !returnProductId} value={returnSize} onChange={(e) => setReturnSize(e.target.value)} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-70 disabled:bg-slate-100">
                       <option value="" disabled>Selecione...</option>
                       {returnProductObj?.sizes?.map((s:any, i:number) => <option key={i} value={s}>{s}</option>) || ["P","M","G","GG"].map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
@@ -324,12 +375,17 @@ export default function VendasPage() {
                       type="number"
                       required
                       min="1"
-                      max={maxQuantity}
+                      max={mode === 'EXCHANGE' && selectedTransactionId ? Math.min(maxQuantity, Math.abs(recentTransactions.find(t => t.id === selectedTransactionId)?.quantity || 999)) : maxQuantity}
                       value={quantity}
                       onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
                       disabled={maxQuantity === 0}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm disabled:opacity-50"
                     />
+                    {mode === 'EXCHANGE' && selectedTransactionId && (
+                      <p className="text-xs text-amber-600 mt-1">
+                        Limite da devolução: {Math.abs(recentTransactions.find(t => t.id === selectedTransactionId)?.quantity || 999)} un.
+                      </p>
+                    )}
                   </div>
                 </div>
                 
