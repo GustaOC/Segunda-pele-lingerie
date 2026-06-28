@@ -48,14 +48,24 @@ export default function VendasPage() {
   useEffect(() => {
     async function init() {
       setLoading(true)
-      const [prodRes, promRes, transRes, reselRes] = await Promise.all([
+      const [prodRes, transRes, reselRes] = await Promise.all([
         supabase.from('products').select('id, name, sku, colors, sizes'),
-        supabase.from('profiles').select('id, nome').in('role', ['CONSULTANT', 'USER', 'ADMIN', 'PROMOTOR']),
         supabase.from('inventory_transactions').select('*, products(id, name, sku)').in('type', ['OUT_RETAIL', 'OUT_WHOLESALE']).order('created_at', { ascending: false }).limit(200),
         supabase.from('resellers').select('*').order('name')
       ])
+      
+      try {
+        const res = await fetch('/api/admin/user')
+        const usersRes = await res.json()
+        if (usersRes.data) {
+          const promotersList = usersRes.data.filter((u: any) => ['CONSULTANT', 'PROMOTOR', 'ADMIN'].includes(u.role))
+          setPromoters(promotersList)
+        }
+      } catch (e) {
+        console.error(e)
+      }
+
       if (prodRes.data) setProducts(prodRes.data)
-      if (promRes.data) setPromoters(promRes.data)
       if (transRes.data) setRecentTransactions(transRes.data)
       if (reselRes.data) setResellers(reselRes.data)
       setLoading(false)
@@ -316,7 +326,7 @@ export default function VendasPage() {
                 >
                   <option value="" disabled>Selecione o Promotor/Revendedora</option>
                   {promoters.map(p => (
-                    <option key={p.id} value={p.id}>{p.nome || p.email}</option>
+                    <option key={p.id} value={p.id}>{p.nome || p.firstName || p.email}</option>
                   ))}
                 </select>
                 <p className="text-xs text-purple-700 mt-2">Isso vai abater as peças do estoque pessoal deste promotor, não do estoque geral.</p>
@@ -372,7 +382,7 @@ export default function VendasPage() {
                       <select required value={exchangePromoterId} onChange={(e) => {setExchangePromoterId(e.target.value); setExchangeResellerId(''); setReturnProductId('');}} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm">
                         <option value="" disabled>Selecione o promotor...</option>
                         {promoters.map(p => (
-                          <option key={p.id} value={p.id}>{p.nome}</option>
+                          <option key={p.id} value={p.id}>{p.nome || p.firstName || p.email}</option>
                         ))}
                       </select>
                     </div>
