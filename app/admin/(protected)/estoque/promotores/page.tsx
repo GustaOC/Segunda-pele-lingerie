@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/button"
 import { Playfair_Display, Inter } from "next/font/google"
-import { useState, useEffect } from "react"
+import React, { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
 import { Loader2, Plus, ArrowRight, User, ShoppingCart, Trash2, Package, X } from "lucide-react"
@@ -20,6 +20,7 @@ type PromoterInventoryRow = {
   color: string
   quantity: number
   sku?: string
+  period?: string
 }
 
 type KitItem = {
@@ -222,14 +223,21 @@ export default function EstoquePromotoresPage() {
           .eq('id', generalInv.id)
 
         // 2. Adicionar no estoque do promotor
-        const { data: existingPromInv } = await supabase
+        const query = supabase
           .from('promoter_inventory')
           .select('*')
           .eq('promoter_id', selectedPromoterId)
           .eq('product_id', item.product_id)
           .eq('size', item.size)
           .eq('color', item.color)
-          .single()
+
+        if (weeklyPeriod) {
+          query.eq('period', weeklyPeriod)
+        } else {
+          query.is('period', null)
+        }
+
+        const { data: existingPromInv } = await query.single()
 
         if (existingPromInv) {
           await supabase
@@ -244,7 +252,8 @@ export default function EstoquePromotoresPage() {
               product_id: item.product_id,
               size: item.size,
               color: item.color,
-              quantity: item.quantity
+              quantity: item.quantity,
+              period: weeklyPeriod || null
             })
         }
 
@@ -342,53 +351,68 @@ export default function EstoquePromotoresPage() {
         ) : (
           <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600 uppercase tracking-wider">
-                    <th className="px-6 py-4">Promotor</th>
-                    <th className="px-6 py-4">SKU</th>
-                    <th className="px-6 py-4">Produto</th>
-                    <th className="px-6 py-4">Tamanho</th>
-                    <th className="px-6 py-4">Cor</th>
-                    <th className="px-6 py-4 text-right">Qtd com o Promotor</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {inventory.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="px-6 py-8 text-center text-slate-500">
-                        Nenhuma peça com promotores atualmente.
-                      </td>
+              {inventory.length === 0 ? (
+                <div className="px-6 py-8 text-center text-slate-500">
+                  Nenhuma peça com promotores atualmente.
+                </div>
+              ) : (
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600 uppercase tracking-wider">
+                      <th className="px-6 py-4">Promotor</th>
+                      <th className="px-6 py-4">SKU</th>
+                      <th className="px-6 py-4">Produto</th>
+                      <th className="px-6 py-4">Tamanho</th>
+                      <th className="px-6 py-4">Cor</th>
+                      <th className="px-6 py-4 text-right">Qtd com o Promotor</th>
                     </tr>
-                  ) : (
-                    inventory.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center text-slate-800 font-medium">
-                            <User className="w-4 h-4 mr-2 text-brand-plum" />
-                            {item.promoter_name}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 text-slate-500 font-mono text-sm">{item.sku || '-'}</td>
-                        <td className="px-6 py-4 font-medium text-slate-800">{item.product_name}</td>
-                        <td className="px-6 py-4">
-                          <span className="inline-flex items-center justify-center px-2 py-1 rounded bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200">
-                            {item.size}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 capitalize text-slate-600">
-                          {item.color}
-                        </td>
-                        <td className="px-6 py-4 text-right">
-                          <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-bold bg-brand-plum/10 text-brand-plum">
-                            {item.quantity} un
-                          </span>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {/* Agrupar por periodo */}
+                    {Object.entries(
+                      inventory.reduce((acc, item) => {
+                        const p = item.period || 'Sem Período Registrado'
+                        if (!acc[p]) acc[p] = []
+                        acc[p].push(item)
+                        return acc
+                      }, {} as Record<string, PromoterInventoryRow[]>)
+                    ).map(([period, items]) => (
+                      <React.Fragment key={period}>
+                        <tr className="bg-slate-100 border-t border-b border-slate-200">
+                          <td colSpan={6} className="px-6 py-2 text-sm font-bold text-slate-700">
+                            Período: {period}
+                          </td>
+                        </tr>
+                        {items.map((item) => (
+                          <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                            <td className="px-6 py-4">
+                              <div className="flex items-center text-slate-800 font-medium">
+                                <User className="w-4 h-4 mr-2 text-brand-plum" />
+                                {item.promoter_name}
+                              </div>
+                            </td>
+                            <td className="px-6 py-4 text-slate-500 font-mono text-sm">{item.sku || '-'}</td>
+                            <td className="px-6 py-4 font-medium text-slate-800">{item.product_name}</td>
+                            <td className="px-6 py-4">
+                              <span className="inline-flex items-center justify-center px-2 py-1 rounded bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200">
+                                {item.size}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 capitalize text-slate-600">
+                              {item.color}
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-bold bg-brand-plum/10 text-brand-plum">
+                                {item.quantity} un
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </div>
         )}
