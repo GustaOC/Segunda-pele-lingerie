@@ -43,6 +43,7 @@ export default function EstoquePromotoresPage() {
   const [transferQuantity, setTransferQuantity] = useState(1)
 
   const [weeklyPeriod, setWeeklyPeriod] = useState("")
+  const [filterPromoterId, setFilterPromoterId] = useState("ALL")
   
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -360,28 +361,44 @@ export default function EstoquePromotoresPage() {
             <Loader2 className="w-8 h-8 animate-spin text-brand-plum" />
           </div>
         ) : (
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              {inventory.length === 0 ? (
-                <div className="px-6 py-8 text-center text-slate-500">
-                  Nenhuma peça com promotores atualmente.
-                </div>
-              ) : (
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600 uppercase tracking-wider">
-                      <th className="px-6 py-4">Promotor</th>
-                      <th className="px-6 py-4">SKU</th>
-                      <th className="px-6 py-4">Produto</th>
-                      <th className="px-6 py-4">Tamanho</th>
-                      <th className="px-6 py-4">Cor</th>
-                      <th className="px-6 py-4 text-right">Qtd com o Promotor</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {/* Agrupar por periodo */}
-                    {Object.entries(
-                      inventory.reduce((acc, item) => {
+          <div className="space-y-6">
+            {/* Filtro por Promotor */}
+            <div className="flex items-center gap-4 bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
+              <label className="text-sm font-bold text-slate-700 whitespace-nowrap">Filtrar por Promotor:</label>
+              <select
+                value={filterPromoterId}
+                onChange={(e) => setFilterPromoterId(e.target.value)}
+                className="w-full md:w-auto min-w-[200px] bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 outline-none focus:border-brand-plum text-sm cursor-pointer"
+              >
+                <option value="ALL">Todos os Promotores</option>
+                {promoters.map(p => (
+                  <option key={p.id} value={p.id}>{p.nome}</option>
+                ))}
+              </select>
+            </div>
+
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+              <div className="overflow-x-auto">
+                {inventory.length === 0 ? (
+                  <div className="px-6 py-8 text-center text-slate-500">
+                    Nenhuma peça com promotores atualmente.
+                  </div>
+                ) : (
+                  <table className="w-full text-left border-collapse">
+                    <thead>
+                      <tr className="bg-slate-50 border-b border-slate-200 text-sm font-semibold text-slate-600 uppercase tracking-wider">
+                        <th className="px-6 py-4">Promotor</th>
+                        <th className="px-6 py-4">SKU</th>
+                        <th className="px-6 py-4">Produto</th>
+                        <th className="px-6 py-4">Tamanho</th>
+                        <th className="px-6 py-4">Cor</th>
+                        <th className="px-6 py-4 text-right">Qtd com o Promotor</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {/* Agrupar por periodo */}
+                      {Object.entries(
+                        (filterPromoterId === "ALL" ? inventory : inventory.filter(i => i.promoter_id === filterPromoterId)).reduce((acc, item) => {
                         const p = item.period || 'Sem Período Registrado'
                         if (!acc[p]) acc[p] = []
                         acc[p].push(item)
@@ -425,6 +442,7 @@ export default function EstoquePromotoresPage() {
                 </table>
               )}
             </div>
+          </div>
           </div>
         )}
 
