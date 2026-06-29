@@ -13,6 +13,10 @@ export default function VendasPage() {
   const [loading, setLoading] = useState(true)
   const [products, setProducts] = useState<any[]>([])
   const [promoters, setPromoters] = useState<any[]>([])
+
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [userRole, setUserRole] = useState<string>("")
+
   
   // PDV State
   const [mode, setMode] = useState<'RETAIL' | 'WHOLESALE' | 'PROMOTER_SALE' | 'EXCHANGE'>('RETAIL')
@@ -66,10 +70,27 @@ export default function VendasPage() {
       ])
       
       try {
+        const { data: { session } } = await supabase.auth.getSession()
+        let currentRole = ""
+        if (session) {
+          setCurrentUser(session.user)
+          const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single()
+          currentRole = profile?.role || session.user.user_metadata?.role || ""
+          setUserRole(currentRole)
+        }
+
         const res = await fetch('/api/admin/user')
         const usersRes = await res.json()
         if (usersRes.data) {
-          const promotersList = usersRes.data.filter((u: any) => ['CONSULTANT', 'PROMOTOR', 'ADMIN'].includes(u.role))
+          let promotersList = usersRes.data.filter((u: any) => ['CONSULTANT', 'PROMOTOR', 'ADMIN'].includes(u.role))
+          
+          if (currentRole === 'PROMOTOR' || currentRole === 'CONSULTANT') {
+            promotersList = promotersList.filter((u: any) => u.id === session?.user.id)
+            if (promotersList.length > 0) {
+              setExchangePromoterId(promotersList[0].id)
+              setSelectedPromoterId(promotersList[0].id)
+            }
+          }
           setPromoters(promotersList)
         }
       } catch (e) {

@@ -37,6 +37,10 @@ export default function EstoqueRevendedorasPage() {
   // Selectors state
   const [promoters, setPromoters] = useState<any[]>([])
   const [selectedPromoterId, setSelectedPromoterId] = useState("")
+
+  const [currentUser, setCurrentUser] = useState<any>(null)
+  const [userRole, setUserRole] = useState<string>("")
+
   
   const [resellers, setResellers] = useState<Reseller[]>([])
   const [selectedResellerId, setSelectedResellerId] = useState("")
@@ -76,11 +80,28 @@ export default function EstoqueRevendedorasPage() {
     setLoading(true)
     
     try {
+      const { data: { session } } = await supabase.auth.getSession()
+      let currentRole = ""
+      if (session) {
+        setCurrentUser(session.user)
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single()
+        currentRole = profile?.role || session.user.user_metadata?.role || ""
+        setUserRole(currentRole)
+      }
+
       const res = await fetch('/api/admin/user')
       const usersRes = await res.json()
       
       if (usersRes.data) {
-        const promotersList = usersRes.data.filter((u: any) => ['CONSULTANT', 'PROMOTOR', 'ADMIN'].includes(u.role))
+        let promotersList = usersRes.data.filter((u: any) => ['CONSULTANT', 'PROMOTOR', 'ADMIN'].includes(u.role))
+        
+        if (currentRole === 'PROMOTOR' || currentRole === 'CONSULTANT') {
+           promotersList = promotersList.filter((u: any) => u.id === session?.user.id)
+           if (promotersList.length > 0) {
+             setSelectedPromoterId(promotersList[0].id)
+           }
+        }
+        
         setPromoters(promotersList)
       }
     } catch (e) {
@@ -369,10 +390,11 @@ export default function EstoqueRevendedorasPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
             <label className="block text-sm font-bold text-slate-700 mb-2">1. Selecione o Promotor Responsável</label>
-            <select
+<select
+              disabled={userRole === 'PROMOTOR' || userRole === 'CONSULTANT'}
               value={selectedPromoterId}
               onChange={(e) => setSelectedPromoterId(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm disabled:opacity-50"
             >
               <option value="" disabled>Selecione um promotor...</option>
               {promoters.map(p => (

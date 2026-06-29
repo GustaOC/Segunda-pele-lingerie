@@ -114,9 +114,9 @@ export default function ContaPage() {
           
           <div className="flex flex-col gap-3 w-full md:w-auto">
 
-            {role === 'ADMIN' && (
+            {(role === 'ADMIN' || role === 'PROMOTOR' || role === 'CONSULTANT') && (
               <Button onClick={() => router.push('/admin')} variant="outline" className="border-brand-plum text-brand-plum hover:bg-brand-plum hover:text-white rounded-full w-full md:w-auto">
-                Acessar Painel Admin
+                {role === 'ADMIN' ? 'Acessar Painel Admin' : 'Acessar Área do Promotor'}
               </Button>
             )}
             <Button onClick={handleLogout} variant="outline" className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600 rounded-full w-full md:w-auto">
