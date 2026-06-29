@@ -32,6 +32,7 @@ type KitItem = {
   color: string
   quantity: number
   price: number
+  originalQuantity?: number
 }
 
 type Kit = {
@@ -46,6 +47,7 @@ type Kit = {
 export default function KitsPromotoraPage() {
   const [loading, setLoading] = useState(true)
   const [user, setUser] = useState<any>(null)
+  const [isAdmin, setIsAdmin] = useState(false)
   const [inventory, setInventory] = useState<PromoterInventoryRow[]>([])
   const [kits, setKits] = useState<Kit[]>([])
   
@@ -73,12 +75,17 @@ export default function KitsPromotoraPage() {
     if (!session) return
     setUser(session.user)
 
-    // 1. Fetch Promoter Inventory & Products
-    const [prodRes, invRes, kitsRes] = await Promise.all([
+    // 1. Fetch Promoter Inventory & Products & User Role
+    const [prodRes, invRes, kitsRes, userRes] = await Promise.all([
       supabase.from('products').select('*'),
       supabase.from('promoter_inventory').select('*').eq('promoter_id', session.user.id).gt('quantity', 0),
-      supabase.from('promoter_kits').select('*, items:promoter_kit_items(*)').eq('promoter_id', session.user.id).is('reseller_id', null).order('created_at', { ascending: false })
+      supabase.from('promoter_kits').select('*, items:promoter_kit_items(*)').eq('promoter_id', session.user.id).is('reseller_id', null).order('created_at', { ascending: false }),
+      supabase.from('users').select('role').eq('id', session.user.id).single()
     ])
+
+    if (userRes.data) {
+      setIsAdmin(userRes.data.role === 'ADMIN')
+    }
 
     const products = prodRes.data || []
     
@@ -151,11 +158,26 @@ export default function KitsPromotoraPage() {
     setAddQuantity(1)
   }
 
+  // Check if current editing kit is locked for non-admins (older than 1 hour)
+  const editingKitObj = editingKitId ? kits.find(k => k.id === editingKitId) : null
+  const isEditingLocked = editingKitObj ? (!isAdmin && (Date.now() - new Date(editingKitObj.created_at).getTime()) > 3600000) : false
+
   const handleRemoveItem = (id: string) => {
+    const item = kitItems.find(i => i.id === id)
+    if (isEditingLocked && item && item.originalQuantity !== undefined) {
+      alert("Você não pode remover itens que já estavam neste kit. Após 1 hora, só é possível adicionar novas peças.")
+      return
+    }
     setKitItems(kitItems.filter(item => item.id !== id))
   }
 
   const handleDecrementItem = (id: string) => {
+    const item = kitItems.find(i => i.id === id)
+    if (!item) return
+    if (isEditingLocked && item.originalQuantity !== undefined && item.quantity <= item.originalQuantity) {
+      alert("Você não pode diminuir a quantidade de peças originais deste kit após 1 hora.")
+      return
+    }
     setKitItems(kitItems.map(item => {
       if (item.id === id) {
         return { ...item, quantity: item.quantity - 1 }
@@ -181,7 +203,8 @@ export default function KitsPromotoraPage() {
         size: item.size,
         color: item.color,
         quantity: item.quantity,
-        price: item.price || 0
+        price: item.price || 0,
+        originalQuantity: item.quantity
       }
     })
     setKitItems(mappedItems)
@@ -460,8 +483,9 @@ export default function KitsPromotoraPage() {
                       type="text"
                       placeholder="Ex: Kit Especial Dia das Mães"
                       value={kitName}
+                      disabled={isEditingLocked}
                       onChange={(e) => setKitName(e.target.value)}
-                      className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-plum/50"
+                      className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-plum/50 disabled:opacity-50"
                     />
                   </div>
                   {!editingKitId && (
@@ -481,12 +505,13 @@ export default function KitsPromotoraPage() {
                     <select
                       required
                       value={kitPeriod}
+                      disabled={isEditingLocked}
                       onChange={(e) => {
                         setKitPeriod(e.target.value)
                         setKitItems([]) // clear items because period changed
                         setSelectedInvId("")
                       }}
-                      className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-plum/50"
+                      className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-plum/50 disabled:opacity-50"
                     >
                       <option value="" disabled>Selecione um período...</option>
                       {availablePeriods.map(p => (
@@ -637,9 +662,11 @@ export default function KitsPromotoraPage() {
                         <button onClick={() => handleEditKit(kit)} className="text-slate-400 hover:text-brand-plum transition-colors p-1.5 bg-slate-50 rounded-full hover:bg-brand-plum/10" title="Editar">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                         </button>
-                        <button onClick={() => handleDeleteKit(kit)} className="text-slate-400 hover:text-red-500 transition-colors p-1.5 bg-slate-50 rounded-full hover:bg-red-50" title="Excluir">
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {(!(!isAdmin && (Date.now() - new Date(kit.created_at).getTime() > 3600000))) && (
+                          <button onClick={() => handleDeleteKit(kit)} className="text-slate-400 hover:text-red-500 transition-colors p-1.5 bg-slate-50 rounded-full hover:bg-red-50" title="Excluir">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </div>
                   </div>
