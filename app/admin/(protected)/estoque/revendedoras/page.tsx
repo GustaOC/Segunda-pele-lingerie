@@ -199,7 +199,8 @@ export default function EstoqueRevendedorasPage() {
 
   const handleEditKit = (kit: any) => {
     const ONE_HOUR = 60 * 60 * 1000
-    const kitAge = Date.now() - new Date(kit.created_at).getTime()
+    const kitDate = kit.updated_at || kit.created_at
+    const kitAge = Date.now() - new Date(kitDate).getTime()
     
     // Admin has no restrictions.
     // Promoter can only add pieces, so we lock original items ALWAYS.
@@ -377,7 +378,7 @@ export default function EstoqueRevendedorasPage() {
       if (!transferKitId || !selectedResellerId) return alert("Selecione um Kit.")
       setSubmitting(true)
       try {
-          const { error } = await supabase.from('promoter_kits').update({ reseller_id: selectedResellerId }).eq('id', transferKitId)
+          const { error } = await supabase.from('promoter_kits').update({ reseller_id: selectedResellerId, updated_at: new Date().toISOString() }).eq('id', transferKitId)
           if (error) throw error
           alert("Kit transferido com sucesso!")
           setIsTransferKitModalOpen(false)
@@ -466,9 +467,11 @@ export default function EstoqueRevendedorasPage() {
                       <div className="flex justify-between items-start mb-4">
                         <h3 className="font-bold text-slate-800 text-lg">{kit.name}</h3>
                         <div className="flex gap-2 items-center">
-                          <button onClick={() => handleEditKit(kit)} className="text-slate-400 hover:text-brand-plum transition-colors p-1.5 bg-slate-50 rounded-full hover:bg-brand-plum/10" title="Editar Kit">
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                          </button>
+                          {(userRole === 'ADMIN' || (Date.now() - new Date(kit.updated_at || kit.created_at).getTime() <= 3600000)) && (
+                            <button onClick={() => handleEditKit(kit)} className="text-slate-400 hover:text-brand-plum transition-colors p-1.5 bg-slate-50 rounded-full hover:bg-brand-plum/10" title="Editar Kit">
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </button>
+                          )}
                           <div className="text-brand-plum font-bold bg-brand-plum/10 px-3 py-1 rounded-full text-sm">
                             R$ {Number(kit.total_price || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}
                           </div>
