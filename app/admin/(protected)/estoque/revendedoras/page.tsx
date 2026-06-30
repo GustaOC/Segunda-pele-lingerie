@@ -20,6 +20,7 @@ type KitItem = {
   color: string
   quantity: number
   price: number
+  originalQuantity?: number
 }
 
 type Reseller = {
@@ -68,6 +69,7 @@ export default function EstoqueRevendedorasPage() {
   const [editKitName, setEditKitName] = useState("")
   const [editKitPeriod, setEditKitPeriod] = useState("")
   const [editKitItems, setEditKitItems] = useState<KitItem[]>([])
+  const [isKitLocked, setIsKitLocked] = useState(false)
   const [addQuantity, setAddQuantity] = useState(1)
   const [selectedInvId, setSelectedInvId] = useState("")
 
@@ -196,6 +198,11 @@ export default function EstoqueRevendedorasPage() {
   
 
   const handleEditKit = (kit: any) => {
+    const ONE_HOUR = 60 * 60 * 1000
+    const kitAge = Date.now() - new Date(kit.created_at).getTime()
+    const locked = userRole !== 'ADMIN' && kitAge > ONE_HOUR
+    setIsKitLocked(locked)
+
     setEditKitName(kit.name)
     setEditingKitId(kit.id)
     setEditKitPeriod(kit.period || "")
@@ -209,7 +216,8 @@ export default function EstoqueRevendedorasPage() {
         size: item.size,
         color: item.color,
         quantity: item.quantity,
-        price: p ? p.price : 0
+        price: p ? p.price : 0,
+        originalQuantity: item.quantity
       }
     })
     setEditKitItems(mappedItems)
@@ -240,12 +248,23 @@ export default function EstoqueRevendedorasPage() {
   }
 
   const handleRemoveItemFromEdit = (id: string) => {
+    if (isKitLocked) {
+      const item = editKitItems.find(i => i.id === id)
+      if (item && item.originalQuantity && item.originalQuantity > 0) {
+        alert("Você não pode remover itens originais deste kit após 1 hora da criação.")
+        return
+      }
+    }
     setEditKitItems(editKitItems.filter(item => item.id !== id))
   }
 
   const handleDecrementItemFromEdit = (id: string) => {
     setEditKitItems(editKitItems.map(item => {
       if (item.id === id) {
+        if (isKitLocked && item.originalQuantity && item.quantity <= item.originalQuantity) {
+            alert("Você não pode diminuir a quantidade de itens originais deste kit após 1 hora da criação.")
+            return item
+        }
         return { ...item, quantity: item.quantity - 1 }
       }
       return item
@@ -526,17 +545,14 @@ export default function EstoqueRevendedorasPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-2">Nome do Kit</label>
-                    <input
-                      type="text"
-                      value={editKitName}
+                    <input type="text" disabled={isKitLocked} value={editKitName}
                       onChange={(e) => setEditKitName(e.target.value)}
                       className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-brand-plum"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-2">Período</label>
-                    <select
-                      value={editKitPeriod}
+                    <select disabled={isKitLocked} value={editKitPeriod}
                       onChange={(e) => {
                         setEditKitPeriod(e.target.value)
                         setEditKitItems([])
@@ -602,8 +618,12 @@ export default function EstoqueRevendedorasPage() {
                         <div className="flex items-center gap-3">
                           <span className="font-bold text-slate-700">{item.quantity}x</span>
                           <div className="flex flex-col gap-1 border-l border-slate-200 pl-3">
-                            <button onClick={() => handleDecrementItemFromEdit(item.id)} className="text-slate-400 hover:text-orange-500 p-1"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4"></path></svg></button>
-                            <button onClick={() => handleRemoveItemFromEdit(item.id)} className="text-slate-400 hover:text-red-500 p-1"><Trash2 className="w-3 h-3" /></button>
+                            {(!isKitLocked || !item.originalQuantity || item.quantity > item.originalQuantity) && (
+                              <button onClick={() => handleDecrementItemFromEdit(item.id)} className="text-slate-400 hover:text-orange-500 p-1"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4"></path></svg></button>
+                            )}
+                            {(!isKitLocked || !item.originalQuantity || item.originalQuantity === 0) && (
+                              <button onClick={() => handleRemoveItemFromEdit(item.id)} className="text-slate-400 hover:text-red-500 p-1"><Trash2 className="w-3 h-3" /></button>
+                            )}
                           </div>
                         </div>
                       </div>
