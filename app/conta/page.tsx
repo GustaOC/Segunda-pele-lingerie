@@ -115,7 +115,7 @@ export default function ContaPage() {
           <div className="flex flex-col gap-3 w-full md:w-auto">
 
             {(role === 'ADMIN' || role === 'PROMOTOR' || role === 'CONSULTANT') && (
-              <Button onClick={() => router.push('/admin')} variant="outline" className="border-brand-plum text-brand-plum hover:bg-brand-plum hover:text-white rounded-full w-full md:w-auto">
+              <Button onClick={() => router.push(role === 'ADMIN' ? '/admin/dashboard' : '/area-promotora/kits')} variant="outline" className="border-brand-plum text-brand-plum hover:bg-brand-plum hover:text-white rounded-full w-full md:w-auto">
                 {role === 'ADMIN' ? 'Acessar Painel Admin' : 'Acessar Área do Promotor'}
               </Button>
             )}
