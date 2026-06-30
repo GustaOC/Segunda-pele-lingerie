@@ -12,6 +12,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar as CalendarUI } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -32,7 +34,7 @@ import ShaderBackground from "@/components/shader-background";
 import { Playfair_Display, Inter } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
-import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
+import { format, subDays, startOfMonth, endOfMonth, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import * as XLSX from 'xlsx';
 
@@ -84,7 +86,7 @@ export default function DashboardClient({ user }: { user: User }) {
     const { toast } = useToast();
 
     // Estados
-    const [selectedPeriod, setSelectedPeriod] = useState("30d");
+    const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 6));
     const [searchTerm, setSearchTerm] = useState("");
     const [showPendingModal, setShowPendingModal] = useState(false);
     const [showPromoterReportModal, setShowPromoterReportModal] = useState(false);
@@ -109,31 +111,42 @@ export default function DashboardClient({ user }: { user: User }) {
         approvalRate, whatsappClicks, statusData, registrationChartData,
         growthRate, conversionRate, averageProcessingTime
     } = useMemo(() => {
-        const allLeads = leadsResponse?.data || [];
+        let rawLeads = leadsResponse?.data || [];
+        
+        // Setup dates for filtering
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        const end = addDays(start, 6);
+        end.setHours(23, 59, 59, 999);
+
+        // Filter leads based on selected 7-day period
+        const allLeads = rawLeads.filter((l: any) => {
+            if (!l.createdAt) return false;
+            const d = new Date(l.createdAt);
+            return d >= start && d <= end;
+        });
+
         const total = allLeads.length;
         const approved = allLeads.filter((l: any) => l.status === 'APROVADO').length;
         const pending = allLeads.filter((l: any) => l.status === 'EM_ANALISE');
         const rejected = allLeads.filter((l: any) => l.status === 'REPROVADO').length;
         const rate = total > 0 ? ((approved / total) * 100).toFixed(1) : "0.0";
+        
+        // Whatsapp clicks (filtering them is harder if they lack timestamps, but assume we just show the whole system clicks or simulate if needed. 
+        // For now, let's keep whatsappResponse as is if they don't have timestamps in metrics endpoint)
         const clicks = whatsappResponse?.data?.length || 0;
 
-        // Calcular crescimento mensal
-        const thisMonth = allLeads.filter((l: any) => {
+        // Calcular crescimento considerando a semana escolhida vs semana anterior
+        const previousStart = subDays(start, 7);
+        const previousEnd = subDays(end, 7);
+        const thisPeriodLeads = total;
+        const lastPeriodLeads = rawLeads.filter((l: any) => {
             if (!l.createdAt) return false;
-            const leadDate = new Date(l.createdAt);
-            const now = new Date();
-            return leadDate.getMonth() === now.getMonth() && leadDate.getFullYear() === now.getFullYear();
+            const d = new Date(l.createdAt);
+            return d >= previousStart && d <= previousEnd;
         }).length;
 
-        const lastMonth = allLeads.filter((l: any) => {
-            if (!l.createdAt) return false;
-            const leadDate = new Date(l.createdAt);
-            const lastMonthDate = new Date();
-            lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
-            return leadDate.getMonth() === lastMonthDate.getMonth() && leadDate.getFullYear() === lastMonthDate.getFullYear();
-        }).length;
-
-        const growth = lastMonth > 0 ? (((thisMonth - lastMonth) / lastMonth) * 100).toFixed(1) : "0";
+        const growth = lastPeriodLeads > 0 ? (((thisPeriodLeads - lastPeriodLeads) / lastPeriodLeads) * 100).toFixed(1) : "0";
 
         // Taxa de conversão WhatsApp para cadastro
         const conversion = clicks > 0 ? ((total / clicks) * 100).toFixed(1) : "0";
@@ -147,10 +160,10 @@ export default function DashboardClient({ user }: { user: User }) {
             { name: "Reprovados", value: rejected, color: "#ef4444" },
         ];
 
-        // Dados para gráfico dos últimos 7 dias
+        // Dados para gráfico dos 7 dias selecionados
         const dailyData: { [key: string]: { cadastros: number, aprovados: number, reprovados: number } } = {};
-        for (let i = 6; i >= 0; i--) {
-            const date = format(subDays(new Date(), i), 'dd/MM');
+        for (let i = 0; i <= 6; i++) {
+            const date = format(addDays(start, i), 'dd/MM');
             dailyData[date] = { cadastros: 0, aprovados: 0, reprovados: 0 };
         }
 
@@ -180,7 +193,7 @@ export default function DashboardClient({ user }: { user: User }) {
             conversionRate: conversion,
             averageProcessingTime: avgTime
         };
-    }, [leadsResponse, whatsappResponse]);
+    }, [leadsResponse, whatsappResponse, startDate]);
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -197,12 +210,10 @@ export default function DashboardClient({ user }: { user: User }) {
 
     // Função para calcular relatório detalhado
     const generateDetailedReport = useMemo(() => {
-        const today = new Date();
-        const startOfThisMonth = startOfMonth(today);
-        const endOfThisMonth = endOfMonth(today);
+        const endOfPeriod = addDays(startDate, 6);
 
         return {
-            periodo: `${format(startOfThisMonth, "dd/MM/yyyy", { locale: ptBR })} - ${format(endOfThisMonth, "dd/MM/yyyy", { locale: ptBR })}`,
+            periodo: `${format(startDate, "dd/MM/yyyy", { locale: ptBR })} - ${format(endOfPeriod, "dd/MM/yyyy", { locale: ptBR })}`,
             totalCadastros: totalLeads,
             aprovados: approvedLeadsCount,
             reprovados: rejectedLeadsCount,
@@ -216,7 +227,7 @@ export default function DashboardClient({ user }: { user: User }) {
             metaMensal: 500,
             percentualMeta: ((totalLeads / 500) * 100).toFixed(1)
         };
-    }, [totalLeads, approvedLeadsCount, rejectedLeadsCount, pendingRegistrations.length, approvalRate, growthRate, averageProcessingTime, whatsappClicks, conversionRate]);
+    }, [totalLeads, approvedLeadsCount, rejectedLeadsCount, pendingRegistrations.length, approvalRate, growthRate, averageProcessingTime, whatsappClicks, conversionRate, startDate]);
 
     // Funções de ação melhoradas
     const handleApprove = async (leadId: string) => {
@@ -535,17 +546,33 @@ export default function DashboardClient({ user }: { user: User }) {
                         </p>
                     </div>
                     <div className={isPromoter ? "hidden" : "flex items-center gap-3 flex-wrap"}>
-                        <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-                            <SelectTrigger className="w-40 bg-white/80 backdrop-blur-sm border-white/50 focus:ring-purple-500 focus:border-purple-500 rounded-2xl shadow-lg">
-                                <Calendar className="w-4 h-4 mr-2" style={{ color: "#5D3A5B" }} />
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="7d">Últimos 7 dias</SelectItem>
-                                <SelectItem value="30d">Últimos 30 dias</SelectItem>
-                                <SelectItem value="90d">Últimos 90 dias</SelectItem>
-                            </SelectContent>
-                        </Select>
+                        <Popover>
+                            <PopoverTrigger asChild>
+                                <Button
+                                    variant="outline"
+                                    className="w-[240px] justify-start text-left font-normal bg-white/80 backdrop-blur-sm border-white/50 focus:ring-purple-500 focus:border-purple-500 rounded-2xl shadow-lg"
+                                >
+                                    <Calendar className="mr-2 h-4 w-4" style={{ color: "#5D3A5B" }} />
+                                    {startDate ? (
+                                        `${format(startDate, 'dd/MM/yyyy')} - ${format(addDays(startDate, 6), 'dd/MM/yyyy')}`
+                                    ) : (
+                                        <span>Selecione uma data</span>
+                                    )}
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-auto p-0 rounded-2xl border-white/50 shadow-2xl bg-white/95 backdrop-blur-lg" align="start">
+                                <CalendarUI
+                                    mode="single"
+                                    selected={startDate}
+                                    onSelect={(date) => date && setStartDate(date)}
+                                    initialFocus
+                                    className="p-3"
+                                />
+                                <div className="p-3 border-t text-xs text-slate-500 text-center">
+                                    O sistema selecionará automaticamente a semana (7 dias) a partir da data escolhida.
+                                </div>
+                            </PopoverContent>
+                        </Popover>
                         <div className="relative">
                             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                             <Input
