@@ -500,7 +500,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                 onClick={() => router.push('/admin/user')}
                                 variant="outline"
                                 size="sm"
-                                className="border-white/50 bg-white/50 text-slate-700 hover:bg-white hover:text-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"
+                                className={isPromoter ? "hidden" : "border-white/50 bg-white/50 text-slate-700 hover:bg-white hover:text-slate-800 shadow-lg hover:shadow-xl transition-all duration-300 rounded-2xl"}
                             >
                                 <Users className="w-4 h-4 mr-2" />
                                 Funcionários
@@ -534,7 +534,7 @@ export default function DashboardClient({ user }: { user: User }) {
                             Última atualização: {format(new Date(), 'dd/MM/yyyy HH:mm', { locale: ptBR })}
                         </p>
                     </div>
-                    <div className="flex items-center gap-3 flex-wrap">
+                    <div className={isPromoter ? "hidden" : "flex items-center gap-3 flex-wrap"}>
                         <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
                             <SelectTrigger className="w-40 bg-white/80 backdrop-blur-sm border-white/50 focus:ring-purple-500 focus:border-purple-500 rounded-2xl shadow-lg">
                                 <Calendar className="w-4 h-4 mr-2" style={{ color: "#5D3A5B" }} />
@@ -559,7 +559,7 @@ export default function DashboardClient({ user }: { user: User }) {
                 </div>
 
                 {/* Cards de métricas melhorados */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+                <div className={isPromoter ? "hidden" : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 mb-8"}>
                     <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl hover:shadow-2xl transition-all duration-300 rounded-2xl">
                         <CardHeader className="flex-row items-center justify-between pb-3 space-y-0">
                             <CardTitle className="text-sm font-medium text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Total de Cadastros</CardTitle>
@@ -630,7 +630,7 @@ export default function DashboardClient({ user }: { user: User }) {
 
                 {/* Tabs melhoradas */}
                 <Tabs defaultValue="overview" className="space-y-6">
-                    <TabsList className="grid w-full grid-cols-4 bg-white/50 backdrop-blur-sm p-1 rounded-2xl border border-white/30">
+                    <TabsList className={isPromoter ? "hidden" : "grid w-full grid-cols-4 bg-white/50 backdrop-blur-sm p-1 rounded-2xl border border-white/30"}>
                         <TabsTrigger
                             value="overview"
                             className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-2xl py-2 transition-all duration-300"
@@ -846,7 +846,7 @@ export default function DashboardClient({ user }: { user: User }) {
                             </Card>
 
                             {/* Metas e performance */}
-                            <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
+                            <Card className={isPromoter ? "hidden" : "border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl"}>
                                 <CardHeader className="pb-3">
                                     <CardTitle className="flex items-center text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
                                         <Target className="w-5 h-5 mr-2" style={{ color: "#5D3A5B" }} />
@@ -880,7 +880,7 @@ export default function DashboardClient({ user }: { user: User }) {
                             </Card>
 
                             {/* Gerenciador WhatsApp */}
-                            <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
+                            <Card className={isPromoter ? "hidden" : "border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl"}>
                                 <CardHeader className="pb-3">
                                     <CardTitle className="flex items-center text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
                                         <MessageSquare className="w-5 h-5 mr-2" style={{ color: "#5D3A5B" }} />
@@ -915,7 +915,7 @@ export default function DashboardClient({ user }: { user: User }) {
                         </div>
 
                         {/* Gráficos principais */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className={isPromoter ? "hidden" : "grid grid-cols-1 lg:grid-cols-2 gap-6"}>
                             <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                                 <CardHeader className="pb-3">
                                     <CardTitle className="text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Cadastros (Últimos 7 dias)</CardTitle>
@@ -1006,7 +1006,7 @@ export default function DashboardClient({ user }: { user: User }) {
                         </div>
                     </TabsContent>
 
-                    <TabsContent value="registrations" className="space-y-6">
+                    <TabsContent value="registrations" className={isPromoter ? "hidden" : "space-y-6"}>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                                 <CardHeader>
@@ -1302,7 +1302,7 @@ export default function DashboardClient({ user }: { user: User }) {
                         </Card>
                     </TabsContent>
 
-                    <TabsContent value="analytics" className="space-y-6">
+                    <TabsContent value="analytics" className={isPromoter ? "hidden" : "space-y-6"}>
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                                 <CardHeader>
@@ -1403,7 +1403,7 @@ export default function DashboardClient({ user }: { user: User }) {
                         </Card>
                     </TabsContent>
 
-                    <TabsContent value="geography" className="space-y-6">
+                    <TabsContent value="geography" className={isPromoter ? "hidden" : "space-y-6"}>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                             <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                                 <CardHeader>
