@@ -465,6 +465,7 @@ export default function DashboardClient({ user }: { user: User }) {
     }
 
     const userRole = user.user_metadata?.role || 'Admin';
+    const isPromoter = userRole?.toUpperCase() === 'PROMOTOR';
 
     return (
         <div className={`min-h-screen bg-white relative overflow-hidden ${inter.variable} ${playfair.variable} font-sans`}>
@@ -671,7 +672,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
-                                    <Link href="/admin/consultants">
+                                    {!isPromoter ? (<Link href="/admin/consultants">
                                         <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
                                             <Users className="w-4 h-4 mr-3" style={{ color: "#5D3A5B" }} />
                                             <div className="text-left">
@@ -679,8 +680,16 @@ export default function DashboardClient({ user }: { user: User }) {
                                                 <div className="text-xs text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>{totalLeads} cadastradas</div>
                                             </div>
                                         </Button>
-                                    </Link>
-                                    <Link href="/admin/estoque">
+                                    </Link>) : (
+                                      <Button variant="ghost" disabled className="w-full justify-start text-slate-400 py-5 border border-white/30 rounded-2xl cursor-not-allowed">
+                                          <Users className="w-4 h-4 mr-3 text-slate-300" />
+                                          <div className="text-left">
+                                              <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>Gerenciar Consultoras</div>
+                                              <div className="text-xs text-slate-400" style={{ fontFamily: "var(--font-inter)" }}>Bloqueado</div>
+                                          </div>
+                                      </Button>
+                                    )}
+                                    {!isPromoter ? (<Link href="/admin/estoque">
                                         <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
                                             <Package className="w-4 h-4 mr-3" style={{ color: "#5D3A5B" }} />
                                             <div className="text-left">
@@ -688,7 +697,15 @@ export default function DashboardClient({ user }: { user: User }) {
                                                 <div className="text-xs text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>Gestão do CD</div>
                                             </div>
                                         </Button>
-                                    </Link>
+                                    </Link>) : (
+                                      <Button variant="ghost" disabled className="w-full justify-start text-slate-400 py-5 border border-white/30 rounded-2xl cursor-not-allowed">
+                                          <Package className="w-4 h-4 mr-3 text-slate-300" />
+                                          <div className="text-left">
+                                              <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>Estoque Geral</div>
+                                              <div className="text-xs text-slate-400" style={{ fontFamily: "var(--font-inter)" }}>Bloqueado</div>
+                                          </div>
+                                      </Button>
+                                    )}
                                     <Link href="/admin/estoque/promotores">
                                         <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
                                             <User className="w-4 h-4 mr-3" style={{ color: "#5D3A5B" }} />
@@ -707,7 +724,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                             </div>
                                         </Button>
                                     </Link>
-                                    <Link href="/admin/vendas">
+                                    {!isPromoter ? (<Link href="/admin/vendas">
                                         <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
                                             <ShoppingCart className="w-4 h-4 mr-3" style={{ color: "#5D3A5B" }} />
                                             <div className="text-left">
@@ -715,8 +732,16 @@ export default function DashboardClient({ user }: { user: User }) {
                                                 <div className="text-xs text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>Registrar saídas</div>
                                             </div>
                                         </Button>
-                                    </Link>
-                                    <Dialog open={showDetailedReportModal} onOpenChange={setShowDetailedReportModal}>
+                                    </Link>) : (
+                                      <Button variant="ghost" disabled className="w-full justify-start text-slate-400 py-5 border border-white/30 rounded-2xl cursor-not-allowed">
+                                          <ShoppingCart className="w-4 h-4 mr-3 text-slate-300" />
+                                          <div className="text-left">
+                                              <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>PDV / Vendas</div>
+                                              <div className="text-xs text-slate-400" style={{ fontFamily: "var(--font-inter)" }}>Bloqueado</div>
+                                          </div>
+                                      </Button>
+                                    )}
+                                    {!isPromoter ? (<Dialog open={showDetailedReportModal} onOpenChange={setShowDetailedReportModal}>
                                         <DialogTrigger asChild>
                                             <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
                                                 <FileText className="w-4 h-4 mr-3" style={{ color: "#5D3A5B" }} />
@@ -758,8 +783,24 @@ export default function DashboardClient({ user }: { user: User }) {
                                                 </Button>
                                             </div>
                                         </DialogContent>
-                                    </Dialog>
-                                    <Dialog open={showPromoterReportModal} onOpenChange={setShowPromoterReportModal}>
+                                    </Dialog>) : (
+                                      <Button variant="ghost" disabled className="w-full justify-start text-slate-400 py-5 border border-white/30 rounded-2xl cursor-not-allowed">
+                                          <FileSpreadsheet className="w-4 h-4 mr-3 text-slate-300" />
+                                          <div className="text-left">
+                                              <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>Relatório por Promotor</div>
+                                              <div className="text-xs text-slate-400" style={{ fontFamily: "var(--font-inter)" }}>Bloqueado</div>
+                                          </div>
+                                      </Button>
+                                    )}) : (
+                                      <Button variant="ghost" disabled className="w-full justify-start text-slate-400 py-5 border border-white/30 rounded-2xl cursor-not-allowed">
+                                          <FileText className="w-4 h-4 mr-3 text-slate-300" />
+                                          <div className="text-left">
+                                              <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>Relatórios Detalhados</div>
+                                              <div className="text-xs text-slate-400" style={{ fontFamily: "var(--font-inter)" }}>Bloqueado</div>
+                                          </div>
+                                      </Button>
+                                    )}
+                                    {!isPromoter ? (<Dialog open={showPromoterReportModal} onOpenChange={setShowPromoterReportModal}>
                                         <DialogTrigger asChild>
                                             <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
                                                 <FileSpreadsheet className="w-4 h-4 mr-3" style={{ color: "#5D3A5B" }} />
@@ -800,7 +841,23 @@ export default function DashboardClient({ user }: { user: User }) {
                                                 </Button>
                                             </div>
                                         </DialogContent>
-                                    </Dialog>
+                                    </Dialog>) : (
+                                      <Button variant="ghost" disabled className="w-full justify-start text-slate-400 py-5 border border-white/30 rounded-2xl cursor-not-allowed">
+                                          <FileSpreadsheet className="w-4 h-4 mr-3 text-slate-300" />
+                                          <div className="text-left">
+                                              <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>Relatório por Promotor</div>
+                                              <div className="text-xs text-slate-400" style={{ fontFamily: "var(--font-inter)" }}>Bloqueado</div>
+                                          </div>
+                                      </Button>
+                                    )}) : (
+                                      <Button variant="ghost" disabled className="w-full justify-start text-slate-400 py-5 border border-white/30 rounded-2xl cursor-not-allowed">
+                                          <FileText className="w-4 h-4 mr-3 text-slate-300" />
+                                          <div className="text-left">
+                                              <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>Relatórios Detalhados</div>
+                                              <div className="text-xs text-slate-400" style={{ fontFamily: "var(--font-inter)" }}>Bloqueado</div>
+                                          </div>
+                                      </Button>
+                                    )}
                                 </CardContent>
                             </Card>
 
@@ -854,14 +911,21 @@ export default function DashboardClient({ user }: { user: User }) {
                                             <div className="text-sm text-blue-700" style={{ fontFamily: "var(--font-inter)" }}>Acesse para enviar mensagens e gerenciar campanhas.</div>
                                         </div>
                                     </div>
-                                    <Link href="/admin/whatsapp">
+                                    {!isPromoter ? (<Link href="/admin/whatsapp">
                                         <Button variant="ghost" className="w-full justify-center text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
                                             <div className="text-center">
                                                 <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>Acessar Ferramenta</div>
                                                 <div className="text-xs text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>Clique aqui para começar</div>
                                             </div>
                                         </Button>
-                                    </Link>
+                                    </Link>) : (
+                                      <Button variant="ghost" disabled className="w-full justify-center text-slate-400 py-5 border border-white/30 rounded-2xl cursor-not-allowed">
+                                          <div className="text-center">
+                                              <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>Acessar Ferramenta</div>
+                                              <div className="text-xs text-slate-400" style={{ fontFamily: "var(--font-inter)" }}>Bloqueado para promotores</div>
+                                          </div>
+                                      </Button>
+                                    )}
                                 </CardContent>
                             </Card>
                         </div>
