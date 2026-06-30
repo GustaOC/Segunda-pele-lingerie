@@ -160,7 +160,7 @@ export default function KitsPromotoraPage() {
 
   // Check if current editing kit is locked for non-admins (older than 1 hour)
   const editingKitObj = editingKitId ? kits.find(k => k.id === editingKitId) : null
-  const isEditingLocked = editingKitObj ? (!isAdmin && (Date.now() - new Date(editingKitObj.created_at).getTime()) > 3600000) : false
+  const isEditingLocked = !isAdmin
 
   const handleRemoveItem = (id: string) => {
     const item = kitItems.find(i => i.id === id)
@@ -187,6 +187,14 @@ export default function KitsPromotoraPage() {
   }
 
   const handleEditKit = (kit: Kit) => {
+    if (!isAdmin && kit.created_at) {
+      const kitAge = Date.now() - new Date(kit.created_at).getTime()
+      if (kitAge > 3600000) {
+        alert("O prazo de 1 hora para adicionar peças a este kit expirou.")
+        return
+      }
+    }
+
     setKitName(kit.name)
     setEditingKitId(kit.id)
     setKitMultiplier(1)
