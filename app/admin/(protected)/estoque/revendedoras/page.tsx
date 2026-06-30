@@ -200,8 +200,16 @@ export default function EstoqueRevendedorasPage() {
   const handleEditKit = (kit: any) => {
     const ONE_HOUR = 60 * 60 * 1000
     const kitAge = Date.now() - new Date(kit.created_at).getTime()
-    const locked = userRole !== 'ADMIN' && kitAge > ONE_HOUR
-    setIsKitLocked(locked)
+    
+    // Admin has no restrictions.
+    // Promoter can only add pieces, so we lock original items ALWAYS.
+    const isPromoter = userRole !== 'ADMIN'
+    setIsKitLocked(isPromoter) // We use isKitLocked to mean "restricted to adding only"
+
+    if (isPromoter && kitAge > ONE_HOUR) {
+      alert("O prazo de 1 hora para editar este kit expirou.")
+      return
+    }
 
     setEditKitName(kit.name)
     setEditingKitId(kit.id)
