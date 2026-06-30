@@ -21,7 +21,8 @@ export default async function AreaPromotoraLayout({
     .eq('id', session.user.id)
     .single()
 
-  const userRole = session.user?.user_metadata?.role || profile?.role
+  const rawRole = session.user?.user_metadata?.role || profile?.role
+  const userRole = rawRole ? rawRole.toUpperCase().trim() : null
 
   if (!userRole || (userRole !== 'PROMOTOR' && userRole !== 'CONSULTANT' && userRole !== 'ADMIN')) {
     redirect("/conta")
