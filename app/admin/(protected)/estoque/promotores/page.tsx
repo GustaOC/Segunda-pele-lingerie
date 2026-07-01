@@ -358,12 +358,14 @@ export default function EstoquePromotoresPage() {
             >
               <ShoppingCart className="w-4 h-4 mr-2" /> Minha Área de Kits
             </Button>
-            <Button 
-              onClick={() => setIsModalOpen(true)}
-              className="bg-brand-plum hover:bg-brand-rose text-white rounded-full px-6 shadow-md transition-colors"
-            >
-              <Package className="w-4 h-4 mr-2" /> Transferir Peças
-            </Button>
+            {userRole === 'ADMIN' && (
+              <Button
+                onClick={() => setIsModalOpen(true)}
+                className="bg-brand-plum hover:bg-brand-rose text-white rounded-full px-6 shadow-md transition-colors"
+              >
+                <Package className="w-4 h-4 mr-2" /> Transferir Peças
+              </Button>
+            )}
           </div>
         </div>
 
