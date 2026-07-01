@@ -271,7 +271,7 @@ export default function VendasPage() {
         }
       } else if (mode === 'RETAIL' || mode === 'WHOLESALE') {
         // Remove from inventory
-        const { data: inv } = await supabase.from('inventory').select('id, quantity').eq('product_id', selectedProductId).eq('size', selectedSize).eq('color', selectedColor).single()
+        const { data: inv } = await supabase.from('inventory').select('id, quantity').eq('product_id', selectedProductId).eq('size', selectedSize).eq('color', selectedColor).maybeSingle()
         if (inv) {
           await supabase.from('inventory').update({ quantity: inv.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', inv.id)
           await supabase.from('inventory_transactions').insert({
@@ -283,7 +283,7 @@ export default function VendasPage() {
           const pQ = returnPeriod === 'null' ? null : returnPeriod
 
           // 1. New Piece: Remove from general inventory
-          const { data: invOut } = await supabase.from('inventory').select('id, quantity').eq('product_id', selectedProductId).eq('size', selectedSize).eq('color', selectedColor).single()
+          const { data: invOut } = await supabase.from('inventory').select('id, quantity').eq('product_id', selectedProductId).eq('size', selectedSize).eq('color', selectedColor).maybeSingle()
           if (invOut) {
             await supabase.from('inventory').update({ quantity: invOut.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', invOut.id)
             await supabase.from('inventory_transactions').insert({
@@ -298,7 +298,7 @@ export default function VendasPage() {
             if (pQ) promOutQuery = promOutQuery.eq('period', pQ)
             else promOutQuery = promOutQuery.is('period', null)
             
-            const { data: promInvOut } = await promOutQuery.single()
+            const { data: promInvOut } = await promOutQuery.maybeSingle()
             if (promInvOut) {
               await supabase.from('promoter_inventory').update({ quantity: promInvOut.quantity + quantity, updated_at: new Date().toISOString() }).eq('id', promInvOut.id)
             } else {
@@ -338,7 +338,7 @@ export default function VendasPage() {
               if (pQ) resOutQuery = resOutQuery.eq('period', pQ)
               else resOutQuery = resOutQuery.is('period', null)
               
-              const { data: resInvOut } = await resOutQuery.single()
+              const { data: resInvOut } = await resOutQuery.maybeSingle()
               if (resInvOut) {
                 await supabase.from('reseller_inventory').update({ quantity: resInvOut.quantity + quantity, updated_at: new Date().toISOString() }).eq('id', resInvOut.id)
               } else {
@@ -357,7 +357,7 @@ export default function VendasPage() {
             if (pQ) promInQuery = promInQuery.eq('period', pQ)
             else promInQuery = promInQuery.is('period', null)
             
-            const { data: promInvIn } = await promInQuery.single()
+            const { data: promInvIn } = await promInQuery.maybeSingle()
             if (promInvIn) {
               const newQ = promInvIn.quantity - quantity
               if (newQ <= 0) {
@@ -397,7 +397,7 @@ export default function VendasPage() {
               if (pQ) resInQuery = resInQuery.eq('period', pQ)
               else resInQuery = resInQuery.is('period', null)
               
-              const { data: resInvIn } = await resInQuery.single()
+              const { data: resInvIn } = await resInQuery.maybeSingle()
               if (resInvIn) {
                 const newQ = resInvIn.quantity - quantity
                 if (newQ <= 0) {
@@ -409,7 +409,7 @@ export default function VendasPage() {
             }
           }
 
-          const { data: invIn } = await supabase.from('inventory').select('id, quantity').eq('product_id', returnProductId).eq('size', returnSize).eq('color', returnColor).single()
+          const { data: invIn } = await supabase.from('inventory').select('id, quantity').eq('product_id', returnProductId).eq('size', returnSize).eq('color', returnColor).maybeSingle()
           if (invIn) {
             await supabase.from('inventory').update({ quantity: invIn.quantity + quantity, updated_at: new Date().toISOString() }).eq('id', invIn.id)
           } else {
@@ -423,7 +423,7 @@ export default function VendasPage() {
 
         } else {
           // 1. Remove new piece from inventory
-          const { data: invOut } = await supabase.from('inventory').select('id, quantity').eq('product_id', selectedProductId).eq('size', selectedSize).eq('color', selectedColor).single()
+          const { data: invOut } = await supabase.from('inventory').select('id, quantity').eq('product_id', selectedProductId).eq('size', selectedSize).eq('color', selectedColor).maybeSingle()
           if (invOut) {
             await supabase.from('inventory').update({ quantity: invOut.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', invOut.id)
             await supabase.from('inventory_transactions').insert({
@@ -432,7 +432,7 @@ export default function VendasPage() {
           }
           
           // 2. Add returned piece to inventory
-          const { data: invIn } = await supabase.from('inventory').select('id, quantity').eq('product_id', returnProductId).eq('size', returnSize).eq('color', returnColor).single()
+          const { data: invIn } = await supabase.from('inventory').select('id, quantity').eq('product_id', returnProductId).eq('size', returnSize).eq('color', returnColor).maybeSingle()
           if (invIn) {
             await supabase.from('inventory').update({ quantity: invIn.quantity + quantity, updated_at: new Date().toISOString() }).eq('id', invIn.id)
           } else {
