@@ -405,13 +405,15 @@ export default function EstoqueRevendedorasPage() {
             <p className="text-slate-500 mt-1">Gerencie e transfira o estoque dos promotores para as suas revendedoras.</p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Button 
-              disabled={!selectedResellerId}
-              onClick={() => setIsTransferKitModalOpen(true)}
-              className="bg-brand-plum hover:bg-brand-rose text-white rounded-full px-6 shadow-md transition-colors"
-            >
-              <ShoppingCart className="w-4 h-4 mr-2" /> Transferir Kit
-            </Button>
+            {userRole === 'ADMIN' && (
+              <Button 
+                disabled={!selectedResellerId}
+                onClick={() => setIsTransferKitModalOpen(true)}
+                className="bg-brand-plum hover:bg-brand-rose text-white rounded-full px-6 shadow-md transition-colors"
+              >
+                <ShoppingCart className="w-4 h-4 mr-2" /> Transferir Kit
+              </Button>
+            )}
           </div>
         </div>
 
