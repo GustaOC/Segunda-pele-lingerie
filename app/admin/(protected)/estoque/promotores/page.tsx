@@ -38,6 +38,7 @@ type KitItem = {
 
 export default function EstoquePromotoresPage() {
   const [loading, setLoading] = useState(true)
+  const [userRole, setUserRole] = useState("")
   const [inventory, setInventory] = useState<PromoterInventoryRow[]>([])
   const [promoters, setPromoters] = useState<any[]>([])
   const router = useRouter()
@@ -75,6 +76,12 @@ export default function EstoquePromotoresPage() {
 
   const fetchData = async () => {
     setLoading(true)
+    
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) {
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).maybeSingle()
+      setUserRole(profile?.role || session.user.user_metadata?.role || "")
+    }
     
     const [prodRes, invRes, usersRes] = await Promise.all([
       supabase.from('products').select('id, name, sku, colors, sizes'),
