@@ -120,7 +120,7 @@ export default function EstoquePromotoresPage() {
           .eq('product_id', selectedProductId)
           .eq('color', selectedColor)
           .eq('size', selectedSize)
-          .single()
+          .maybeSingle()
         
         let available = data?.quantity || 0
         
@@ -216,7 +216,7 @@ export default function EstoquePromotoresPage() {
           .eq('product_id', item.product_id)
           .eq('size', item.size)
           .eq('color', item.color)
-          .single()
+          .maybeSingle()
 
         if (!generalInv || generalInv.quantity < item.quantity) {
           throw new Error(`Estoque insuficiente para ${item.product_name} (${item.color}, ${item.size}).`)
@@ -244,7 +244,7 @@ export default function EstoquePromotoresPage() {
           query.is('period', null)
         }
 
-        const { data: existingPromInv, error: existingError } = await query.single()
+        const { data: existingPromInv, error: existingError } = await query.maybeSingle()
         
         if (existingError && existingError.code !== 'PGRST116') {
           // Ignore "Row not found" error, but throw others (like column doesn't exist)
