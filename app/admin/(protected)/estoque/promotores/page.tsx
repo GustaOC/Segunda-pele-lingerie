@@ -36,6 +36,18 @@ type KitItem = {
   quantity: number
 }
 
+const isPeriodExpired = (period: string | null | undefined) => {
+  if (!period || period === 'null' || period === 'Sem Período Registrado') return true;
+  
+  const match = period.match(/a\s+(\d{2})\/(\d{2})\/(\d{4})/);
+  if (match) {
+    const [_, day, month, year] = match;
+    const endDate = new Date(Number(year), Number(month) - 1, Number(day), 23, 59, 59);
+    return new Date() > endDate;
+  }
+  return true;
+};
+
 export default function EstoquePromotoresPage() {
   const [loading, setLoading] = useState(true)
   const [userRole, setUserRole] = useState("")
@@ -77,10 +89,12 @@ export default function EstoquePromotoresPage() {
   const fetchData = async () => {
     setLoading(true)
     
+    let currentRole = "";
     const { data: { session } } = await supabase.auth.getSession()
     if (session) {
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).maybeSingle()
-      setUserRole(profile?.role || session.user.user_metadata?.role || "")
+      currentRole = profile?.role || session.user.user_metadata?.role || "";
+      setUserRole(currentRole)
     }
     
     const [prodRes, invRes, usersRes] = await Promise.all([
@@ -98,7 +112,7 @@ export default function EstoquePromotoresPage() {
     }
     
     if (invRes.data && prodRes.data && promData) {
-      const mapped = invRes.data.map(inv => {
+      let mapped = invRes.data.map(inv => {
         const p = prodRes.data.find(p => p.id === inv.product_id)
         const pr = promData.find((pr: any) => pr.id === inv.promoter_id)
         return {
@@ -108,6 +122,11 @@ export default function EstoquePromotoresPage() {
           promoter_name: pr ? pr.nome : 'Promotor Desconhecido'
         }
       })
+
+      if (currentRole !== 'ADMIN') {
+        mapped = mapped.filter(inv => !isPeriodExpired(inv.period))
+      }
+
       setInventory(mapped)
     }
     setLoading(false)

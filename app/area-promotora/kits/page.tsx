@@ -46,7 +46,7 @@ type Kit = {
 
 
 const isPeriodExpired = (period: string | null | undefined) => {
-  if (!period || period === 'null') return false;
+  if (!period || period === 'null' || period === 'Sem Período Registrado') return true;
   
   const match = period.match(/a\s+(\d{2})\/(\d{2})\/(\d{4})/);
   if (match) {
@@ -54,7 +54,7 @@ const isPeriodExpired = (period: string | null | undefined) => {
     const endDate = new Date(Number(year), Number(month) - 1, Number(day), 23, 59, 59);
     return new Date() > endDate;
   }
-  return false;
+  return true;
 };
 
 export default function KitsPromotoraPage() {
