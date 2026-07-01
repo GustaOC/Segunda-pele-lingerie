@@ -1,11 +1,14 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarUI } from "@/components/ui/calendar"
+import { format, addDays } from "date-fns"
 import { Playfair_Display, Inter } from "next/font/google"
 import React, { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { Loader2, Plus, ArrowRight, User, ShoppingCart, Trash2, Package, X } from "lucide-react"
+import { Loader2, Plus, ArrowRight, User, ShoppingCart, Trash2, Package, X, Calendar } from "lucide-react"
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" })
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inter" })
@@ -43,6 +46,7 @@ export default function EstoquePromotoresPage() {
   const [transferQuantity, setTransferQuantity] = useState(1)
 
   const [weeklyPeriod, setWeeklyPeriod] = useState("")
+  const [weeklyPeriodDate, setWeeklyPeriodDate] = useState<Date | undefined>(undefined)
   const [filterPromoterId, setFilterPromoterId] = useState("ALL")
   
   // Modal state
@@ -541,13 +545,40 @@ export default function EstoquePromotoresPage() {
 
                 <div className="pt-4">
                   <label className="block text-sm font-bold text-slate-700 mb-1">2. Período Semanal (Opcional)</label>
-                  <input
-                    type="text"
-                    placeholder="Ex: 12 a 18/fevereiro"
-                    value={weeklyPeriod}
-                    onChange={(e) => setWeeklyPeriod(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
-                  />
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start text-left font-normal bg-slate-50 border-slate-200 px-4 py-3 h-auto hover:bg-slate-100"
+                      >
+                        <Calendar className="mr-2 h-4 w-4 text-brand-plum" />
+                        {weeklyPeriodDate ? (
+                          `${format(weeklyPeriodDate, 'dd/MM/yyyy')} a ${format(addDays(weeklyPeriodDate, 6), 'dd/MM/yyyy')}`
+                        ) : (
+                          <span className="text-slate-500">Selecione o dia inicial da semana...</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 rounded-2xl border-slate-200 shadow-xl" align="start">
+                      <CalendarUI
+                        mode="single"
+                        selected={weeklyPeriodDate}
+                        onSelect={(date) => {
+                          setWeeklyPeriodDate(date);
+                          if (date) {
+                            setWeeklyPeriod(`${format(date, 'dd/MM/yyyy')} a ${format(addDays(date, 6), 'dd/MM/yyyy')}`);
+                          } else {
+                            setWeeklyPeriod("");
+                          }
+                        }}
+                        initialFocus
+                        className="p-3"
+                      />
+                      <div className="p-3 border-t text-xs text-slate-500 text-center bg-slate-50 rounded-b-2xl">
+                          O sistema fechará automaticamente a janela de 7 dias.
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 <div className="pt-4 border-t border-slate-100 mt-4">
