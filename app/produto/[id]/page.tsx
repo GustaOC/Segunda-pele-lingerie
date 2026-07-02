@@ -13,6 +13,42 @@ import { createClient } from "@/lib/supabase/client"
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" })
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inter" })
 
+const COLOR_MAP: Record<string, string> = {
+  vermelho: "#ef4444",
+  vermelha: "#ef4444",
+  azul: "#3b82f6",
+  verde: "#22c55e",
+  amarelo: "#eab308",
+  amarela: "#eab308",
+  branco: "#ffffff",
+  branca: "#ffffff",
+  rosa: "#ec4899",
+  roxo: "#a855f7",
+  roxa: "#a855f7",
+  lilás: "#d8b4e2",
+  lilas: "#d8b4e2",
+  laranja: "#f97316",
+  marrom: "#78350f",
+  bege: "#f5f5dc",
+  cinza: "#9ca3af",
+  vinho: "#831843",
+  preto: "#000000",
+  preta: "#000000",
+  nude: "#e3bc9a",
+  salmão: "#fa8072",
+  salmao: "#fa8072"
+}
+
+const getDisplayColor = (hex: string, name: string) => {
+  if (hex === "#000000" && name) {
+    const normalizedName = name.toLowerCase().trim()
+    if (normalizedName !== "preto" && normalizedName !== "preta") {
+      return COLOR_MAP[normalizedName] || hex
+    }
+  }
+  return hex
+}
+
 const FALLBACK_PRODUCT = {
   name: "Conjunto Rendado Aurora",
   price: 189.90,
@@ -282,7 +318,7 @@ export default function ProdutoPage() {
                       className={`relative w-10 h-10 rounded-full border-2 transition-all group flex items-center justify-center ${selectedColor?.hex === color.hex ? "border-brand-plum scale-110 shadow-md" : "border-slate-200 hover:border-slate-300"}`}
                       title={color.name}
                     >
-                      <span className="w-7 h-7 rounded-full border border-slate-100" style={{ backgroundColor: color.hex }}></span>
+                      <span className="w-7 h-7 rounded-full border border-slate-100" style={{ backgroundColor: getDisplayColor(color.hex, color.name) }}></span>
                     </button>
                   ))}
                 </div>
