@@ -240,6 +240,8 @@ export default function EstoqueGeralPage() {
     }
   }
 
+  const selectedProductObj = products.find(p => p.id === selectedProductId)
+
   return (
     <div className={`min-h-screen bg-slate-50 relative overflow-hidden ${inter.variable} ${playfair.variable} font-sans pb-20`}>
       <div className="container mx-auto px-4 py-8">
