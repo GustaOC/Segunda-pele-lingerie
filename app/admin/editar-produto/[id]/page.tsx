@@ -67,7 +67,10 @@ export default function EditarProdutoPage() {
         const parents = data.filter(c => !c.parent_id)
         const grouped = parents.map(parent => ({
           ...parent,
-          children: data.filter(c => c.parent_id === parent.id)
+          children: data.filter(c => c.parent_id === parent.id).map(child => ({
+            ...child,
+            children: data.filter(model => model.parent_id === child.id)
+          }))
         }))
         setCategories(grouped)
       }
@@ -343,8 +346,16 @@ export default function EditarProdutoPage() {
                   {categories.map((group) => (
                     group.children && group.children.length > 0 ? (
                       <optgroup key={group.id} label={group.name}>
+                        <option value={group.id}>{group.name} (Geral)</option>
                         {group.children.map((child: any) => (
-                          <option key={child.id} value={child.id}>{child.name}</option>
+                          <optgroup key={child.id} label={`↳ ${child.name}`}>
+                            <option value={child.id}>-- {child.name} (Geral)</option>
+                            {child.children?.map((model: any) => (
+                              <option key={model.id} value={model.id}>
+                                ---- {model.name}
+                              </option>
+                            ))}
+                          </optgroup>
                         ))}
                       </optgroup>
                     ) : (

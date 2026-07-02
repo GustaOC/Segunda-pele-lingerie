@@ -54,7 +54,10 @@ export default function AtivarEcommercePage() {
         const parents = catData.filter(c => !c.parent_id)
         const grouped = parents.map(parent => ({
           ...parent,
-          children: catData.filter(c => c.parent_id === parent.id)
+          children: catData.filter(c => c.parent_id === parent.id).map(child => ({
+            ...child,
+            children: catData.filter(model => model.parent_id === child.id)
+          }))
         }))
         setCategories(grouped)
       }
@@ -340,9 +343,14 @@ export default function AtivarEcommercePage() {
                         <optgroup key={parent.id} label={parent.name}>
                           <option value={parent.id}>{parent.name} (Geral)</option>
                           {parent.children?.map((child: any) => (
-                            <option key={child.id} value={child.id}>
-                              -- {child.name}
-                            </option>
+                            <optgroup key={child.id} label={`↳ ${child.name}`}>
+                              <option value={child.id}>-- {child.name} (Geral)</option>
+                              {child.children?.map((model: any) => (
+                                <option key={model.id} value={model.id}>
+                                  ---- {model.name}
+                                </option>
+                              ))}
+                            </optgroup>
                           ))}
                         </optgroup>
                       ))}
