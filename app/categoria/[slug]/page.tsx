@@ -23,6 +23,8 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
   
   const [selectedSizes, setSelectedSizes] = useState<string[]>([])
   const [selectedColors, setSelectedColors] = useState<string[]>([])
+  const [selectedModels, setSelectedModels] = useState<string[]>([])
+  const [currentCategory, setCurrentCategory] = useState<any>(null)
 
   const supabase = createClient()
   useEffect(() => {
@@ -52,6 +54,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
         return
       }
 
+      setCurrentCategory(category)
       setCategoryName(category.name)
       setCategoryId(category.id)
 
@@ -106,11 +109,18 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
     setSelectedColors(prev => prev.includes(colorName) ? prev.filter(c => c !== colorName) : [...prev, colorName])
   }
 
+  const toggleModel = (modelId: string) => {
+    setSelectedModels(prev => prev.includes(modelId) ? prev.filter(m => m !== modelId) : [...prev, modelId])
+  }
+
   const filteredProducts = products.filter(p => {
     const matchSize = selectedSizes.length === 0 || (p.sizes && p.sizes.some((s: string) => selectedSizes.includes(s)))
     const matchColor = selectedColors.length === 0 || (p.colors && p.colors.some((c: any) => selectedColors.includes(c.name)))
-    return matchSize && matchColor
+    const matchModel = selectedModels.length === 0 || selectedModels.includes(p.category_id)
+    return matchSize && matchColor && matchModel
   })
+
+  const isShowingModels = currentCategory && currentCategory.parent_id !== null
 
   return (
     <div className={`min-h-screen bg-slate-50 ${inter.variable} ${playfair.variable} font-sans`}>
@@ -193,19 +203,41 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                   </div>
                 )}
 
-                {/* Subcategorias */}
+                {/* Subcategorias ou Modelos */}
                 {subCategories.length > 0 && (
                   <div>
-                    <h2 className="text-xl font-bold text-slate-900 mb-4" style={{ fontFamily: "var(--font-playfair)" }}>Subcategorias</h2>
-                    <ul className="space-y-2">
-                      {subCategories.map((sub: any) => (
-                        <li key={sub.id}>
-                          <Link href={`/categoria/${sub.slug}`} className={`block px-4 py-2.5 rounded-xl font-medium transition-colors ${sub.id === categoryId ? 'bg-brand-peach/40 text-brand-plum shadow-sm' : 'text-slate-600 hover:bg-brand-peach/20 hover:text-brand-plum'}`}>
-                            {sub.name}
-                          </Link>
-                        </li>
-                      ))}
-                    </ul>
+                    <h2 className="text-xl font-bold text-slate-900 mb-4" style={{ fontFamily: "var(--font-playfair)" }}>
+                      {isShowingModels ? "Modelos" : "Subcategorias"}
+                    </h2>
+                    
+                    {isShowingModels ? (
+                      <div className="flex flex-col gap-2">
+                        {subCategories.map((sub: any) => (
+                          <label key={sub.id} className="flex items-center gap-3 cursor-pointer group">
+                            <input 
+                              type="checkbox" 
+                              className="hidden" 
+                              checked={selectedModels.includes(sub.id)} 
+                              onChange={() => toggleModel(sub.id)} 
+                            />
+                            <div className={`w-5 h-5 rounded-md flex items-center justify-center border-2 transition-colors ${selectedModels.includes(sub.id) ? 'bg-brand-plum border-brand-plum' : 'border-slate-300 bg-white group-hover:border-brand-plum'}`}>
+                              {selectedModels.includes(sub.id) && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>}
+                            </div>
+                            <span className="text-slate-600 group-hover:text-brand-plum transition-colors">{sub.name}</span>
+                          </label>
+                        ))}
+                      </div>
+                    ) : (
+                      <ul className="space-y-2">
+                        {subCategories.map((sub: any) => (
+                          <li key={sub.id}>
+                            <Link href={`/categoria/${sub.slug}`} className={`block px-4 py-2.5 rounded-xl font-medium transition-colors ${sub.id === categoryId ? 'bg-brand-peach/40 text-brand-plum shadow-sm' : 'text-slate-600 hover:bg-brand-peach/20 hover:text-brand-plum'}`}>
+                              {sub.name}
+                            </Link>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
                 )}
 
