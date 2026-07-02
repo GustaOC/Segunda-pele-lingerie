@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft, Star, Heart, Plus, Trash2 } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
+import { Navbar } from "@/components/Navbar"
 import { useState, useEffect } from "react"
 import { Playfair_Display, Inter } from "next/font/google"
 import { createClient } from "@/lib/supabase/client"
@@ -46,8 +47,9 @@ export default function SalePage() {
   }, [supabase, supabase.auth])
 
   return (
-    <div className={`min-h-screen bg-slate-50 ${inter.variable} ${playfair.variable} font-sans pt-12 pb-24`}>
-      <div className="max-w-7xl mx-auto px-6">
+    <div className={`min-h-screen bg-slate-50 ${inter.variable} ${playfair.variable} font-sans`}>
+      <Navbar />
+      <div className="pt-32 pb-24 max-w-7xl mx-auto px-6">
         <Link href="/" className="inline-flex items-center text-slate-500 hover:text-red-500 transition-colors mb-8">
           <ArrowLeft className="w-4 h-4 mr-2" /> Voltar para Home
         </Link>
