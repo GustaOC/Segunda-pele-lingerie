@@ -33,6 +33,7 @@ export default function CarrinhoPage() {
           id: item.product_id,
           name: item.products.name,
           price: item.products.price,
+          old_price: item.products.old_price,
           image: item.products.image,
           size: item.size || 'U',
           quantity: item.quantity
@@ -53,9 +54,23 @@ export default function CarrinhoPage() {
     checkAuth()
   }, [router, supabase])
 
-  const subtotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
+  const nonPromoItems = items.filter(i => !(i.old_price && i.old_price > i.price))
+  const nonPromoQty = nonPromoItems.reduce((acc, item) => acc + item.quantity, 0)
+  
+  let discountPercent = 0
+  if (nonPromoQty > 10) discountPercent = 0.15
+  else if (nonPromoQty >= 6) discountPercent = 0.10
+  else if (nonPromoQty >= 1) discountPercent = 0.05
+
+  const nonPromoSubtotal = nonPromoItems.reduce((acc, item) => acc + (item.price * item.quantity), 0)
+  const promoSubtotal = items.filter(i => (i.old_price && i.old_price > i.price)).reduce((acc, item) => acc + (item.price * item.quantity), 0)
+  
+  const discountAmount = nonPromoSubtotal * discountPercent
+  const subtotal = (nonPromoSubtotal - discountAmount) + promoSubtotal
+  
   const frete = subtotal > 299 || items.length === 0 ? 0 : 25.00
   const total = subtotal + frete
+  const originalSubtotal = nonPromoSubtotal + promoSubtotal
 
   const updateQuantity = async (cart_id: string, delta: number) => {
     const item = items.find(i => i.cart_id === cart_id)
@@ -145,8 +160,14 @@ export default function CarrinhoPage() {
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between text-slate-600">
                   <span>Subtotal</span>
-                  <span>R$ {subtotal.toFixed(2).replace('.', ',')}</span>
+                  <span>R$ {originalSubtotal.toFixed(2).replace('.', ',')}</span>
                 </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-green-600 font-medium">
+                    <span>Desconto ({discountPercent * 100}%)</span>
+                    <span>- R$ {discountAmount.toFixed(2).replace('.', ',')}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-slate-600">
                   <span>Frete</span>
                   {frete === 0 ? (

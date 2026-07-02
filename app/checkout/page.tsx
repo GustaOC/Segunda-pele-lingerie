@@ -41,6 +41,7 @@ export default function CheckoutPage() {
           id: item.product_id,
           name: item.products.name,
           price: item.products.price,
+          old_price: item.products.old_price,
           image: item.products.image,
           quantity: item.quantity
         }))
@@ -62,9 +63,23 @@ export default function CheckoutPage() {
     checkAuth()
   }, [router, supabase])
 
-  const subtotal = items.reduce((acc, item) => acc + (item.price * item.quantity), 0)
+  const nonPromoItems = items.filter(i => !(i.old_price && i.old_price > i.price))
+  const nonPromoQty = nonPromoItems.reduce((acc, item) => acc + item.quantity, 0)
+  
+  let discountPercent = 0
+  if (nonPromoQty > 10) discountPercent = 0.15
+  else if (nonPromoQty >= 6) discountPercent = 0.10
+  else if (nonPromoQty >= 1) discountPercent = 0.05
+
+  const nonPromoSubtotal = nonPromoItems.reduce((acc, item) => acc + (item.price * item.quantity), 0)
+  const promoSubtotal = items.filter(i => (i.old_price && i.old_price > i.price)).reduce((acc, item) => acc + (item.price * item.quantity), 0)
+  
+  const discountAmount = nonPromoSubtotal * discountPercent
+  const subtotal = (nonPromoSubtotal - discountAmount) + promoSubtotal
+  
   const effectiveFrete = deliveryMethod === 'pickup' ? 0 : (frete || 0)
   const total = subtotal + effectiveFrete
+  const originalSubtotal = nonPromoSubtotal + promoSubtotal
 
   const handleCepSearch = async () => {
     if (cep.replace(/\D/g, '').length !== 8) return alert("CEP inválido")
@@ -309,8 +324,14 @@ export default function CheckoutPage() {
               <div className="space-y-4 pt-6 border-t border-slate-100 mb-6">
                 <div className="flex justify-between text-slate-600">
                   <span>Subtotal</span>
-                  <span>R$ {subtotal.toFixed(2).replace('.', ',')}</span>
+                  <span>R$ {originalSubtotal.toFixed(2).replace('.', ',')}</span>
                 </div>
+                {discountAmount > 0 && (
+                  <div className="flex justify-between text-green-600 font-medium">
+                    <span>Desconto ({discountPercent * 100}%)</span>
+                    <span>- R$ {discountAmount.toFixed(2).replace('.', ',')}</span>
+                  </div>
+                )}
                 <div className="flex justify-between text-slate-600 mb-2">
                   <span>Frete</span>
                   <span>
