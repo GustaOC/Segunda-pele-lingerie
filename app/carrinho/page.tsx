@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Trash2, Plus, Minus, Lock, Loader2 } from "lucide-react"
+import { ArrowLeft, Trash2, Plus, Minus, Lock, Loader2, ShoppingCart } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
@@ -72,6 +72,43 @@ export default function CarrinhoPage() {
   const total = subtotal + frete
   const originalSubtotal = nonPromoSubtotal + promoSubtotal
 
+  const renderDiscountMessage = () => {
+    if (nonPromoQty < 5) {
+      const needed = 6 - nonPromoQty;
+      return (
+        <div className="bg-brand-peach/30 border border-brand-peach text-brand-plum p-4 rounded-xl mb-6 text-sm flex items-start shadow-sm">
+          <ShoppingCart className="w-5 h-5 mr-3 shrink-0 mt-0.5" />
+          <p>
+            {nonPromoQty > 0 ? (
+              <>Você tem <strong>{nonPromoQty} {nonPromoQty === 1 ? 'peça' : 'peças'}</strong> no carrinho. Adicione mais <strong>{needed} {needed === 1 ? 'peça' : 'peças'}</strong> (sem promoção) para ganhar <strong>10% de desconto</strong>!</>
+            ) : (
+              <>Adicione <strong>6 peças</strong> (sem promoção) no carrinho para ganhar <strong>10% de desconto</strong>!</>
+            )}
+          </p>
+        </div>
+      )
+    } else if (nonPromoQty >= 5 && nonPromoQty < 10) {
+      const needed = 11 - nonPromoQty;
+      return (
+        <div className="bg-brand-peach/30 border border-brand-peach text-brand-plum p-4 rounded-xl mb-6 text-sm flex items-start shadow-sm">
+          <ShoppingCart className="w-5 h-5 mr-3 shrink-0 mt-0.5" />
+          <p>
+            Você tem <strong>{nonPromoQty} peças</strong> no carrinho. Adicione mais <strong>{needed} {needed === 1 ? 'peça' : 'peças'}</strong> (sem promoção) para seu desconto subir para <strong>15% OFF</strong>!
+          </p>
+        </div>
+      )
+    } else {
+      return (
+        <div className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-xl mb-6 text-sm flex items-start shadow-sm">
+          <ShoppingCart className="w-5 h-5 mr-3 shrink-0 mt-0.5" />
+          <p>
+            Parabéns! Você já tem <strong>15% de desconto máximo</strong> garantido no carrinho!
+          </p>
+        </div>
+      )
+    }
+  }
+
   const updateQuantity = async (cart_id: string, delta: number) => {
     const item = items.find(i => i.cart_id === cart_id)
     if (!item) return
@@ -122,6 +159,7 @@ export default function CarrinhoPage() {
             
             {/* Lista de Itens */}
             <div className="lg:col-span-2 space-y-6">
+              {renderDiscountMessage()}
               {items.map((item) => (
                 <div key={item.cart_id} className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
                   <div className="relative w-24 h-32 rounded-xl overflow-hidden shrink-0 bg-slate-100">
