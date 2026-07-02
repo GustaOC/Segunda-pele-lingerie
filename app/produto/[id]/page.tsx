@@ -137,7 +137,7 @@ export default function ProdutoPage() {
     const isPromo = product?.oldPrice && product.oldPrice > product.price;
     if (!product || isPromo) return null;
     
-    if (cartNonPromoQty < 5) {
+    if (cartNonPromoQty < 6) {
       const needed = 6 - cartNonPromoQty;
       return (
         <div className="bg-brand-peach/30 border border-brand-peach text-brand-plum p-4 rounded-xl mb-6 text-sm flex items-start shadow-sm">
@@ -151,7 +151,7 @@ export default function ProdutoPage() {
           </p>
         </div>
       )
-    } else if (cartNonPromoQty >= 5 && cartNonPromoQty < 10) {
+    } else if (cartNonPromoQty >= 6 && cartNonPromoQty < 11) {
       const needed = 11 - cartNonPromoQty;
       return (
         <div className="bg-brand-peach/30 border border-brand-peach text-brand-plum p-4 rounded-xl mb-6 text-sm flex items-start shadow-sm">

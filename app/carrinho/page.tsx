@@ -73,7 +73,7 @@ export default function CarrinhoPage() {
   const originalSubtotal = nonPromoSubtotal + promoSubtotal
 
   const renderDiscountMessage = () => {
-    if (nonPromoQty < 5) {
+    if (nonPromoQty < 6) {
       const needed = 6 - nonPromoQty;
       return (
         <div className="bg-brand-peach/30 border border-brand-peach text-brand-plum p-4 rounded-xl mb-6 text-sm flex items-start shadow-sm">
@@ -87,7 +87,7 @@ export default function CarrinhoPage() {
           </p>
         </div>
       )
-    } else if (nonPromoQty >= 5 && nonPromoQty < 10) {
+    } else if (nonPromoQty >= 6 && nonPromoQty < 11) {
       const needed = 11 - nonPromoQty;
       return (
         <div className="bg-brand-peach/30 border border-brand-peach text-brand-plum p-4 rounded-xl mb-6 text-sm flex items-start shadow-sm">
