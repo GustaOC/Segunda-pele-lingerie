@@ -52,19 +52,8 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
       // Monta array de IDs de categoria permitidos (a categoria atual + filhas)
       const allowedCategoryIds = [category.id]
       if (category.children && category.children.length > 0) {
-        // It is a parent category
         setSubCategories(category.children)
         category.children.forEach((child: any) => allowedCategoryIds.push(child.id))
-      } else if (category.parent_id) {
-        // It is a subcategory. Fetch siblings to keep the sidebar populated
-        const { data: siblings } = await supabase
-          .from('categories')
-          .select('*')
-          .eq('parent_id', category.parent_id)
-        
-        if (siblings) {
-          setSubCategories(siblings)
-        }
       }
 
       // 2. Busca os produtos pertencentes a essas categorias
