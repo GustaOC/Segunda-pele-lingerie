@@ -23,7 +23,10 @@ export default function AtivarEcommercePage() {
   const [productData, setProductData] = useState<any>(null)
 
   // E-commerce data
-  const [categoryId, setCategoryId] = useState("")
+  const [mainCategoryId, setMainCategoryId] = useState("")
+  const [subCategoryId, setSubCategoryId] = useState("")
+  const [modelId, setModelId] = useState("")
+  const [allCategories, setAllCategories] = useState<any[]>([])
   const [images, setImages] = useState<File[]>([])
   const [imagePreviews, setImagePreviews] = useState<string[]>([])
   const [description, setDescription] = useState("")
@@ -51,6 +54,7 @@ export default function AtivarEcommercePage() {
 
       const { data: catData } = await supabase.from('categories').select('*').order('name')
       if (catData) {
+        setAllCategories(catData)
         const parents = catData.filter(c => !c.parent_id)
         const grouped = parents.map(parent => ({
           ...parent,
@@ -77,7 +81,18 @@ export default function AtivarEcommercePage() {
     setProductData(p)
     
     if (p) {
-      setCategoryId(p.category_id || "")
+      if (p.category_id && allCategories.length > 0) {
+        let current = allCategories.find(c => c.id === p.category_id)
+        let path = []
+        while (current) {
+          path.unshift(current)
+          current = allCategories.find(c => c.id === current.parent_id)
+        }
+        if (path.length > 0) setMainCategoryId(path[0].id)
+        if (path.length > 1) setSubCategoryId(path[1].id)
+        if (path.length > 2) setModelId(path[2].id)
+      }
+      
       setDescription(p.description || "")
       setIsHighlight(p.is_highlight || false)
       
@@ -228,8 +243,10 @@ export default function AtivarEcommercePage() {
       }
     }
 
+    const finalCategoryId = modelId || subCategoryId || mainCategoryId
+
     const { error } = await supabase.from('products').update({
-      category_id: categoryId || null,
+      category_id: finalCategoryId || null,
       image: finalGeneralImages.length > 0 ? finalGeneralImages[0] : "",
       images: finalGeneralImages,
       colors: updatedColors,
@@ -330,31 +347,61 @@ export default function AtivarEcommercePage() {
                 </h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Categoria *</label>
-                    <select 
-                      required
-                      value={categoryId} 
-                      onChange={(e) => setCategoryId(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
-                    >
-                      <option value="" disabled>Selecione uma categoria...</option>
-                      {categories.map((parent) => (
-                        <optgroup key={parent.id} label={parent.name}>
-                          <option value={parent.id}>{parent.name} (Geral)</option>
-                          {parent.children?.map((child: any) => (
-                            <optgroup key={child.id} label={`↳ ${child.name}`}>
-                              <option value={child.id}>-- {child.name} (Geral)</option>
-                              {child.children?.map((model: any) => (
-                                <option key={model.id} value={model.id}>
-                                  ---- {model.name}
-                                </option>
-                              ))}
-                            </optgroup>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">Categoria Principal *</label>
+                      <select 
+                        required
+                        value={mainCategoryId} 
+                        onChange={(e) => {
+                          setMainCategoryId(e.target.value)
+                          setSubCategoryId("")
+                          setModelId("")
+                        }}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+                      >
+                        <option value="" disabled>Selecione a categoria principal...</option>
+                        {categories.map((parent) => (
+                          <option key={parent.id} value={parent.id}>{parent.name}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {mainCategoryId && (
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Subcategoria *</label>
+                        <select 
+                          required
+                          value={subCategoryId} 
+                          onChange={(e) => {
+                            setSubCategoryId(e.target.value)
+                            setModelId("")
+                          }}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+                        >
+                          <option value="" disabled>Selecione a subcategoria...</option>
+                          {categories.find(c => c.id === mainCategoryId)?.children?.map((child: any) => (
+                            <option key={child.id} value={child.id}>{child.name}</option>
                           ))}
-                        </optgroup>
-                      ))}
-                    </select>
+                        </select>
+                      </div>
+                    )}
+
+                    {subCategoryId && categories.find(c => c.id === mainCategoryId)?.children?.find((c: any) => c.id === subCategoryId)?.children?.length > 0 && (
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">Modelo (Opcional)</label>
+                        <select 
+                          value={modelId} 
+                          onChange={(e) => setModelId(e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+                        >
+                          <option value="">Nenhum modelo específico</option>
+                          {categories.find(c => c.id === mainCategoryId)?.children?.find((c: any) => c.id === subCategoryId)?.children?.map((model: any) => (
+                            <option key={model.id} value={model.id}>{model.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                    )}
                   </div>
                   
                   <div className="space-y-3">
