@@ -34,6 +34,7 @@ export default function ProdutoPage() {
   const [selectedColor, setSelectedColor] = useState<any>(null)
   const [loadingProduct, setLoadingProduct] = useState(true)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [cartNonPromoQty, setCartNonPromoQty] = useState<number>(0)
   
   const supabase = createClient()
   const router = useRouter()
@@ -76,6 +77,25 @@ export default function ProdutoPage() {
     fetchProduct()
   }, [id, supabase])
 
+  useEffect(() => {
+    const fetchCartData = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        const { data } = await supabase
+          .from('cart_items')
+          .select('quantity, products(old_price, price)')
+          .eq('user_id', session.user.id)
+        
+        if (data) {
+          const nonPromo = data.filter((item: any) => !(item.products?.old_price && item.products.old_price > item.products.price))
+          const qty = nonPromo.reduce((acc: number, item: any) => acc + item.quantity, 0)
+          setCartNonPromoQty(qty)
+        }
+      }
+    }
+    fetchCartData()
+  }, [supabase])
+
   const handleActionAuth = async (action: (user: any) => void) => {
     const { data: { session } } = await supabase.auth.getSession()
     if (!session) {
@@ -99,13 +119,58 @@ export default function ProdutoPage() {
         size: selectedSize
       })
 
-      if (error) {
-        console.error("Erro ao adicionar:", error)
-        alert("Erro ao adicionar ao carrinho.")
-      } else {
+      if (!error) {
+        setAdded(true)
+        const isPromo = product?.oldPrice && product.oldPrice > product.price;
+        if (!isPromo) {
+          setCartNonPromoQty(prev => prev + 1)
+        }
+        setTimeout(() => setAdded(false), 2000)
         router.push("/carrinho")
+      } else {
+        alert("Erro ao adicionar produto.")
       }
     })
+  }
+
+  const renderDiscountMessage = () => {
+    const isPromo = product?.oldPrice && product.oldPrice > product.price;
+    if (!product || isPromo) return null;
+    
+    if (cartNonPromoQty < 5) {
+      const needed = 6 - cartNonPromoQty;
+      return (
+        <div className="bg-brand-peach/30 border border-brand-peach text-brand-plum p-4 rounded-xl mb-6 text-sm flex items-start shadow-sm">
+          <ShoppingCart className="w-5 h-5 mr-3 shrink-0 mt-0.5" />
+          <p>
+            {cartNonPromoQty > 0 ? (
+              <>Você tem <strong>{cartNonPromoQty} {cartNonPromoQty === 1 ? 'peça' : 'peças'}</strong> no carrinho. Adicione mais <strong>{needed} {needed === 1 ? 'peça' : 'peças'}</strong> (sem promoção) para ganhar <strong>10% de desconto</strong>!</>
+            ) : (
+              <>Adicione <strong>6 peças</strong> (sem promoção) no carrinho para ganhar <strong>10% de desconto</strong>!</>
+            )}
+          </p>
+        </div>
+      )
+    } else if (cartNonPromoQty >= 5 && cartNonPromoQty < 10) {
+      const needed = 11 - cartNonPromoQty;
+      return (
+        <div className="bg-brand-peach/30 border border-brand-peach text-brand-plum p-4 rounded-xl mb-6 text-sm flex items-start shadow-sm">
+          <ShoppingCart className="w-5 h-5 mr-3 shrink-0 mt-0.5" />
+          <p>
+            Você tem <strong>{cartNonPromoQty} peças</strong> no carrinho. Adicione mais <strong>{needed} {needed === 1 ? 'peça' : 'peças'}</strong> (sem promoção) para seu desconto subir para <strong>15% OFF</strong>!
+          </p>
+        </div>
+      )
+    } else {
+      return (
+        <div className="bg-green-50 border border-green-200 text-green-700 p-4 rounded-xl mb-6 text-sm flex items-start shadow-sm">
+          <ShoppingCart className="w-5 h-5 mr-3 shrink-0 mt-0.5" />
+          <p>
+            Parabéns! Você já tem <strong>15% de desconto máximo</strong> garantido no carrinho!
+          </p>
+        </div>
+      )
+    }
   }
 
   if (loadingProduct) {
@@ -238,6 +303,8 @@ export default function ProdutoPage() {
                 ))}
               </div>
             </div>
+
+            {renderDiscountMessage()}
 
             <Button 
               size="lg" 
