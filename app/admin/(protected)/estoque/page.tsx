@@ -42,7 +42,9 @@ export default function EstoqueGeralPage() {
   const [newSku, setNewSku] = useState("")
   const [newName, setNewName] = useState("")
   const [newPrice, setNewPrice] = useState("")
-  const [newCategoryId, setNewCategoryId] = useState("")
+  const [newMainCategoryId, setNewMainCategoryId] = useState("")
+  const [newSubCategoryId, setNewSubCategoryId] = useState("")
+  const [newModelId, setNewModelId] = useState("")
   const [newColors, setNewColors] = useState<{name: string, hex: string}[]>([{name: "", hex: "#000000"}])
   const [newSizes, setNewSizes] = useState<string[]>(["P", "M", "G", "GG"])
 
@@ -126,7 +128,7 @@ export default function EstoqueGeralPage() {
         sku: newSku,
         name: newName,
         price: priceNum,
-        category_id: newCategoryId || null,
+        category_id: newModelId || newSubCategoryId || newMainCategoryId || null,
         colors: formattedColors,
         sizes: newSizes,
         is_active: false, // Só ativa quando for pro E-commerce preencher foto e desc
@@ -151,6 +153,9 @@ export default function EstoqueGeralPage() {
         setNewPrice("")
         setNewColors([{name: "", hex: "#000000"}])
         setNewSizes(["P", "M", "G", "GG"])
+        setNewMainCategoryId("")
+        setNewSubCategoryId("")
+        setNewModelId("")
         fetchData()
       }
     } catch (err) {
@@ -370,30 +375,61 @@ export default function EstoqueGeralPage() {
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">Categoria (Opcional)</label>
-                <select
-                  value={newCategoryId}
-                  onChange={(e) => setNewCategoryId(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
-                >
-                  <option value="">Selecione a Categoria principal...</option>
-                  {categories.map((parent) => (
-                    <optgroup key={parent.id} label={parent.name}>
-                      <option value={parent.id}>{parent.name} (Geral)</option>
-                      {parent.children?.map((child: any) => (
-                        <optgroup key={child.id} label={`↳ ${child.name}`}>
-                          <option value={child.id}>-- {child.name} (Geral)</option>
-                          {child.children?.map((model: any) => (
-                            <option key={model.id} value={model.id}>
-                              ---- {model.name}
-                            </option>
-                          ))}
-                        </optgroup>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">Categoria Principal *</label>
+                  <select 
+                    required
+                    value={newMainCategoryId} 
+                    onChange={(e) => {
+                      setNewMainCategoryId(e.target.value)
+                      setNewSubCategoryId("")
+                      setNewModelId("")
+                    }}
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+                  >
+                    <option value="" disabled>Selecione a categoria principal...</option>
+                    {categories.map((parent) => (
+                      <option key={parent.id} value={parent.id}>{parent.name}</option>
+                    ))}
+                  </select>
+                </div>
+
+                {newMainCategoryId && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Subcategoria *</label>
+                    <select 
+                      required
+                      value={newSubCategoryId} 
+                      onChange={(e) => {
+                        setNewSubCategoryId(e.target.value)
+                        setNewModelId("")
+                      }}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+                    >
+                      <option value="" disabled>Selecione a subcategoria...</option>
+                      {categories.find(c => c.id === newMainCategoryId)?.children?.map((child: any) => (
+                        <option key={child.id} value={child.id}>{child.name}</option>
                       ))}
-                    </optgroup>
-                  ))}
-                </select>
+                    </select>
+                  </div>
+                )}
+
+                {newSubCategoryId && categories.find(c => c.id === newMainCategoryId)?.children?.find((c: any) => c.id === newSubCategoryId)?.children?.length > 0 && (
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">Modelo (Opcional)</label>
+                    <select 
+                      value={newModelId} 
+                      onChange={(e) => setNewModelId(e.target.value)}
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+                    >
+                      <option value="">Nenhum modelo específico</option>
+                      {categories.find(c => c.id === newMainCategoryId)?.children?.find((c: any) => c.id === newSubCategoryId)?.children?.map((model: any) => (
+                        <option key={model.id} value={model.id}>{model.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
               </div>
 
               <div className="border border-slate-200 rounded-xl p-4 bg-slate-50/50">
