@@ -96,8 +96,15 @@ export default function EditarProdutoPage() {
               current = data.find(c => c.id === current.parent_id)
             }
             if (path.length > 0) setMainCategoryId(path[0].id)
+            else setMainCategoryId("")
             if (path.length > 1) setSubCategoryId(path[1].id)
+            else setSubCategoryId("")
             if (path.length > 2) setModelId(path[2].id)
+            else setModelId("")
+          } else {
+            setMainCategoryId("")
+            setSubCategoryId("")
+            setModelId("")
           }
 
           setDescription(prodData.description || "")

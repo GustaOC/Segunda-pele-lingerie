@@ -359,6 +359,16 @@ export default function EstoqueRevendedorasPage() {
         const invItem = freshInv?.find(i => i.product_id === item.product_id && i.size === item.size && i.color === item.color && (i.period || 'null') === (editKitPeriod || 'null'))
         if (invItem) {
           await supabase.from('promoter_inventory').update({ quantity: invItem.quantity - item.quantity }).eq('id', invItem.id)
+          
+          await supabase.from('inventory_transactions').insert({
+            type: 'TRANSFER_RESELLER',
+            product_id: item.product_id,
+            size: item.size,
+            color: item.color,
+            quantity: item.quantity,
+            promoter_id: selectedPromoterId,
+            notes: `Transferência para Revendedora: Kit ${editKitName}`
+          })
         }
       }
 

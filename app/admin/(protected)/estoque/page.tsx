@@ -2,8 +2,9 @@
 import { Button } from "@/components/ui/button"
 import { Playfair_Display, Inter } from "next/font/google"
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
-import { Loader2, Plus, ArrowDown, ArrowUp, Package, History, X, Palette } from "lucide-react"
+import { Loader2, Plus, ArrowDown, ArrowUp, Package, History, X, Palette, List } from "lucide-react"
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" })
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inter" })
@@ -19,6 +20,7 @@ type InventoryRow = {
 }
 
 export default function EstoqueGeralPage() {
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [inventory, setInventory] = useState<InventoryRow[]>([])
   
@@ -238,8 +240,6 @@ export default function EstoqueGeralPage() {
     }
   }
 
-  const selectedProductObj = products.find(p => p.id === selectedProductId)
-
   return (
     <div className={`min-h-screen bg-slate-50 relative overflow-hidden ${inter.variable} ${playfair.variable} font-sans pb-20`}>
       <div className="container mx-auto px-4 py-8">
@@ -251,20 +251,18 @@ export default function EstoqueGeralPage() {
             </h1>
             <p className="text-slate-500 mt-1">Gerencie a entrada e saída de peças do centro de distribuição.</p>
           </div>
-          <div className="flex gap-3">
-            <Button 
-              onClick={() => setIsCreateProductModalOpen(true)}
-              className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-300 rounded-full px-6 shadow-sm"
-            >
-              <Package className="w-4 h-4 mr-2" />
-              Novo Produto Base
+          <div className="flex flex-wrap gap-3">
+            <Button onClick={() => router.push('/admin/estoque/historico')} className="bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 rounded-xl px-4 py-2 shadow-sm font-semibold">
+              <List className="w-5 h-5 mr-2" />
+              Histórico
             </Button>
-            <Button 
-              onClick={() => setIsModalOpen(true)}
-              className="bg-brand-plum hover:bg-brand-rose text-white rounded-full px-6 shadow-md"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Nova Movimentação
+            <Button onClick={() => setIsCreateProductModalOpen(true)} className="bg-brand-plum text-white hover:bg-brand-plum/90 rounded-xl px-4 py-2 shadow-sm font-semibold">
+              <Plus className="w-5 h-5 mr-2" />
+              Criar Produto Base
+            </Button>
+            <Button onClick={() => setIsModalOpen(true)} className="bg-slate-800 text-white hover:bg-slate-700 rounded-xl px-4 py-2 shadow-sm font-semibold">
+              <Plus className="w-5 h-5 mr-2" />
+              Adicionar Estoque
             </Button>
           </div>
         </div>
