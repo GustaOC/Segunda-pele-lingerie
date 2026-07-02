@@ -72,8 +72,16 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
   }, [params.slug, supabase])
 
   // Derive available filters from loaded products
-  const availableSizes = Array.from(new Set(products.flatMap(p => p.sizes || []))).sort()
-  const availableColors = Array.from(new Set(products.flatMap(p => p.colors?.map((c: any) => c.name) || []))).sort()
+  let availableSizes = Array.from(new Set(products.flatMap(p => p.sizes || []))).sort()
+  let availableColors = Array.from(new Set(products.flatMap(p => p.colors?.map((c: any) => c.name) || []))).sort()
+
+  // Se a categoria estiver vazia ou não tiver tamanhos/cores, usamos um padrão para o layout não quebrar
+  if (availableSizes.length === 0) {
+    availableSizes = ['P', 'M', 'G', 'GG']
+  }
+  if (availableColors.length === 0) {
+    availableColors = ['Preto', 'Branco', 'Nude', 'Vermelho']
+  }
 
   const toggleSize = (size: string) => {
     setSelectedSizes(prev => prev.includes(size) ? prev.filter(s => s !== size) : [...prev, size])
