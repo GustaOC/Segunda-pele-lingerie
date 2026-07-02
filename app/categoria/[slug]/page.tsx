@@ -52,8 +52,19 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
       // Monta array de IDs de categoria permitidos (a categoria atual + filhas)
       const allowedCategoryIds = [category.id]
       if (category.children && category.children.length > 0) {
+        // It is a parent category
         setSubCategories(category.children)
         category.children.forEach((child: any) => allowedCategoryIds.push(child.id))
+      } else if (category.parent_id) {
+        // It is a subcategory. Fetch siblings to keep the sidebar populated
+        const { data: siblings } = await supabase
+          .from('categories')
+          .select('*')
+          .eq('parent_id', category.parent_id)
+        
+        if (siblings) {
+          setSubCategories(siblings)
+        }
       }
 
       // 2. Busca os produtos pertencentes a essas categorias
@@ -171,7 +182,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                     <ul className="space-y-2">
                       {subCategories.map((sub: any) => (
                         <li key={sub.id}>
-                          <Link href={`/categoria/${sub.slug}`} className="block px-4 py-2.5 rounded-xl text-slate-600 font-medium hover:bg-brand-peach/30 hover:text-brand-plum transition-colors">
+                          <Link href={`/categoria/${sub.slug}`} className={`block px-4 py-2.5 rounded-xl font-medium transition-colors ${sub.id === categoryId ? 'bg-brand-peach/40 text-brand-plum shadow-sm' : 'text-slate-600 hover:bg-brand-peach/20 hover:text-brand-plum'}`}>
                             {sub.name}
                           </Link>
                         </li>
