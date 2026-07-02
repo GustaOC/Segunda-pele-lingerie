@@ -716,6 +716,23 @@ export default function DashboardClient({ user }: { user: User }) {
                                           </div>
                                       </Button>
                                     )}
+                                    {!isPromoter ? (<Link href="/admin/categorias">
+                                        <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
+                                            <FolderOpen className="w-4 h-4 mr-3" style={{ color: "#5D3A5B" }} />
+                                            <div className="text-left">
+                                                <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>Gerenciar Categorias</div>
+                                                <div className="text-xs text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>Categorias e Modelos</div>
+                                            </div>
+                                        </Button>
+                                    </Link>) : (
+                                      <Button variant="ghost" disabled className="w-full justify-start text-slate-400 py-5 border border-white/30 rounded-2xl cursor-not-allowed">
+                                          <FolderOpen className="w-4 h-4 mr-3 text-slate-300" />
+                                          <div className="text-left">
+                                              <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>Gerenciar Categorias</div>
+                                              <div className="text-xs text-slate-400" style={{ fontFamily: "var(--font-inter)" }}>Bloqueado</div>
+                                          </div>
+                                      </Button>
+                                    )}
                                     {!isPromoter ? (<Link href="/admin/estoque">
                                         <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
                                             <Package className="w-4 h-4 mr-3" style={{ color: "#5D3A5B" }} />

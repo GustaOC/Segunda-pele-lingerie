@@ -33,14 +33,20 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
         setIsAdmin(true)
       }
 
-      // 1. Busca a categoria atual e as suas filhas (se existirem)
-      const { data: category, error: catError } = await supabase
+      // 1. Busca todas as categorias para montar a árvore
+      const { data: allCategories, error: catError } = await supabase
         .from('categories')
-        .select('*, children:categories(*)')
-        .eq('slug', params.slug)
-        .single()
+        .select('*')
       
-      if (catError || !category) {
+      if (catError || !allCategories) {
+        setCategoryName("Categoria não encontrada")
+        setLoading(false)
+        return
+      }
+
+      const category = allCategories.find(c => c.slug === params.slug)
+      
+      if (!category) {
         setCategoryName("Categoria não encontrada")
         setLoading(false)
         return
@@ -49,11 +55,20 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
       setCategoryName(category.name)
       setCategoryId(category.id)
 
-      // Monta array de IDs de categoria permitidos (a categoria atual + filhas)
+      // Encontra filhas diretas para exibir na barra lateral
+      const children = allCategories.filter(c => c.parent_id === category.id)
+      setSubCategories(children)
+
+      // Monta array de IDs de categoria permitidos recursivamente (categoria atual + todas as descendentes)
       const allowedCategoryIds = [category.id]
-      if (category.children && category.children.length > 0) {
-        setSubCategories(category.children)
-        category.children.forEach((child: any) => allowedCategoryIds.push(child.id))
+      const queue = [...children]
+      while (queue.length > 0) {
+        const current = queue.shift()
+        if (current) {
+          allowedCategoryIds.push(current.id)
+          const currentChildren = allCategories.filter(c => c.parent_id === current.id)
+          queue.push(...currentChildren)
+        }
       }
 
       // 2. Busca os produtos pertencentes a essas categorias
