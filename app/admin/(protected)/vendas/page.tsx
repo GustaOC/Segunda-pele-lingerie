@@ -5,7 +5,10 @@ import { Playfair_Display, Inter } from "next/font/google"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { Loader2, ShoppingCart, RefreshCw, Box, Tag, ArrowLeft } from "lucide-react"
+import { Loader2, ShoppingCart, RefreshCw, Box, Tag, ArrowLeft, Check, ChevronsUpDown } from "lucide-react"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
+import { cn } from "@/lib/utils"
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" })
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inter" })
@@ -28,6 +31,9 @@ export default function VendasPage() {
   const [selectedColor, setSelectedColor] = useState("")
   const [quantity, setQuantity] = useState(1)
   const [notes, setNotes] = useState("")
+  const [clients, setClients] = useState<any[]>([])
+  const [selectedClient, setSelectedClient] = useState("")
+  const [comboboxOpen, setComboboxOpen] = useState(false)
   const [transactionDate, setTransactionDate] = useState(() => new Date().toISOString().split('T')[0])
   
   // For Promoter mode
@@ -94,6 +100,7 @@ export default function VendasPage() {
             }
           }
           setPromoters(promotersList)
+          setClients(usersRes.data)
         }
       } catch (e) {
         console.error(e)
@@ -231,6 +238,12 @@ export default function VendasPage() {
   }, [selectedProductId, selectedColor, selectedSize, mode, selectedPromoterId, selectedPeriod])
 
   const handleSubmit = async (e: React.FormEvent) => {
+    
+    if (!selectedClient) {
+      alert("Por favor, selecione um cliente cadastrado.")
+      setSubmitting(false)
+      return
+    }
     e.preventDefault()
     setSubmitting(true)
     
@@ -245,6 +258,9 @@ export default function VendasPage() {
       setSubmitting(false)
       return
     }
+
+    const clientName = clients.find(c => c.id === selectedClient)?.nome || selectedClient
+    const txNotes = `Cliente: ${clientName}${notes ? ` | Obs: ${notes}` : ''}`
 
     try {
       if (mode === 'PROMOTER_SALE') {
@@ -268,7 +284,7 @@ export default function VendasPage() {
         if (inv) {
           await supabase.from('promoter_inventory').update({ quantity: inv.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', inv.id)
           await supabase.from('inventory_transactions').insert({
-            type: 'OUT_PROMOTER', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, promoter_id: selectedPromoterId, notes: notes || 'Venda Promotor', created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
+            type: 'OUT_PROMOTER', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, promoter_id: selectedPromoterId, notes: txNotes, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
           })
         }
       } else if (mode === 'RETAIL' || mode === 'WHOLESALE') {
@@ -277,7 +293,7 @@ export default function VendasPage() {
         if (inv) {
           await supabase.from('inventory').update({ quantity: inv.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', inv.id)
           await supabase.from('inventory_transactions').insert({
-            type: mode === 'RETAIL' ? 'OUT_RETAIL' : 'OUT_WHOLESALE', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: notes || `Venda ${mode}`, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
+            type: mode === 'RETAIL' ? 'OUT_RETAIL' : 'OUT_WHOLESALE', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: txNotes, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
           })
         }
       } else if (mode === 'EXCHANGE') {
@@ -289,7 +305,7 @@ export default function VendasPage() {
           if (invOut) {
             await supabase.from('inventory').update({ quantity: invOut.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', invOut.id)
             await supabase.from('inventory_transactions').insert({
-              type: 'EXCHANGE_OUT', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: `Saída para Troca de Promotor/Revenda`, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
+              type: 'EXCHANGE_OUT', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: txNotes + " (Saída para Troca)", created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
             })
           }
 
@@ -420,7 +436,7 @@ export default function VendasPage() {
             })
           }
           await supabase.from('inventory_transactions').insert({
-            type: 'EXCHANGE_IN', product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity, notes: `Entrada de Troca de Promotor`, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
+            type: 'EXCHANGE_IN', product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity, notes: txNotes + " (Entrada de Troca)", created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
           })
 
         } else {
@@ -429,7 +445,7 @@ export default function VendasPage() {
           if (invOut) {
             await supabase.from('inventory').update({ quantity: invOut.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', invOut.id)
             await supabase.from('inventory_transactions').insert({
-              type: 'EXCHANGE_OUT', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: 'Saída por troca', created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
+              type: 'EXCHANGE_OUT', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: txNotes + " (Saída por troca)", created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
             })
           }
           
@@ -443,7 +459,7 @@ export default function VendasPage() {
             })
           }
           await supabase.from('inventory_transactions').insert({
-            type: 'EXCHANGE_IN', product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity, notes: notes || 'Entrada por devolução/troca', created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
+            type: 'EXCHANGE_IN', product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity, notes: txNotes + " (Entrada por devolução)", created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
           })
         }
       }
@@ -856,7 +872,54 @@ export default function VendasPage() {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-1">Observações / Nome do Cliente (Opcional)</label>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Pessoa Registrada (Cliente/Promotor) *</label>
+                  <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={comboboxOpen}
+                        className="w-full justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 h-[46px] font-normal text-sm hover:bg-slate-100"
+                      >
+                        {selectedClient
+                          ? clients.find((client) => client.id === selectedClient)?.nome
+                          : "Pesquise e selecione..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[400px] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Pesquisar pessoa..." />
+                        <CommandList>
+                          <CommandEmpty>Nenhuma pessoa encontrada.</CommandEmpty>
+                          <CommandGroup>
+                            {clients.map((client) => (
+                              <CommandItem
+                                key={client.id}
+                                value={client.nome}
+                                onSelect={() => {
+                                  setSelectedClient(client.id)
+                                  setComboboxOpen(false)
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    selectedClient === client.id ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {client.nome} <span className="ml-2 text-xs text-slate-400">({client.role})</span>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Observações Adicionais (Opcional)</label>
                   <input
                     type="text"
                     value={notes}
