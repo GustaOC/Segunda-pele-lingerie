@@ -10,6 +10,27 @@ import { useRouter } from "next/navigation"
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" })
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inter" })
 
+const getColorHex = (colorName: string) => {
+  if (!colorName) return '#ccc';
+  const color = colorName.toLowerCase().trim();
+  
+  if (color === 'preto') return '#000000';
+  if (color === 'branco') return '#ffffff';
+  if (color === 'vermelho') return '#ef4444'; // red-500
+  if (color === 'nude') return '#f3ceb6';
+  if (color === 'azul') return '#3b82f6'; // blue-500
+  if (color === 'rosa') return '#ec4899'; // pink-500
+  if (color === 'verde') return '#22c55e'; // green-500
+  if (color === 'amarelo') return '#eab308'; // yellow-500
+  if (color.includes('verde musgo')) return '#4d7c0f'; // lime-700
+  if (color === 'vinho') return '#7f1d1d'; // red-900
+  if (color === 'marrom') return '#78350f'; // amber-900
+  if (color === 'cinza') return '#6b7280'; // gray-500
+  if (color === 'laranja') return '#f97316'; // orange-500
+  
+  return '#ccc'; // fallback
+}
+
 export default function EstoqueHistoricoPage() {
   const [loading, setLoading] = useState(true)
   const [transactions, setTransactions] = useState<any[]>([])
@@ -147,7 +168,7 @@ export default function EstoqueHistoricoPage() {
                             <div className="flex items-center text-xs text-slate-600">
                               <div 
                                 className="w-3 h-3 rounded-full border border-slate-200 mr-1 shadow-inner" 
-                                style={{backgroundColor: t.color === 'Preto' ? '#000' : t.color === 'Branco' ? '#fff' : '#ccc'}}
+                                style={{backgroundColor: getColorHex(t.color)}}
                               ></div>
                               {t.color}
                             </div>

@@ -8,7 +8,7 @@ import { Playfair_Display, Inter } from "next/font/google"
 import React, { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { Loader2, Plus, ArrowRight, User, ShoppingCart, Trash2, Package, X, Calendar } from "lucide-react"
+import { Loader2, Plus, ArrowRight, User, ShoppingCart, Trash2, Package, X, Calendar, ArrowLeft } from "lucide-react"
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" })
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inter" })
@@ -357,9 +357,17 @@ export default function EstoquePromotoresPage() {
         
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
-              Estoque de Promotores
-            </h1>
+            <div className="flex items-center gap-3 mb-2">
+              <button 
+                onClick={() => router.push('/admin/dashboard')}
+                className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+              >
+                <ArrowLeft className="w-5 h-5 text-slate-600" />
+              </button>
+              <h1 className="text-3xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
+                Estoque de Promotores
+              </h1>
+            </div>
             <p className="text-slate-500 mt-1">Veja quais peças estão com cada promotor / revendedora.</p>
           </div>
           <div className="flex flex-wrap gap-3">

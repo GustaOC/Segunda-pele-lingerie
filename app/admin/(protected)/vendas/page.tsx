@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Playfair_Display, Inter } from "next/font/google"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
-import { Loader2, ShoppingCart, RefreshCw, Box, Tag } from "lucide-react"
+import { Loader2, ShoppingCart, RefreshCw, Box, Tag, ArrowLeft } from "lucide-react"
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" })
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inter" })
@@ -520,9 +520,17 @@ export default function VendasPage() {
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         
         <div className="mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
-          <h1 className="text-3xl font-bold text-slate-800 mb-2" style={{ fontFamily: "var(--font-playfair)" }}>
-            PDV / Vendas
-          </h1>
+          <div className="flex items-center gap-3 mb-2">
+            <button 
+              onClick={() => router.push('/admin/dashboard')}
+              className="p-2 hover:bg-slate-100 rounded-full transition-colors"
+            >
+              <ArrowLeft className="w-5 h-5 text-slate-600" />
+            </button>
+            <h1 className="text-3xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
+              PDV / Vendas
+            </h1>
+          </div>
           <p className="text-slate-500">Registre saídas e trocas para dar baixa no estoque automaticamente.</p>
         </div>
 
