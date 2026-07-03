@@ -4,12 +4,14 @@ import { Button } from "@/components/ui/button"
 import { Playfair_Display, Inter } from "next/font/google"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
+import { useRouter } from "next/navigation"
 import { Loader2, ShoppingCart, RefreshCw, Box, Tag, ArrowLeft } from "lucide-react"
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" })
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inter" })
 
 export default function VendasPage() {
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [products, setProducts] = useState<any[]>([])
   const [promoters, setPromoters] = useState<any[]>([])
