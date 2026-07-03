@@ -12,45 +12,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "validation" }, { status: 400 })
     }
 
-    // Verificar se o CPF já existe
+    // Verificar se o CPF já existe (armazenado no campo email)
     const cpfLimpo = cpf.replace(/\D/g, "")
     const { data: existingConsultant } = await supabaseAdmin
       .from('consultant')
       .select('id')
-      .eq('cpf', cpfLimpo)
+      .eq('email', cpfLimpo)
       .single()
 
     if (existingConsultant) {
       return NextResponse.json({ error: "CPF já cadastrado" }, { status: 409 })
     }
 
-    // Criar endereço
-    const { data: address, error: addressError } = await supabaseAdmin
-      .from('address')
-      .insert({
-        rua: endereco.rua,
-        numero: endereco.numero,
-        bairro: endereco.bairro,
-        cidade: endereco.cidade,
-        uf: endereco.uf,
-        cep: endereco.cep ? endereco.cep.replace(/\D/g, "") : null,
-      })
-      .select()
-      .single()
-
-    if (addressError) {
-      console.error('Error creating address:', addressError)
-      return NextResponse.json({ error: "server_error" }, { status: 500 })
-    }
-
     // Criar consultor
     const { data: consultant, error: consultantError } = await supabaseAdmin
       .from('consultant')
       .insert({
-        nome: nomeCompleto,
-        cpf: cpfLimpo,
-        telefone,
-        addressId: address.id
+        name: nomeCompleto,
+        email: cpfLimpo, // Salvamos CPF no email
+        phone: telefone,
       })
       .select()
       .single()
@@ -64,7 +44,7 @@ export async function POST(req: NextRequest) {
     const { data: lead, error: leadError } = await supabaseAdmin
       .from('lead')
       .insert({
-        consultantId: consultant.id,
+        consultant_id: consultant.id,
         status: "EM_ANALISE",
       })
       .select()
@@ -72,6 +52,25 @@ export async function POST(req: NextRequest) {
 
     if (leadError) {
       console.error('Error creating lead:', leadError)
+      return NextResponse.json({ error: "server_error" }, { status: 500 })
+    }
+
+    // Criar endereço (armazenando rua e bairro em JSON no street)
+    const { data: address, error: addressError } = await supabaseAdmin
+      .from('address')
+      .insert({
+        lead_id: lead.id,
+        street: JSON.stringify({ rua: endereco.rua, bairro: endereco.bairro }),
+        number: endereco.numero,
+        city: endereco.cidade,
+        state: endereco.uf,
+        zip_code: endereco.cep ? endereco.cep.replace(/\D/g, "") : null,
+      })
+      .select()
+      .single()
+
+    if (addressError) {
+      console.error('Error creating address:', addressError)
       return NextResponse.json({ error: "server_error" }, { status: 500 })
     }
 
@@ -101,23 +100,20 @@ export async function GET(req: NextRequest) {
     const from = searchParams.get("from")
     const to = searchParams.get("to")
 
-    console.log('🔍 Buscando leads...') // ✅ LOG PARA DEBUG
+    console.log('🔍 Buscando leads...')
 
-    // ✅ QUERY CORRIGIDA - usar nomes de colunas exatos do banco
     let query = supabaseAdmin
       .from('lead')
       .select(`
         *,
-        consultant!inner (
-          *,
-          address (*)
-        )
+        consultant (*),
+        address (*)
       `)
 
     // Aplicar filtros
     if (status) query = query.eq('status', status)
-    if (promotorId) query = query.eq('promotorId', promotorId)
-    
+    if (promotorId) query = query.eq('promoter', promotorId)
+
     if (from) query = query.gte('created_at', new Date(String(from)).toISOString())
     if (to) query = query.lte('created_at', new Date(String(to)).toISOString())
 
@@ -131,12 +127,49 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ data: [], error: "Database unavailable" })
     }
 
-    console.log(`✅ Encontrados ${data?.length || 0} leads`) // ✅ LOG PARA DEBUG
+    console.log(`✅ Encontrados ${data?.length || 0} leads originais`)
 
-    // Filtrar por cidade se necessário (pós-processamento)
-    let filteredData = data || []
-    if (cidade && data) {
-      filteredData = data.filter(lead => 
+    // Mapear de volta para o formato que o frontend espera (Português)
+    const mappedData = data.map(lead => {
+      const c = lead.consultant
+      const a = lead.address && lead.address.length > 0 ? lead.address[0] : null
+      
+      let ruaParsed = a?.street || ""
+      let bairroParsed = ""
+      
+      try {
+        if (a && a.street && a.street.startsWith("{")) {
+           const parsed = JSON.parse(a.street)
+           ruaParsed = parsed.rua || ""
+           bairroParsed = parsed.bairro || ""
+        }
+      } catch(e) {}
+
+      return {
+        ...lead,
+        promotorId: lead.promoter,
+        consultant: c ? {
+          ...c,
+          nome: c.name,
+          cpf: c.email || "", // O CPF foi salvo no email
+          telefone: c.phone,
+          address: a ? {
+            rua: ruaParsed,
+            bairro: bairroParsed,
+            numero: a.number,
+            cidade: a.city,
+            uf: a.state,
+            cep: a.zip_code
+          } : null
+        } : null
+      }
+    })
+
+    let filteredData = mappedData
+
+    // Filtrar por cidade se necessário
+    if (cidade) {
+      filteredData = filteredData.filter(lead =>
         lead.consultant?.address?.cidade === cidade
       )
     }
@@ -147,7 +180,7 @@ export async function GET(req: NextRequest) {
       filteredData = filteredData.filter(lead => {
         const consultant = lead.consultant
         if (!consultant) return false
-        
+
         return (
           consultant.nome.toLowerCase().includes(q.toLowerCase()) ||
           consultant.cpf.includes(cpfLimpo) ||
@@ -157,7 +190,7 @@ export async function GET(req: NextRequest) {
       })
     }
 
-    console.log(`🎯 Retornando ${filteredData.length} leads filtrados`) // ✅ LOG PARA DEBUG
+    console.log(`🎯 Retornando ${filteredData.length} leads filtrados`)
 
     return NextResponse.json({ data: filteredData })
   } catch (error) {

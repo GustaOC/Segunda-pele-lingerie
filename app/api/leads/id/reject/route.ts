@@ -14,8 +14,7 @@ export async function PATCH(
       .from('lead')
       .update({
         status: 'REPROVADO',
-        motivoReprovacao: motivo,
-        observacoes: observacoes
+        // motivoReprovacao and observacoes don't exist in the database schema.
       })
       .eq('id', id)
       .select()
@@ -25,9 +24,6 @@ export async function PATCH(
       console.error('Error updating lead:', leadError)
       return NextResponse.json({ error: 'Failed to update lead' }, { status: 500 })
     }
-
-    // Criar histórico (opcional, se tiver a tabela)
-    // await supabaseAdmin.from('leadHistory').insert(...)
 
     return NextResponse.json({ ok: true, lead })
   } catch (error) {
