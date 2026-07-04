@@ -458,16 +458,7 @@ export default function HomePage() {
         </footer>
       </div>
 
-      {/* Botão WhatsApp fixo */}
-      <Link 
-        href="https://api.whatsapp.com/send?phone=5567992149878&text=Olá%20gostaria%20de%20fazer%20o%20meu%20cadastro!%20" 
-        target="_blank"
-        className="fixed bottom-8 right-8 z-50 group flex items-center justify-center bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white w-16 h-16 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 border border-green-400/20"
-        aria-label="Fale conosco no WhatsApp"
-      >
-        <MessageCircle className="w-7 h-7 group-hover:animate-bounce" />
-        <div className="absolute -inset-1 bg-green-400/30 rounded-2xl blur-lg animate-pulse"></div>
-      </Link>
+      
 
       {/* Modal de Sucesso */}
       <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
