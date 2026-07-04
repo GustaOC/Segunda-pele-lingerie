@@ -904,7 +904,7 @@ export default function VendasPage() {
                             {clients.map((client) => (
                               <CommandItem
                                 key={client.id}
-                                value={client.nome}
+                                value={`${client.nome} ${client.id}`}
                                 onSelect={() => {
                                   setSelectedClient(client.id)
                                   setComboboxOpen(false)

@@ -187,7 +187,7 @@ export function CadastroClienteModal({ open, onOpenChange, onSuccess }: ClienteM
                         {users.map((u) => (
                           <CommandItem
                             key={u.id}
-                            value={u.nome + " " + u.email}
+                            value={`${u.nome} ${u.email} ${u.id}`}
                             onSelect={() => {
                               setSelectedUser(u.id)
                               setComboboxOpen(false)
