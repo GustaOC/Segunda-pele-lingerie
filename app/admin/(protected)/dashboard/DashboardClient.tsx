@@ -1068,10 +1068,6 @@ export default function DashboardClient({ user }: { user: User }) {
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     {/* Modal Ver Cadastros Pendentes */}
-                                    <CadastroClienteModal open={showClientModal} onOpenChange={setShowClientModal} onSuccess={() => {
-                                      toast({ title: "Sucesso", description: "Cliente cadastrado com sucesso!" });
-                                    }} />
-
                                     <Dialog open={showPendingModal} onOpenChange={setShowPendingModal}>
                                         <DialogTrigger asChild>
                                             <Button
@@ -1558,6 +1554,9 @@ export default function DashboardClient({ user }: { user: User }) {
                     </TabsContent>
                 </Tabs>
             </div>
+            <CadastroClienteModal open={showClientModal} onOpenChange={setShowClientModal} onSuccess={() => {
+                toast({ title: "Sucesso", description: "Cliente cadastrado com sucesso!" });
+            }} />
         </div>
     );
 }
