@@ -1,7 +1,9 @@
-// app/api/admin/users/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { z } from "zod";
+
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 // Schema de validação para novos usuários
 const createUserSchema = z.object({
@@ -30,19 +32,41 @@ export async function GET(req: NextRequest) {
         console.error('Erro ao buscar perfis:', profileError);
     }
 
-    const combinedUsers = users.users.map(user => {
-        const profile = profiles?.find(p => p.id === user.id);
-        return {
+    const profilesMap = new Map((profiles || []).map(p => [p.id, p]));
+    const combinedUsers = [];
+
+    // Add all auth users
+    users.users.forEach(user => {
+        const profile = profilesMap.get(user.id);
+        combinedUsers.push({
             id: user.id,
             email: user.email,
             nome: profile?.nome || user.user_metadata?.nome || 'Não definido',
             role: profile?.role || 'USER',
             ativo: profile?.ativo ?? true,
             telefone: profile?.telefone,
+            cpf: profile?.cpf,
             created_at: user.created_at,
             last_sign_in: user.last_sign_in_at,
             updated_at: profile?.updated_at || user.updated_at,
-        };
+        });
+        profilesMap.delete(user.id);
+    });
+
+    // Add any remaining profiles that weren't in the top 50 auth users
+    profilesMap.forEach(profile => {
+        combinedUsers.push({
+            id: profile.id,
+            email: '',
+            nome: profile.nome || 'Não definido',
+            role: profile.role || 'USER',
+            ativo: profile.ativo ?? true,
+            telefone: profile.telefone,
+            cpf: profile.cpf,
+            created_at: profile.created_at || new Date().toISOString(),
+            last_sign_in: null,
+            updated_at: profile.updated_at,
+        });
     });
 
     return NextResponse.json({ data: combinedUsers });
