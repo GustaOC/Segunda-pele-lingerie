@@ -15,18 +15,15 @@ export async function POST(req: NextRequest) {
 
     if (!targetUserId) {
       // Create new user since it was not linked to an existing one
-      // We use a placeholder email if they didn't provide one
       const email = emailBusca || `${cpfLimpo}@cliente.local`;
       
       const { data: newUser, error: createError } = await supabaseAdmin.auth.admin.createUser({
         email: email,
-        password: Math.random().toString(36).slice(-10) + "A1!", // Random secure password
+        password: Math.random().toString(36).slice(-10) + "A1!", 
         email_confirm: true,
         user_metadata: {
           nome: nome,
-          role: "USER",
-          cpf: cpfLimpo,
-          endereco: endereco
+          role: "USER"
         }
       });
 
@@ -37,36 +34,46 @@ export async function POST(req: NextRequest) {
 
       targetUserId = newUser.user.id;
     } else {
-      // Link to existing user: update their metadata
-      const { data: existingUser, error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+      // Update existing auth user just in case
+      await supabaseAdmin.auth.admin.updateUserById(
         targetUserId,
         {
           user_metadata: {
             nome: nome,
-            role: "USER",
-            cpf: cpfLimpo,
-            endereco: endereco
+            role: "USER"
           }
         }
       );
-
-      if (updateError) {
-        console.error("Erro ao atualizar usuário:", updateError);
-        return NextResponse.json({ error: "Erro ao vincular cliente" }, { status: 500 });
-      }
     }
 
-    // Upsert into profiles to make sure it's fully synced and searchable in the system
+    // Upsert into profiles
     const { error: profileError } = await supabaseAdmin.from('profiles').upsert({
       id: targetUserId,
       nome: nome,
-      role: "USER", // Default role for clients
+      role: "USER", 
       telefone: telefone,
       ativo: true
     });
 
     if (profileError) {
       console.error("Erro ao salvar perfil:", profileError);
+    }
+
+    // Upsert into the new clientes table
+    const { error: clienteError } = await supabaseAdmin.from('clientes').upsert({
+      user_id: targetUserId,
+      cpf: cpfLimpo,
+      rua: endereco.rua,
+      numero: endereco.numero,
+      bairro: endereco.bairro,
+      cidade: endereco.cidade,
+      uf: endereco.uf,
+      cep: endereco.cep
+    });
+
+    if (clienteError) {
+      console.error("Erro ao salvar dados na tabela clientes:", clienteError);
+      return NextResponse.json({ error: "Erro ao salvar os detalhes do cliente" }, { status: 500 });
     }
 
     return NextResponse.json({ ok: true, userId: targetUserId }, { status: 201 });
