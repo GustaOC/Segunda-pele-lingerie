@@ -5,7 +5,7 @@ import { Playfair_Display, Inter } from "next/font/google"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { Loader2, ShoppingCart, RefreshCw, Box, Tag, ArrowLeft, Check, ChevronsUpDown } from "lucide-react"
+import { Loader2, ShoppingCart, RefreshCw, Box, Tag, ArrowLeft, Check, ChevronsUpDown, Trash2 } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { cn } from "@/lib/utils"
@@ -66,6 +66,9 @@ export default function VendasPage() {
 
   const [submitting, setSubmitting] = useState(false)
   const [maxQuantity, setMaxQuantity] = useState(0)
+
+  // Cart state
+  const [cartItems, setCartItems] = useState<any[]>([])
 
   // Consumidor state
   const [isConsumerSale, setIsConsumerSale] = useState(false)
@@ -271,6 +274,42 @@ export default function VendasPage() {
     checkMax()
   }, [selectedProductId, selectedColor, selectedSize, mode, selectedPromoterId, selectedPeriod])
 
+  
+  const addToCart = () => {
+    if (!selectedProductId || !selectedColor || !selectedSize || quantity <= 0) {
+      alert("Preencha todos os campos do produto corretamente.");
+      return;
+    }
+    if (quantity > maxQuantity) {
+      alert("Quantidade maior que o estoque disponível.");
+      return;
+    }
+
+    const item = {
+      id: Date.now().toString(),
+      productId: selectedProductId,
+      productObj: products.find(p => p.id === selectedProductId),
+      color: selectedColor,
+      size: selectedSize,
+      quantity: quantity,
+      promoterId: selectedPromoterId,
+      period: selectedPeriod
+    };
+
+    setCartItems([...cartItems, item]);
+
+    // Reset product selection
+    setSelectedProductId("");
+    setSelectedColor("");
+    setSelectedSize("");
+    setSelectedPeriod("");
+    setQuantity(1);
+  };
+
+  const removeFromCart = (id: string) => {
+    setCartItems(cartItems.filter(item => item.id !== id));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     
     if (!selectedClient && !isConsumerSale && !(mode === 'EXCHANGE' && exchangeSourceType === 'OUT_PROMOTER')) {
@@ -281,7 +320,7 @@ export default function VendasPage() {
     e.preventDefault()
     setSubmitting(true)
     
-    if (quantity <= 0 || quantity > maxQuantity) {
+    if (mode === 'EXCHANGE' && (quantity <= 0 || quantity > maxQuantity)) {
       alert("Quantidade inválida ou maior que o estoque.")
       setSubmitting(false)
       return
@@ -301,38 +340,46 @@ export default function VendasPage() {
     const txNotes = `Cliente: ${clientName}${notes ? ` | Obs: ${notes}` : ''}`
 
     try {
-      if (mode === 'PROMOTER_SALE') {
-        // Remove from promoter_inventory
-        let query = supabase
-          .from('promoter_inventory')
-          .select('id, quantity')
-          .eq('promoter_id', selectedPromoterId)
-          .eq('product_id', selectedProductId)
-          .eq('size', selectedSize)
-          .eq('color', selectedColor)
-          
-        if (selectedPeriod && selectedPeriod !== 'null') {
-          query = query.eq('period', selectedPeriod)
-        } else {
-          query = query.is('period', null)
+      if (mode !== 'EXCHANGE') {
+        if (cartItems.length === 0) {
+          alert("Adicione pelo menos um item à venda.");
+          setSubmitting(false);
+          return;
         }
-        
-        const { data: inv } = await query.single()
-          
-        if (inv) {
-          await supabase.from('promoter_inventory').update({ quantity: inv.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', inv.id)
-          await supabase.from('inventory_transactions').insert({
-            type: 'OUT_PROMOTER', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, promoter_id: selectedPromoterId, notes: txNotes, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
-          })
-        }
-      } else if (mode === 'RETAIL' || mode === 'WHOLESALE') {
-        // Remove from inventory
-        const { data: inv } = await supabase.from('inventory').select('id, quantity').eq('product_id', selectedProductId).eq('size', selectedSize).eq('color', selectedColor).maybeSingle()
-        if (inv) {
-          await supabase.from('inventory').update({ quantity: inv.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', inv.id)
-          await supabase.from('inventory_transactions').insert({
-            type: mode === 'RETAIL' ? 'OUT_RETAIL' : 'OUT_WHOLESALE', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: txNotes, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
-          })
+
+        for (const item of cartItems) {
+          if (mode === 'PROMOTER_SALE') {
+            let query = supabase
+              .from('promoter_inventory')
+              .select('id, quantity')
+              .eq('promoter_id', item.promoterId)
+              .eq('product_id', item.productId)
+              .eq('size', item.size)
+              .eq('color', item.color)
+              
+            if (item.period && item.period !== 'null') {
+              query = query.eq('period', item.period)
+            } else {
+              query = query.is('period', null)
+            }
+            
+            const { data: inv } = await query.single()
+              
+            if (inv) {
+              await supabase.from('promoter_inventory').update({ quantity: inv.quantity - item.quantity, updated_at: new Date().toISOString() }).eq('id', inv.id)
+              await supabase.from('inventory_transactions').insert({
+                type: 'OUT_PROMOTER', product_id: item.productId, size: item.size, color: item.color, quantity: -item.quantity, promoter_id: item.promoterId, notes: txNotes, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
+              })
+            }
+          } else {
+            const { data: inv } = await supabase.from('inventory').select('id, quantity').eq('product_id', item.productId).eq('size', item.size).eq('color', item.color).maybeSingle()
+            if (inv) {
+              await supabase.from('inventory').update({ quantity: inv.quantity - item.quantity, updated_at: new Date().toISOString() }).eq('id', inv.id)
+              await supabase.from('inventory_transactions').insert({
+                type: mode === 'RETAIL' ? 'OUT_RETAIL' : 'OUT_WHOLESALE', product_id: item.productId, size: item.size, color: item.color, quantity: -item.quantity, notes: txNotes, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
+              })
+            }
+          }
         }
       } else if (mode === 'EXCHANGE') {
         if (exchangeSourceType === 'OUT_PROMOTER') {
@@ -515,6 +562,7 @@ export default function VendasPage() {
       setReturnPeriod("")
       setQuantity(1)
       setNotes("")
+      setCartItems([])
       
     } catch (err) {
       console.error(err)
@@ -537,6 +585,7 @@ export default function VendasPage() {
     setReturnPeriod("");
     setQuantity(1);
     setNotes("");
+    setCartItems([]);
     setExchangePeriod("");
     setExchangeSourceType("");
     setSelectedTransactionId("");
@@ -864,7 +913,7 @@ export default function VendasPage() {
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Produto *</label>
                   <select
-                    required
+                    required={mode === 'EXCHANGE' || cartItems.length === 0}
                     value={selectedProductId}
                     onChange={(e) => { setSelectedProductId(e.target.value); setSelectedColor(""); setSelectedSize("") }}
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
@@ -878,7 +927,7 @@ export default function VendasPage() {
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Cor *</label>
                     <select
-                      required
+                      required={mode === 'EXCHANGE' || cartItems.length === 0}
                       value={selectedColor}
                       onChange={(e) => setSelectedColor(e.target.value)}
                       disabled={!selectedProductId}
@@ -891,7 +940,7 @@ export default function VendasPage() {
                   <div>
                     <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho *</label>
                     <select
-                      required
+                      required={mode === 'EXCHANGE' || cartItems.length === 0}
                       value={selectedSize}
                       onChange={(e) => setSelectedSize(e.target.value)}
                       disabled={!selectedProductId}
@@ -907,7 +956,7 @@ export default function VendasPage() {
                   <div className="mt-4">
                     <label className="block text-sm font-medium text-slate-700 mb-1">Período *</label>
                     <select
-                      required
+                      required={mode === 'EXCHANGE' || cartItems.length === 0}
                       value={selectedPeriod}
                       onChange={(e) => setSelectedPeriod(e.target.value)}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
@@ -943,7 +992,7 @@ export default function VendasPage() {
                     <label className="block text-sm font-medium text-slate-700 mb-1">Quantidade *</label>
                     <input
                       type="number"
-                      required
+                      required={mode === 'EXCHANGE' || cartItems.length === 0}
                       min="1"
                       max={maxQuantity}
                       value={quantity}
