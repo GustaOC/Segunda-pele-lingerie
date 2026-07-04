@@ -264,7 +264,7 @@ export default function VendasPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     
-    if (!selectedClient) {
+    if (!selectedClient && !isConsumerSale) {
       alert("Por favor, selecione um cliente cadastrado.")
       setSubmitting(false)
       return
