@@ -27,6 +27,12 @@ export async function GET(req: NextRequest) {
     const { data: profiles, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('*');
+
+    const { data: clientesData } = await supabaseAdmin
+      .from('clientes')
+      .select('user_id, cpf');
+    
+    const clientesMap = new Map((clientesData || []).map(c => [c.user_id, c.cpf]));
     
     if (profileError) {
         console.error('Erro ao buscar perfis:', profileError);
@@ -45,7 +51,7 @@ export async function GET(req: NextRequest) {
             role: profile?.role || 'USER',
             ativo: profile?.ativo ?? true,
             telefone: profile?.telefone,
-            cpf: profile?.cpf,
+            cpf: clientesMap.get(user.id),
             created_at: user.created_at,
             last_sign_in: user.last_sign_in_at,
             updated_at: profile?.updated_at || user.updated_at,
@@ -62,7 +68,7 @@ export async function GET(req: NextRequest) {
             role: profile.role || 'USER',
             ativo: profile.ativo ?? true,
             telefone: profile.telefone,
-            cpf: profile.cpf,
+            cpf: clientesMap.get(profile.id),
             created_at: profile.created_at || new Date().toISOString(),
             last_sign_in: null,
             updated_at: profile.updated_at,
