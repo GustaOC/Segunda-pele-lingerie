@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { User } from "@supabase/supabase-js";
 import useSWR, { mutate } from 'swr';
+import { CadastroClienteModal } from "../../components/CadastroClienteModal";
 
 // Componentes da UI
 import { Button } from "@/components/ui/button";
@@ -89,6 +90,7 @@ export default function DashboardClient({ user }: { user: User }) {
     const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 6));
     const [searchTerm, setSearchTerm] = useState("");
     const [showPendingModal, setShowPendingModal] = useState(false);
+    const [showClientModal, setShowClientModal] = useState(false);
     const [showPromoterReportModal, setShowPromoterReportModal] = useState(false);
     const [showDetailedReportModal, setShowDetailedReportModal] = useState(false);
     const [selectedPromoter, setSelectedPromoter] = useState("all");
@@ -699,6 +701,13 @@ export default function DashboardClient({ user }: { user: User }) {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="space-y-3">
+                                    <Button onClick={() => setShowClientModal(true)} variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
+                                        <UserCheck className="w-4 h-4 mr-3" style={{ color: "#5D3A5B" }} />
+                                        <div className="text-left">
+                                            <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>Cadastros Clientes</div>
+                                            <div className="text-xs text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>Registrar novo cliente</div>
+                                        </div>
+                                    </Button>
                                     {!isPromoter ? (<Link href="/admin/consultants">
                                         <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-5 border border-white/30 rounded-2xl transition-all duration-300">
                                             <Users className="w-4 h-4 mr-3" style={{ color: "#5D3A5B" }} />
@@ -1059,6 +1068,10 @@ export default function DashboardClient({ user }: { user: User }) {
                                 </CardHeader>
                                 <CardContent className="space-y-4">
                                     {/* Modal Ver Cadastros Pendentes */}
+                                    <CadastroClienteModal open={showClientModal} onOpenChange={setShowClientModal} onSuccess={() => {
+                                      toast({ title: "Sucesso", description: "Cliente cadastrado com sucesso!" });
+                                    }} />
+
                                     <Dialog open={showPendingModal} onOpenChange={setShowPendingModal}>
                                         <DialogTrigger asChild>
                                             <Button
