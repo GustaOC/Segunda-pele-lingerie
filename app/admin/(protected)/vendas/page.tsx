@@ -71,10 +71,11 @@ export default function VendasPage() {
   useEffect(() => {
     async function init() {
       setLoading(true)
-      const [prodRes, transRes, reselRes] = await Promise.all([
+      const [prodRes, transRes, reselRes, consultRes] = await Promise.all([
         supabase.from('products').select('id, name, sku, colors, sizes'),
         supabase.from('inventory_transactions').select('*, products(id, name, sku)').in('type', ['OUT_RETAIL', 'OUT_WHOLESALE']).order('created_at', { ascending: false }).limit(200),
-        supabase.from('resellers').select('*').order('name')
+        supabase.from('resellers').select('*').order('name'),
+        supabase.from('consultant').select('*').order('name')
       ])
       
       try {
@@ -100,7 +101,18 @@ export default function VendasPage() {
             }
           }
           setPromoters(promotersList)
-          setClients(usersRes.data)
+          
+          const allPeople: any[] = []
+          if (usersRes.data) {
+            allPeople.push(...usersRes.data.map((u: any) => ({ id: u.id, nome: u.nome || 'Sem Nome', role: u.role || 'Usuário' })))
+          }
+          if (reselRes.data) {
+            allPeople.push(...reselRes.data.map((r: any) => ({ id: r.id, nome: r.name || 'Sem Nome', role: 'Revendedora' })))
+          }
+          if (consultRes.data) {
+            allPeople.push(...consultRes.data.map((c: any) => ({ id: c.id, nome: c.name || 'Sem Nome', role: 'Consultora/Lead' })))
+          }
+          setClients(allPeople)
         }
       } catch (e) {
         console.error(e)
