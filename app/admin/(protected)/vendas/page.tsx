@@ -66,17 +66,34 @@ export default function VendasPage() {
   const [submitting, setSubmitting] = useState(false)
   const [maxQuantity, setMaxQuantity] = useState(0)
 
+  // Consumidor state
+  const [isConsumerSale, setIsConsumerSale] = useState(false)
+  const [nextConsumerId, setNextConsumerId] = useState(1)
+
   const supabase = createClient()
 
   useEffect(() => {
     async function init() {
       setLoading(true)
-      const [prodRes, transRes, reselRes, consultRes] = await Promise.all([
+      const [prodRes, transRes, reselRes, consultRes, consumerTxRes] = await Promise.all([
         supabase.from('products').select('id, name, sku, colors, sizes'),
         supabase.from('inventory_transactions').select('*, products(id, name, sku)').in('type', ['OUT_RETAIL', 'OUT_WHOLESALE']).order('created_at', { ascending: false }).limit(200),
         supabase.from('resellers').select('*').order('name'),
-        supabase.from('consultant').select('*').order('name')
+        supabase.from('consultant').select('*').order('name'),
+        supabase.from('inventory_transactions').select('notes').ilike('notes', '%Consumidor #%')
       ])
+
+      if (consumerTxRes && consumerTxRes.data) {
+        let maxId = 0;
+        consumerTxRes.data.forEach((tx) => {
+          const match = tx.notes?.match(/Consumidor #(\d+)/);
+          if (match) {
+            const num = parseInt(match[1]);
+            if (num > maxId) maxId = num;
+          }
+        });
+        setNextConsumerId(maxId + 1);
+      }
       
       try {
         const { data: { session } } = await supabase.auth.getSession()
@@ -267,7 +284,7 @@ export default function VendasPage() {
       return
     }
 
-    const clientName = clients.find(c => c.id === selectedClient)?.nome || selectedClient
+    const clientName = isConsumerSale ? `Consumidor #${nextConsumerId}` : (clients.find(c => c.id === selectedClient)?.nome || selectedClient)
     const txNotes = `Cliente: ${clientName}${notes ? ` | Obs: ${notes}` : ''}`
 
     try {
@@ -879,6 +896,22 @@ export default function VendasPage() {
                   </div>
                 </div>
                 
+                <div className="flex items-center space-x-2 mb-4">
+                  <input
+                    type="checkbox"
+                    id="isConsumer"
+                    checked={isConsumerSale}
+                    onChange={(e) => {
+                      setIsConsumerSale(e.target.checked)
+                      if (e.target.checked) setSelectedClient("")
+                    }}
+                    className="w-4 h-4 text-brand-plum rounded focus:ring-brand-plum"
+                  />
+                  <label htmlFor="isConsumer" className="text-sm font-medium text-slate-700">
+                    Venda Consumidor (Venda #{nextConsumerId})
+                  </label>
+                </div>
+                {!isConsumerSale && (
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Cliente Registrado *</label>
                   <Popover open={comboboxOpen} onOpenChange={setComboboxOpen}>
@@ -925,6 +958,7 @@ export default function VendasPage() {
                     </PopoverContent>
                   </Popover>
                 </div>
+                )}
                 
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Observações Adicionais (Opcional)</label>
