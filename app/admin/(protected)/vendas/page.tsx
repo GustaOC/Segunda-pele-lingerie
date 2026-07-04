@@ -273,7 +273,7 @@ export default function VendasPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     
-    if (!selectedClient && !isConsumerSale) {
+    if (!selectedClient && !isConsumerSale && !(mode === 'EXCHANGE' && exchangeSourceType === 'OUT_PROMOTER')) {
       alert("Por favor, selecione um cliente cadastrado.")
       setSubmitting(false)
       return
@@ -293,7 +293,11 @@ export default function VendasPage() {
       return
     }
 
-    const clientName = isConsumerSale ? `Consumidor #${nextConsumerId}` : (clients.find(c => c.id === selectedClient)?.nome || selectedClient)
+    let clientName = isConsumerSale ? `Consumidor #${nextConsumerId}` : (clients.find(c => c.id === selectedClient)?.nome || selectedClient)
+    if (mode === 'EXCHANGE' && exchangeSourceType === 'OUT_PROMOTER') {
+        const pName = promoters.find(p => p.id === exchangePromoterId)?.nome || ''
+        clientName = `Promotor(a) ${pName}`
+    }
     const txNotes = `Cliente: ${clientName}${notes ? ` | Obs: ${notes}` : ''}`
 
     try {
@@ -941,25 +945,19 @@ export default function VendasPage() {
                       type="number"
                       required
                       min="1"
-                      max={mode === 'EXCHANGE' ? Math.min(maxQuantity, (exchangeSourceType === 'OUT_PROMOTER' && returnProductId && returnColor && returnSize ? (exchangePromoterInventory.find(i => i.product_id === returnProductId && i.color === returnColor && i.size === returnSize)?.quantity || 999) : (selectedTransactionId ? Math.abs(recentTransactions.find(t => t.id === selectedTransactionId)?.quantity || 999) : 999))) : maxQuantity}
+                      max={maxQuantity}
                       value={quantity}
                       onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
                       disabled={maxQuantity === 0}
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm disabled:opacity-50"
                     />
-                    {mode === 'EXCHANGE' && exchangeSourceType !== 'OUT_PROMOTER' && selectedTransactionId && (
-                      <p className="text-xs text-amber-600 mt-1">
-                        Limite da devolução: {Math.abs(recentTransactions.find(t => t.id === selectedTransactionId)?.quantity || 999)} un.
-                      </p>
-                    )}
-                    {mode === 'EXCHANGE' && exchangeSourceType === 'OUT_PROMOTER' && returnProductId && returnColor && returnSize && (
-                      <p className="text-xs text-amber-600 mt-1">
-                        Limite da devolução: {exchangePromoterInventory.find(i => i.product_id === returnProductId && i.color === returnColor && i.size === returnSize)?.quantity || 999} un.
-                      </p>
-                    )}
+                    
+                    
                   </div>
                 </div>
                 
+                {!(mode === 'EXCHANGE' && exchangeSourceType === 'OUT_PROMOTER') && (
+                <>
                 <div className="flex items-center space-x-2 mb-4">
                   <input
                     type="checkbox"
@@ -1022,6 +1020,8 @@ export default function VendasPage() {
                     </PopoverContent>
                   </Popover>
                 </div>
+                )}
+                </>
                 )}
                 
                 <div>
