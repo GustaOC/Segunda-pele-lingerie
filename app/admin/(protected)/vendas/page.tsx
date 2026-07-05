@@ -732,7 +732,7 @@ export default function VendasPage() {
                                 let cpf = ""
                                 if (t.notes && t.notes.includes('Cliente: ')) {
                                   const cName = t.notes.split(' | ')[0].replace('Cliente: ', '').trim()
-                                  const foundClient = clients.find(c => c.nome === cName)
+                                  const foundClient = clients.find(c => c.nome === cName) || promoters.find(p => p.nome === cName)
                                   if (foundClient && foundClient.cpf) {
                                     cpf = foundClient.cpf
                                   }
