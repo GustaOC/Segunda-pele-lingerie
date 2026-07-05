@@ -77,7 +77,7 @@ export default function EcommerceHome() {
     const fetchProducts = async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('*, inventory(quantity)')
         .order('created_at', { ascending: false })
         .limit(4)
 
@@ -288,8 +288,21 @@ export default function EcommerceHome() {
                       <Heart className="w-5 h-5" />
                     </button>
                   )}
-                  <Image 
-                    src={product.image} 
+                  
+                  {(() => {
+                    const totalQty = (product.inventory || []).reduce((acc, curr) => acc + (curr.quantity || 0), 0);
+                    if (totalQty <= 0) {
+                      return (
+                        <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] z-20 flex items-center justify-center">
+                          <span className="bg-slate-900 text-white text-sm font-bold px-6 py-2 rounded-full shadow-lg uppercase tracking-wider">
+                            Esgotado
+                          </span>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                  <Image src={product.image} 
                     alt={product.name} 
                     fill 
                     className="object-cover group-hover:scale-105 transition-transform duration-500" 
@@ -297,7 +310,7 @@ export default function EcommerceHome() {
                   
                   {/* Quick Add Button */}
                   <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all duration-300">
-                    <Button className="w-full bg-white/90 backdrop-blur-sm hover:bg-brand-plum text-brand-plum hover:text-white font-semibold shadow-lg">
+                    <Button className="w-full bg-white/90 backdrop-blur-sm hover:bg-brand-plum hover:text-white font-semibold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed text-brand-plum disabled:text-slate-500 disabled:hover:bg-slate-100" disabled={(product.inventory || []).reduce((a, c) => a + (c.quantity || 0), 0) <= 0}>
                       Adicionar ao Carrinho
                     </Button>
                   </div>

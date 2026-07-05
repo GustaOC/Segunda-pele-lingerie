@@ -77,7 +77,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
       // 2. Busca os produtos pertencentes a essas categorias
       const { data: productsData, error: prodError } = await supabase
         .from('products')
-        .select('*')
+        .select('*, inventory(quantity)')
         .in('category_id', allowedCategoryIds)
       
       if (!prodError && productsData) {
@@ -257,7 +257,21 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
                   <Link href={`/produto/${product.id}`} key={product.id} className="group flex flex-col bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-slate-100">
                     <div className="relative h-[320px] overflow-hidden bg-slate-100">
                       <FavoriteButton productId={product.id} className="absolute top-4 right-4 z-10 w-10 h-10 bg-white/80 backdrop-blur rounded-full hover:bg-white shadow-sm opacity-0 group-hover:opacity-100 translate-x-4 group-hover:translate-x-0 duration-300" />
-                      <Image src={product.image} alt={product.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                      
+                  {(() => {
+                    const totalQty = (product.inventory || []).reduce((acc, curr) => acc + (curr.quantity || 0), 0);
+                    if (totalQty <= 0) {
+                      return (
+                        <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] z-20 flex items-center justify-center">
+                          <span className="bg-slate-900 text-white text-sm font-bold px-6 py-2 rounded-full shadow-lg uppercase tracking-wider">
+                            Esgotado
+                          </span>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                  <Image src={product.image} alt={product.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                     </div>
                     <div className="p-5 flex flex-col flex-grow">
                       <div className="flex items-center mb-2">

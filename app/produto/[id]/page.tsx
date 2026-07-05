@@ -88,7 +88,7 @@ export default function ProdutoPage() {
       // Evita o erro caso o ID seja genérico ou vazio no primeiro render
       if (!id) return
 
-      const { data, error } = await supabase.from('products').select('*').eq('id', id).single()
+      const { data, error } = await supabase.from('products').select('*, inventory(quantity, size, color)').eq('id', id).single()
       
       if (error || !data) {
         // Fallback para o mock se não encontrar ou se as tabelas ainda não existirem
@@ -218,6 +218,18 @@ export default function ProdutoPage() {
     )
   }
 
+  
+  const isVariationInStock = (colorName, sizeName) => {
+    if (!product || !product.inventory) return false;
+    const items = product.inventory.filter(i => 
+      (!colorName || i.color.toLowerCase() === colorName.toLowerCase()) && 
+      (!sizeName || i.size === sizeName)
+    );
+    const qty = items.reduce((acc, curr) => acc + (curr.quantity || 0), 0);
+    return qty > 0;
+  }
+
+
   if (!product) return null
 
   return (
@@ -309,13 +321,14 @@ export default function ProdutoPage() {
                   {product.colors.map((color: any, index: number) => (
                     <button
                       key={index}
+                      disabled={!isVariationInStock(color.name, null)}
                       onClick={() => {
                         setSelectedColor(color)
                         if (color.images && color.images.length > 0) {
                           setCurrentImage(color.images[0])
                         }
                       }}
-                      className={`relative w-10 h-10 rounded-full border-2 transition-all group flex items-center justify-center ${selectedColor?.hex === color.hex ? "border-brand-plum scale-110 shadow-md" : "border-slate-200 hover:border-slate-300"}`}
+                      className={`relative w-10 h-10 rounded-full border-2 transition-all group flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed ${selectedColor?.hex === color.hex ? "border-brand-plum scale-110 shadow-md" : "border-slate-200 hover:border-slate-300"}`}
                       title={color.name}
                     >
                       <span className="w-7 h-7 rounded-full border border-slate-100" style={{ backgroundColor: getDisplayColor(color.hex, color.name) }}></span>
@@ -331,8 +344,9 @@ export default function ProdutoPage() {
                 {product.sizes.map((size: string) => (
                   <button
                     key={size}
+                    disabled={selectedColor && !isVariationInStock(selectedColor.name, size)}
                     onClick={() => setSelectedSize(size)}
-                    className={`w-12 h-12 rounded-full flex items-center justify-center text-base font-medium transition-all ${selectedSize === size ? "bg-brand-plum text-white shadow-lg scale-110" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+                    className={`w-12 h-12 rounded-full flex items-center justify-center text-base font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed ${selectedSize === size ? "bg-brand-plum text-white shadow-lg scale-110" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
                   >
                     {size}
                   </button>
@@ -342,13 +356,29 @@ export default function ProdutoPage() {
 
             {renderDiscountMessage()}
 
-            <Button 
-              size="lg" 
-              onClick={handleAddToCart}
-              className={`w-full rounded-2xl h-14 text-base shadow-lg transition-all ${added ? "bg-green-500 hover:bg-green-600" : "bg-brand-plum hover:bg-brand-rose"}`}
-            >
-              {added ? "Adicionado ao Carrinho! ✓" : "Adicionar ao Carrinho"}
-            </Button>
+            {(() => {
+              const inStock = selectedColor && selectedSize ? isVariationInStock(selectedColor.name, selectedSize) : false;
+              const hasAnyStock = (product.inventory || []).reduce((a, c) => a + (c.quantity || 0), 0) > 0;
+              
+              if (!hasAnyStock) {
+                return (
+                  <Button size="lg" disabled className="w-full rounded-2xl h-14 text-base shadow-lg transition-all bg-slate-300 text-slate-500 cursor-not-allowed">
+                    Esgotado
+                  </Button>
+                )
+              }
+              
+              return (
+                <Button 
+                  size="lg" 
+                  onClick={handleAddToCart}
+                  disabled={!inStock}
+                  className={`w-full rounded-2xl h-14 text-base shadow-lg transition-all ${added ? "bg-green-500 hover:bg-green-600" : (inStock ? "bg-brand-plum hover:bg-brand-rose" : "bg-slate-300 text-slate-500")}`}
+                >
+                  {added ? "Adicionado ao Carrinho! ✓" : (inStock ? "Adicionar ao Carrinho" : "Variação Esgotada")}
+                </Button>
+              )
+            })()}
 
             <div className="mt-6 pt-6 border-t border-slate-100 grid grid-cols-2 gap-4">
               <div className="flex items-center text-slate-600">

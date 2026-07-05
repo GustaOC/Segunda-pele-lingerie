@@ -34,7 +34,7 @@ export default function SalePage() {
     const fetchProducts = async () => {
       const { data, error } = await supabase
         .from('products')
-        .select('*')
+        .select('*, inventory(quantity)')
         .not('old_price', 'is', null)
 
       if (error || !data || data.length === 0) {
@@ -87,7 +87,21 @@ export default function SalePage() {
                     <Heart className="w-5 h-5" />
                   </button>
                 )}
-                <Image src={product.image} alt={product.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                
+                  {(() => {
+                    const totalQty = (product.inventory || []).reduce((acc, curr) => acc + (curr.quantity || 0), 0);
+                    if (totalQty <= 0) {
+                      return (
+                        <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] z-20 flex items-center justify-center">
+                          <span className="bg-slate-900 text-white text-sm font-bold px-6 py-2 rounded-full shadow-lg uppercase tracking-wider">
+                            Esgotado
+                          </span>
+                        </div>
+                      );
+                    }
+                    return null;
+                  })()}
+                  <Image src={product.image} alt={product.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
               </div>
               <div className="p-5 flex flex-col flex-grow">
                 <div className="flex items-center mb-2">
