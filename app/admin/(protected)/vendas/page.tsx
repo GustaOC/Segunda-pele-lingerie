@@ -55,6 +55,8 @@ export default function VendasPage() {
   const [returnColor, setReturnColor] = useState("")
   const [returnPeriod, setReturnPeriod] = useState("")
   const [returnAvailablePeriods, setReturnAvailablePeriods] = useState<any[]>([])
+  const [returnCartItems, setReturnCartItems] = useState<any[]>([])
+  const [returnQuantity, setReturnQuantity] = useState(1)
   const [exchangeResellerSourceType, setExchangeResellerSourceType] = useState<'LOOSE' | 'KIT'>('LOOSE')
   const [exchangeResellerInventory, setExchangeResellerInventory] = useState<any[]>([])
   const [exchangeResellerKits, setExchangeResellerKits] = useState<any[]>([])
@@ -276,6 +278,34 @@ export default function VendasPage() {
   }, [selectedProductId, selectedColor, selectedSize, mode, selectedPromoterId, selectedPeriod])
 
   
+  
+  const addReturnToCart = () => {
+    if (!returnProductId || !returnColor || !returnSize || returnQuantity <= 0) {
+      alert("Preencha todos os campos do produto devolvido corretamente.");
+      return;
+    }
+    const item = {
+      id: Date.now().toString(),
+      productId: returnProductId,
+      productObj: products.find(p => p.id === returnProductId) || (exchangeSourceType === 'OUT_PROMOTER' ? [...exchangePromoterInventory, ...exchangeResellerInventory, ...exchangeResellerKits.flatMap(k => k.items)].find((i:any) => i.product_id === returnProductId)?.products : null),
+      color: returnColor,
+      size: returnSize,
+      quantity: returnQuantity,
+      period: returnPeriod,
+      kitId: exchangeResellerSourceType === 'KIT' ? exchangeKitId : undefined
+    };
+    setReturnCartItems([...returnCartItems, item]);
+    setReturnProductId("");
+    setReturnColor("");
+    setReturnSize("");
+    setReturnQuantity(1);
+    setSelectedTransactionId("");
+  };
+
+  const removeReturnFromCart = (id: string) => {
+    setReturnCartItems(returnCartItems.filter(item => item.id !== id));
+  };
+
   const addToCart = () => {
     if (!selectedProductId || !selectedColor || !selectedSize || quantity <= 0) {
       alert("Preencha todos os campos do produto corretamente.");
@@ -385,173 +415,142 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
           }
         }
       } else if (mode === 'EXCHANGE') {
-        if (exchangeSourceType === 'OUT_PROMOTER') {
-          const pQ = returnPeriod === 'null' ? null : returnPeriod
+        if (cartItems.length === 0 && returnCartItems.length === 0) {
+          alert("Adicione peças para troca/devolução.");
+          setSubmitting(false);
+          return;
+        }
 
-          // 1. New Piece: Remove from general inventory
-          const { data: invOut } = await supabase.from('inventory').select('id, quantity').eq('product_id', selectedProductId).eq('size', selectedSize).eq('color', selectedColor).maybeSingle()
-          if (invOut) {
-            await supabase.from('inventory').update({ quantity: invOut.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', invOut.id)
-            await supabase.from('inventory_transactions').insert({
-created_by: (await supabase.auth.getSession()).data.session?.user?.id,
-              type: 'EXCHANGE_OUT', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: txNotes + " (Saída para Troca)", created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
-            })
-          }
-
-          // Add new piece to appropriate destination
-          if (!exchangeResellerId) {
-            // Add to promoter_inventory
-            let promOutQuery = supabase.from('promoter_inventory').select('*').eq('promoter_id', exchangePromoterId).eq('product_id', selectedProductId).eq('color', selectedColor).eq('size', selectedSize)
-            if (pQ) promOutQuery = promOutQuery.eq('period', pQ)
-            else promOutQuery = promOutQuery.is('period', null)
+        // Loop das peças que estão SAINDO (cartItems)
+        for (const item of cartItems) {
+          if (exchangeSourceType === 'OUT_PROMOTER') {
+            const pQ = item.period === 'null' ? null : item.period;
             
-            const { data: promInvOut } = await promOutQuery.maybeSingle()
-            if (promInvOut) {
-              await supabase.from('promoter_inventory').update({ quantity: promInvOut.quantity + quantity, updated_at: new Date().toISOString() }).eq('id', promInvOut.id)
-            } else {
-              await supabase.from('promoter_inventory').insert({
-                promoter_id: exchangePromoterId, product_id: selectedProductId, color: selectedColor, size: selectedSize, quantity: quantity, period: pQ
+            // 1. Remove new piece from general inventory
+            const { data: invOut } = await supabase.from('inventory').select('id, quantity').eq('product_id', item.productId).eq('size', item.size).eq('color', item.color).maybeSingle()
+            if (invOut) {
+              await supabase.from('inventory').update({ quantity: invOut.quantity - item.quantity, updated_at: new Date().toISOString() }).eq('id', invOut.id)
+              await supabase.from('inventory_transactions').insert({
+                created_by: (await supabase.auth.getSession()).data.session?.user?.id,
+                type: 'EXCHANGE_OUT', product_id: item.productId, size: item.size, color: item.color, quantity: -item.quantity, notes: txNotes + " (Saída para Troca)", created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
               })
             }
-          } else {
-            if (exchangeResellerSourceType === 'KIT' && exchangeKitId) {
-              // Add to kit items
-              const { data: kitItem } = await supabase.from('promoter_kit_items')
-                .select('*')
-                .eq('kit_id', exchangeKitId)
-                .eq('product_id', selectedProductId)
-                .eq('color', selectedColor)
-                .eq('size', selectedSize)
-                .single()
-                
-              if (kitItem) {
-                await supabase.from('promoter_kit_items').update({ quantity: kitItem.quantity + quantity }).eq('id', kitItem.id)
+
+            // 2. Add new piece to promoter/reseller destination
+            if (!exchangeResellerId) {
+              let promOutQuery = supabase.from('promoter_inventory').select('*').eq('promoter_id', exchangePromoterId).eq('product_id', item.productId).eq('color', item.color).eq('size', item.size)
+              if (pQ) promOutQuery = promOutQuery.eq('period', pQ)
+              else promOutQuery = promOutQuery.is('period', null)
+              
+              const { data: promInvOut } = await promOutQuery.maybeSingle()
+              if (promInvOut) {
+                await supabase.from('promoter_inventory').update({ quantity: promInvOut.quantity + item.quantity, updated_at: new Date().toISOString() }).eq('id', promInvOut.id)
               } else {
-                await supabase.from('promoter_kit_items').insert({
-                  kit_id: exchangeKitId, product_id: selectedProductId, color: selectedColor, size: selectedSize, quantity: quantity
+                await supabase.from('promoter_inventory').insert({
+                  promoter_id: exchangePromoterId, product_id: item.productId, color: item.color, size: item.size, quantity: item.quantity, period: pQ
                 })
               }
-              // Update kit price for new item
-              const { data: outProd } = await supabase.from('products').select('price').eq('id', selectedProductId).single()
-              const { data: kit } = await supabase.from('promoter_kits').select('total_price').eq('id', exchangeKitId).single()
-              if (outProd && kit) {
-                await supabase.from('promoter_kits').update({
-                  total_price: Number(kit.total_price) + (Number(outProd.price) * quantity)
-                }).eq('id', exchangeKitId)
-              }
             } else {
-              // Add to reseller_inventory
-              let resOutQuery = supabase.from('reseller_inventory').select('*').eq('reseller_id', exchangeResellerId).eq('product_id', selectedProductId).eq('color', selectedColor).eq('size', selectedSize)
+              let resOutQuery = supabase.from('reseller_inventory').select('*').eq('reseller_id', exchangeResellerId).eq('product_id', item.productId).eq('color', item.color).eq('size', item.size)
               if (pQ) resOutQuery = resOutQuery.eq('period', pQ)
               else resOutQuery = resOutQuery.is('period', null)
               
               const { data: resInvOut } = await resOutQuery.maybeSingle()
               if (resInvOut) {
-                await supabase.from('reseller_inventory').update({ quantity: resInvOut.quantity + quantity, updated_at: new Date().toISOString() }).eq('id', resInvOut.id)
+                await supabase.from('reseller_inventory').update({ quantity: resInvOut.quantity + item.quantity, updated_at: new Date().toISOString() }).eq('id', resInvOut.id)
               } else {
                 await supabase.from('reseller_inventory').insert({
-                  reseller_id: exchangeResellerId, product_id: selectedProductId, color: selectedColor, size: selectedSize, quantity: quantity, period: pQ
+                  reseller_id: exchangeResellerId, product_id: item.productId, color: item.color, size: item.size, quantity: item.quantity, period: pQ
                 })
               }
             }
-          }
-
-          // 2. Returned Piece: Remove from Source, Add to General Inventory
-
-          // Remove from source
-          if (!exchangeResellerId) {
-            let promInQuery = supabase.from('promoter_inventory').select('*').eq('promoter_id', exchangePromoterId).eq('product_id', returnProductId).eq('color', returnColor).eq('size', returnSize)
-            if (pQ) promInQuery = promInQuery.eq('period', pQ)
-            else promInQuery = promInQuery.is('period', null)
-            
-            const { data: promInvIn } = await promInQuery.maybeSingle()
-            if (promInvIn) {
-              const newQ = promInvIn.quantity - quantity
-              if (newQ <= 0) {
-                await supabase.from('promoter_inventory').delete().eq('id', promInvIn.id)
-              } else {
-                await supabase.from('promoter_inventory').update({ quantity: newQ, updated_at: new Date().toISOString() }).eq('id', promInvIn.id)
-              }
-            }
           } else {
-            if (exchangeResellerSourceType === 'KIT' && exchangeKitId) {
-              const { data: kitItem } = await supabase.from('promoter_kit_items')
-                .select('*')
-                .eq('kit_id', exchangeKitId)
-                .eq('product_id', returnProductId)
-                .eq('color', returnColor)
-                .eq('size', returnSize)
-                .single()
-              if (kitItem) {
-                const newQ = kitItem.quantity - quantity
+            // RETAIL / WHOLESALE
+            const { data: invOut } = await supabase.from('inventory').select('id, quantity').eq('product_id', item.productId).eq('size', item.size).eq('color', item.color).maybeSingle()
+            if (invOut) {
+              await supabase.from('inventory').update({ quantity: invOut.quantity - item.quantity, updated_at: new Date().toISOString() }).eq('id', invOut.id)
+              await supabase.from('inventory_transactions').insert({
+                created_by: (await supabase.auth.getSession()).data.session?.user?.id,
+                type: 'EXCHANGE_OUT', product_id: item.productId, size: item.size, color: item.color, quantity: -item.quantity, notes: txNotes + " (Saída por troca)", created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
+              })
+            }
+          }
+        }
+
+        // Loop das peças que estão ENTRANDO (returnCartItems)
+        for (const item of returnCartItems) {
+          if (exchangeSourceType === 'OUT_PROMOTER') {
+            const pQ = item.period === 'null' ? null : item.period;
+
+            // Remove from source
+            if (!exchangeResellerId) {
+              let promInQuery = supabase.from('promoter_inventory').select('*').eq('promoter_id', exchangePromoterId).eq('product_id', item.productId).eq('color', item.color).eq('size', item.size)
+              if (pQ) promInQuery = promInQuery.eq('period', pQ)
+              else promInQuery = promInQuery.is('period', null)
+              
+              const { data: promInvIn } = await promInQuery.maybeSingle()
+              if (promInvIn) {
+                const newQ = promInvIn.quantity - item.quantity
                 if (newQ <= 0) {
-                  await supabase.from('promoter_kit_items').delete().eq('id', kitItem.id)
+                  await supabase.from('promoter_inventory').delete().eq('id', promInvIn.id)
                 } else {
-                  await supabase.from('promoter_kit_items').update({ quantity: newQ }).eq('id', kitItem.id)
-                }
-                
-                // Update kit price for returned item
-                const { data: inProd } = await supabase.from('products').select('price').eq('id', returnProductId).single()
-                const { data: kit } = await supabase.from('promoter_kits').select('total_price').eq('id', exchangeKitId).single()
-                if (inProd && kit) {
-                  await supabase.from('promoter_kits').update({
-                    total_price: Number(kit.total_price) - (Number(inProd.price) * quantity)
-                  }).eq('id', exchangeKitId)
+                  await supabase.from('promoter_inventory').update({ quantity: newQ, updated_at: new Date().toISOString() }).eq('id', promInvIn.id)
                 }
               }
             } else {
-              let resInQuery = supabase.from('reseller_inventory').select('*').eq('reseller_id', exchangeResellerId).eq('product_id', returnProductId).eq('color', returnColor).eq('size', returnSize)
-              if (pQ) resInQuery = resInQuery.eq('period', pQ)
-              else resInQuery = resInQuery.is('period', null)
-              
-              const { data: resInvIn } = await resInQuery.maybeSingle()
-              if (resInvIn) {
-                const newQ = resInvIn.quantity - quantity
-                if (newQ <= 0) {
-                  await supabase.from('reseller_inventory').delete().eq('id', resInvIn.id)
-                } else {
-                  await supabase.from('reseller_inventory').update({ quantity: newQ, updated_at: new Date().toISOString() }).eq('id', resInvIn.id)
+              if (item.kitId) {
+                const { data: kitItem } = await supabase.from('promoter_kit_items')
+                  .select('*')
+                  .eq('kit_id', item.kitId)
+                  .eq('product_id', item.productId)
+                  .eq('color', item.color)
+                  .eq('size', item.size)
+                  .single()
+                if (kitItem) {
+                  const newQ = kitItem.quantity - item.quantity
+                  if (newQ <= 0) {
+                    await supabase.from('promoter_kit_items').delete().eq('id', kitItem.id)
+                  } else {
+                    await supabase.from('promoter_kit_items').update({ quantity: newQ }).eq('id', kitItem.id)
+                  }
+                  const { data: inProd } = await supabase.from('products').select('price').eq('id', item.productId).single()
+                  const { data: kit } = await supabase.from('promoter_kits').select('total_price').eq('id', item.kitId).single()
+                  if (inProd && kit) {
+                    await supabase.from('promoter_kits').update({
+                      total_price: Number(kit.total_price) - (Number(inProd.price) * item.quantity)
+                    }).eq('id', item.kitId)
+                  }
+                }
+              } else {
+                let resInQuery = supabase.from('reseller_inventory').select('*').eq('reseller_id', exchangeResellerId).eq('product_id', item.productId).eq('color', item.color).eq('size', item.size)
+                if (pQ) resInQuery = resInQuery.eq('period', pQ)
+                else resInQuery = resInQuery.is('period', null)
+                
+                const { data: resInvIn } = await resInQuery.maybeSingle()
+                if (resInvIn) {
+                  const newQ = resInvIn.quantity - item.quantity
+                  if (newQ <= 0) {
+                    await supabase.from('reseller_inventory').delete().eq('id', resInvIn.id)
+                  } else {
+                    await supabase.from('reseller_inventory').update({ quantity: newQ, updated_at: new Date().toISOString() }).eq('id', resInvIn.id)
+                  }
                 }
               }
             }
           }
 
-          const { data: invIn } = await supabase.from('inventory').select('id, quantity').eq('product_id', returnProductId).eq('size', returnSize).eq('color', returnColor).maybeSingle()
+          // Add to general inventory (all EXCHANGE sources)
+          const { data: invIn } = await supabase.from('inventory').select('id, quantity').eq('product_id', item.productId).eq('size', item.size).eq('color', item.color).maybeSingle()
           if (invIn) {
-            await supabase.from('inventory').update({ quantity: invIn.quantity + quantity, updated_at: new Date().toISOString() }).eq('id', invIn.id)
+            await supabase.from('inventory').update({ quantity: invIn.quantity + item.quantity, updated_at: new Date().toISOString() }).eq('id', invIn.id)
           } else {
             await supabase.from('inventory').insert({
-              product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity
+              product_id: item.productId, size: item.size, color: item.color, quantity: item.quantity
             })
           }
           await supabase.from('inventory_transactions').insert({
-created_by: (await supabase.auth.getSession()).data.session?.user?.id,
-            type: 'EXCHANGE_IN', product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity, notes: txNotes + " (Entrada de Troca)", created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
-          })
-
-        } else {
-          // 1. Remove new piece from inventory
-          const { data: invOut } = await supabase.from('inventory').select('id, quantity').eq('product_id', selectedProductId).eq('size', selectedSize).eq('color', selectedColor).maybeSingle()
-          if (invOut) {
-            await supabase.from('inventory').update({ quantity: invOut.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', invOut.id)
-            await supabase.from('inventory_transactions').insert({
-created_by: (await supabase.auth.getSession()).data.session?.user?.id,
-              type: 'EXCHANGE_OUT', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: txNotes + " (Saída por troca)", created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
-            })
-          }
-          
-          // 2. Add returned piece to inventory
-          const { data: invIn } = await supabase.from('inventory').select('id, quantity').eq('product_id', returnProductId).eq('size', returnSize).eq('color', returnColor).maybeSingle()
-          if (invIn) {
-            await supabase.from('inventory').update({ quantity: invIn.quantity + quantity, updated_at: new Date().toISOString() }).eq('id', invIn.id)
-          } else {
-            await supabase.from('inventory').insert({
-              product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity
-            })
-          }
-          await supabase.from('inventory_transactions').insert({
-created_by: (await supabase.auth.getSession()).data.session?.user?.id,
-            type: 'EXCHANGE_IN', product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity, notes: txNotes + " (Entrada por devolução)", created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
+            created_by: (await supabase.auth.getSession()).data.session?.user?.id,
+            type: 'EXCHANGE_IN', product_id: item.productId, size: item.size, color: item.color, quantity: item.quantity, notes: txNotes + " (Entrada de Troca)", created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
           })
         }
       }
@@ -570,6 +569,7 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
       setQuantity(1)
       setNotes("")
       setCartItems([])
+      setReturnCartItems([])
       
     } catch (err) {
       console.error(err)
@@ -812,6 +812,39 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                     </div>
                   </div>
                 )}
+
+                  <div className="grid grid-cols-2 gap-4 mt-4">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-1">Quantidade Devolvida *</label>
+                      <input type="number" min="1" disabled={!!selectedTransactionId && mode === 'EXCHANGE'} value={returnQuantity} onChange={(e) => setReturnQuantity(parseInt(e.target.value) || 1)} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm" />
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4">
+                    <Button type="button" onClick={addReturnToCart} className="w-full bg-white hover:bg-amber-50 border border-amber-400 text-amber-600 rounded-xl py-3 font-bold text-sm shadow-sm transition-all">
+                      + Adicionar Peça Devolvida
+                    </Button>
+                  </div>
+                  
+                  {returnCartItems.length > 0 && (
+                    <div className="mt-6 bg-white border border-amber-200 rounded-xl p-4">
+                      <h3 className="font-bold text-amber-800 mb-3">Itens Sendo Devolvidos ({returnCartItems.length})</h3>
+                      <div className="space-y-2">
+                        {returnCartItems.map((item:any) => (
+                          <div key={item.id} className="flex justify-between items-center bg-amber-50 p-3 rounded-lg border border-amber-100">
+                            <div>
+                              <p className="text-sm font-semibold text-slate-800">{item.productObj?.name || 'Produto'}</p>
+                              <p className="text-xs text-slate-500">Cor: {item.color} | Tamanho: {item.size} | Qtd: {item.quantity}</p>
+                            </div>
+                            <button type="button" onClick={() => removeReturnFromCart(item.id)} className="text-red-500 hover:text-red-700 p-2 flex items-center text-xs font-medium">
+                              <Trash2 className="w-4 h-4 mr-1" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
 
                 {exchangeSourceType === 'OUT_PROMOTER' && exchangePromoterId && (
                   <div className="mb-4 pt-2 border-t border-amber-200/50">
@@ -1133,15 +1166,14 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
               </div>
             </div>
 
-            {mode !== 'EXCHANGE' && (
-              <div className="pt-6 border-t border-slate-100">
+            {/* always show cart for all modes */} ( <div className="pt-6 border-t border-slate-100">
                 <Button type="button" onClick={addToCart} disabled={maxQuantity === 0} className="w-full bg-white hover:bg-slate-50 border border-brand-plum text-brand-plum rounded-xl py-4 font-bold text-md shadow-sm transition-all mb-4">
                   + Adicionar Peça
                 </Button>
               </div>
             )}
             
-            {mode !== 'EXCHANGE' && cartItems.length > 0 && (
+            {cartItems.length > 0 && (
               <div className="bg-white border border-slate-200 rounded-xl p-4 mb-6">
                 <h3 className="font-bold text-slate-800 mb-3">Itens na Venda ({cartItems.length})</h3>
                 <div className="space-y-2">
@@ -1162,7 +1194,7 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
             )}
 
             <div className={`pt-6 flex justify-end ${mode === 'EXCHANGE' ? 'border-t border-slate-100' : ''}`}>
-              <Button type="submit" disabled={submitting || (mode === 'EXCHANGE' && (maxQuantity === 0 || isExpired)) || (mode !== 'EXCHANGE' && cartItems.length === 0)} className="bg-brand-plum hover:bg-brand-rose text-white rounded-xl px-8 h-12 text-base font-bold shadow-md hover:shadow-lg transition-all w-full md:w-auto">
+              <Button type="submit" disabled={submitting || (mode === 'EXCHANGE' ? (cartItems.length === 0 && returnCartItems.length === 0) : cartItems.length === 0)} className="bg-brand-plum hover:bg-brand-rose text-white rounded-xl px-8 h-12 text-base font-bold shadow-md hover:shadow-lg transition-all w-full md:w-auto">
                 {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (mode === 'EXCHANGE' ? 'Registrar Troca' : 'Finalizar Venda')}
               </Button>
             </div>
