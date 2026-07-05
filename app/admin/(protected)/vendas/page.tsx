@@ -284,6 +284,12 @@ export default function VendasPage() {
       alert("Preencha todos os campos do produto devolvido corretamente.");
       return;
     }
+    const alreadyExists = returnCartItems.some(item => item.productId === returnProductId && item.color === returnColor && item.size === returnSize);
+    if (alreadyExists) {
+      alert("Esta peça já foi adicionada. Caso queira alterar a quantidade, remova a peça e adicione novamente.");
+      return;
+    }
+
     const item = {
       id: Date.now().toString(),
       productId: returnProductId,
@@ -313,6 +319,12 @@ export default function VendasPage() {
     }
     if (quantity > maxQuantity) {
       alert("Quantidade maior que o estoque disponível.");
+      return;
+    }
+
+    const alreadyExists = cartItems.some(item => item.productId === selectedProductId && item.color === selectedColor && item.size === selectedSize);
+    if (alreadyExists) {
+      alert("Esta peça já foi adicionada. Caso queira alterar a quantidade, remova a peça e adicione novamente.");
       return;
     }
 
