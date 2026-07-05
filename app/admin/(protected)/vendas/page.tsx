@@ -34,6 +34,7 @@ export default function VendasPage() {
   const [clients, setClients] = useState<any[]>([])
   const [selectedClient, setSelectedClient] = useState("")
   const [comboboxOpen, setComboboxOpen] = useState(false)
+  const [prodComboboxOpen, setProdComboboxOpen] = useState(false)
   const [transactionDate, setTransactionDate] = useState(() => new Date().toISOString().split('T')[0])
   
   // For Promoter mode
@@ -918,15 +919,55 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Produto *</label>
-                  <select
-                    required={mode === 'EXCHANGE' || cartItems.length === 0}
-                    value={selectedProductId}
-                    onChange={(e) => { setSelectedProductId(e.target.value); setSelectedColor(""); setSelectedSize("") }}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
-                  >
-                    <option value="" disabled>Selecione o produto...</option>
-                    {products.map(p => <option key={p.id} value={p.id}>{p.sku ? `[${p.sku}] ` : ''}{p.name}</option>)}
-                  </select>
+                  <Popover open={prodComboboxOpen} onOpenChange={setProdComboboxOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={prodComboboxOpen}
+                        className="w-full justify-between bg-slate-50 border border-slate-200 rounded-xl px-4 h-[46px] font-normal text-sm hover:bg-slate-100"
+                      >
+                        {selectedProductId
+                          ? (() => {
+                              const p = products.find(prod => prod.id === selectedProductId);
+                              return p ? `${p.sku ? `[${p.sku}] ` : ''}${p.name}` : "Selecione o produto...";
+                            })()
+                          : "Selecione o produto..."}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[400px] md:w-[600px] lg:w-[800px] max-h-[300px] p-0" align="start">
+                      <Command>
+                        <CommandInput placeholder="Pesquisar por SKU ou Nome..." />
+                        <CommandList className="max-h-[250px]">
+                          <CommandEmpty>Nenhum produto encontrado.</CommandEmpty>
+                          <CommandGroup>
+                            {products.map((p) => (
+                              <CommandItem
+                                key={p.id}
+                                value={`${p.sku || ""} ${p.name}`}
+                                onSelect={() => {
+                                  setSelectedProductId(p.id);
+                                  setSelectedColor("");
+                                  setSelectedSize("");
+                                  setProdComboboxOpen(false);
+                                }}
+                              >
+                                <Check
+                                  className={cn(
+                                    "mr-2 h-4 w-4",
+                                    selectedProductId === p.id ? "opacity-100" : "opacity-0"
+                                  )}
+                                />
+                                {p.sku ? <span className="text-brand-plum font-medium mr-2">[{p.sku}]</span> : null}
+                                <span>{p.name}</span>
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
