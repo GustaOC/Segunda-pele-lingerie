@@ -56,16 +56,22 @@ export default function EstoqueHistoricoPage() {
           profiles:promoter_id (
             id,
             nome
-          ),
-          creator:created_by (
-            nome
           )
         `)
         .order('created_at', { ascending: false })
 
       if (error) throw error
 
-      setTransactions(data || [])
+      const { data: allProfiles } = await supabase.from('profiles').select('id, nome')
+      const pMap = new Map(allProfiles?.map(p => [p.id, p.nome]) || [])
+      
+      const transactionsWithCreator = (data || []).map(t => ({
+        ...t,
+        creatorName: pMap.get(t.created_by)
+      }))
+
+      setTransactions(transactionsWithCreator)
+
     } catch (err) {
       console.error(err)
       alert("Erro ao carregar histórico.")
@@ -184,7 +190,7 @@ export default function EstoqueHistoricoPage() {
                           </span>
                         </td>
                         <td className="px-6 py-4 text-sm font-medium text-slate-800">
-                          {t.creator ? t.creator.nome : <span className="text-slate-400 font-normal italic">Sistema</span>}
+                          {t.creatorName ? t.creatorName : (t.created_by ? 'Desconhecido' : <span className="text-slate-400 font-normal italic">Sistema</span>)}
                         </td>
                         <td className="px-6 py-4">
                           {t.profiles && (
