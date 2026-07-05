@@ -47,8 +47,8 @@ export async function GET(req: NextRequest) {
         combinedUsers.push({
             id: user.id,
             email: user.email,
-            nome: profile?.nome || user.user_metadata?.nome || 'Não definido',
-            role: profile?.role || 'USER',
+            nome: profile?.nome || user.user_metadata?.nome || user.user_metadata?.name || user.user_metadata?.full_name || 'Não definido',
+            role: profile?.role || user.user_metadata?.role || 'USER',
             ativo: profile?.ativo ?? true,
             telefone: profile?.telefone,
             cpf: clientesMap.get(user.id),
