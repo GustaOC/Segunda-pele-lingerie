@@ -361,6 +361,7 @@ export default function EstoqueRevendedorasPage() {
           await supabase.from('promoter_inventory').update({ quantity: invItem.quantity - item.quantity }).eq('id', invItem.id)
           
           await supabase.from('inventory_transactions').insert({
+created_by: (await supabase.auth.getSession()).data.session?.user?.id,
             type: 'TRANSFER_RESELLER',
             product_id: item.product_id,
             size: item.size,

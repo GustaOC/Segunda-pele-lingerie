@@ -56,6 +56,9 @@ export default function EstoqueHistoricoPage() {
           profiles:promoter_id (
             id,
             nome
+          ),
+          creator:created_by (
+            nome
           )
         `)
         .order('created_at', { ascending: false })
@@ -131,6 +134,7 @@ export default function EstoqueHistoricoPage() {
                     <th className="px-6 py-4">Produto</th>
                     <th className="px-6 py-4">Variação</th>
                     <th className="px-6 py-4 text-center">Qtd</th>
+                    <th className="px-6 py-4">Responsável</th>
                     <th className="px-6 py-4">Envolvido / Notas</th>
                   </tr>
                 </thead>
@@ -178,6 +182,9 @@ export default function EstoqueHistoricoPage() {
                           <span className={`text-base font-bold ${t.quantity > 0 ? 'text-emerald-600' : 'text-red-600'}`}>
                             {t.quantity > 0 ? `+${t.quantity}` : t.quantity}
                           </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm font-medium text-slate-800">
+                          {t.creator ? t.creator.nome : <span className="text-slate-400 font-normal italic">Sistema</span>}
                         </td>
                         <td className="px-6 py-4">
                           {t.profiles && (

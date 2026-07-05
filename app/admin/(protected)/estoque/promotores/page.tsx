@@ -301,6 +301,7 @@ export default function EstoquePromotoresPage() {
 
         // 3. Log transaction
         await supabase.from('inventory_transactions').insert({
+created_by: (await supabase.auth.getSession()).data.session?.user?.id,
           type: 'TRANSFER_PROMOTER',
           product_id: item.product_id,
           size: item.size,

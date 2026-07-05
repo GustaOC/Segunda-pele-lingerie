@@ -368,6 +368,7 @@ export default function VendasPage() {
             if (inv) {
               await supabase.from('promoter_inventory').update({ quantity: inv.quantity - item.quantity, updated_at: new Date().toISOString() }).eq('id', inv.id)
               await supabase.from('inventory_transactions').insert({
+created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                 type: 'OUT_PROMOTER', product_id: item.productId, size: item.size, color: item.color, quantity: -item.quantity, promoter_id: item.promoterId, notes: txNotes, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
               })
             }
@@ -376,6 +377,7 @@ export default function VendasPage() {
             if (inv) {
               await supabase.from('inventory').update({ quantity: inv.quantity - item.quantity, updated_at: new Date().toISOString() }).eq('id', inv.id)
               await supabase.from('inventory_transactions').insert({
+created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                 type: mode === 'RETAIL' ? 'OUT_RETAIL' : 'OUT_WHOLESALE', product_id: item.productId, size: item.size, color: item.color, quantity: -item.quantity, notes: txNotes, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
               })
             }
@@ -390,6 +392,7 @@ export default function VendasPage() {
           if (invOut) {
             await supabase.from('inventory').update({ quantity: invOut.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', invOut.id)
             await supabase.from('inventory_transactions').insert({
+created_by: (await supabase.auth.getSession()).data.session?.user?.id,
               type: 'EXCHANGE_OUT', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: txNotes + " (Saída para Troca)", created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
             })
           }
@@ -521,6 +524,7 @@ export default function VendasPage() {
             })
           }
           await supabase.from('inventory_transactions').insert({
+created_by: (await supabase.auth.getSession()).data.session?.user?.id,
             type: 'EXCHANGE_IN', product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity, notes: txNotes + " (Entrada de Troca)", created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
           })
 
@@ -530,6 +534,7 @@ export default function VendasPage() {
           if (invOut) {
             await supabase.from('inventory').update({ quantity: invOut.quantity - quantity, updated_at: new Date().toISOString() }).eq('id', invOut.id)
             await supabase.from('inventory_transactions').insert({
+created_by: (await supabase.auth.getSession()).data.session?.user?.id,
               type: 'EXCHANGE_OUT', product_id: selectedProductId, size: selectedSize, color: selectedColor, quantity: -quantity, notes: txNotes + " (Saída por troca)", created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
             })
           }
@@ -544,6 +549,7 @@ export default function VendasPage() {
             })
           }
           await supabase.from('inventory_transactions').insert({
+created_by: (await supabase.auth.getSession()).data.session?.user?.id,
             type: 'EXCHANGE_IN', product_id: returnProductId, size: returnSize, color: returnColor, quantity: quantity, notes: txNotes + " (Entrada por devolução)", created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
           })
         }

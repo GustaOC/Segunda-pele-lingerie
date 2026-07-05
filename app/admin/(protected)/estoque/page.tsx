@@ -217,6 +217,7 @@ export default function EstoqueGeralPage() {
       const logQty = transactionType === 'MANUAL_ADJUST' ? newQuantity - (existingInv?.quantity || 0) : quantity
       
       await supabase.from('inventory_transactions').insert({
+created_by: (await supabase.auth.getSession()).data.session?.user?.id,
         type: transactionType,
         product_id: selectedProductId,
         size: selectedSize,
