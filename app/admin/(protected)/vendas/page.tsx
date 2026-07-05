@@ -133,9 +133,8 @@ export default function VendasPage() {
           
           const allPeople: any[] = []
           if (usersRes.data) {
-            // Only add users whose role is USER (Clients)
-            const clientsOnly = usersRes.data.filter((u: any) => u.role === 'USER');
-            allPeople.push(...clientsOnly.map((u: any) => ({ id: u.id, nome: u.nome || u.email || 'Sem Nome', role: 'Cliente', cpf: u.cpf })))
+            // Add all users so Promoters/Consultants can also be selected as clients
+            allPeople.push(...usersRes.data.map((u: any) => ({ id: u.id, nome: u.nome || u.email || 'Sem Nome', role: u.role || 'Cliente', cpf: u.cpf })))
           }
           setClients(allPeople)
         }
