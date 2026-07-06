@@ -75,7 +75,7 @@ export default function VendasPage() {
 
   // Consumidor state
   const [isConsumerSale, setIsConsumerSale] = useState(false)
-  const [nextConsumerId, setNextConsumerId] = useState(1)
+  const [nextSaleId, setNextSaleId] = useState(1)
 
   const supabase = createClient()
 
@@ -87,19 +87,19 @@ export default function VendasPage() {
         supabase.from('inventory_transactions').select('*, products(id, name, sku)').in('type', ['OUT_RETAIL', 'OUT_WHOLESALE']).order('created_at', { ascending: false }).limit(200),
         supabase.from('resellers').select('*').order('name'),
         supabase.from('consultant').select('*').order('name'),
-        supabase.from('inventory_transactions').select('notes').ilike('notes', '%Consumidor #%')
+        supabase.from('inventory_transactions').select('notes').or('notes.ilike.%Consumidor #%,notes.ilike.%Venda #%')
       ])
 
       if (consumerTxRes && consumerTxRes.data) {
         let maxId = 0;
         consumerTxRes.data.forEach((tx) => {
-          const match = tx.notes?.match(/Consumidor #(\d+)/);
+          const match = tx.notes?.match(/(?:Consumidor|Venda) #(\d+)/);
           if (match) {
             const num = parseInt(match[1]);
             if (num > maxId) maxId = num;
           }
         });
-        setNextConsumerId(maxId + 1);
+        setNextSaleId(maxId + 1);
       }
       
       try {
@@ -375,12 +375,19 @@ export default function VendasPage() {
       return
     }
 
-    let clientName = isConsumerSale ? `Consumidor #${nextConsumerId}` : (clients.find(c => c.id === selectedClient)?.nome || selectedClient)
+    let clientName = isConsumerSale ? "" : (clients.find(c => c.id === selectedClient)?.nome || selectedClient)
     if (mode === 'EXCHANGE' && exchangeSourceType === 'OUT_PROMOTER') {
         const pName = promoters.find(p => p.id === exchangePromoterId)?.nome || ''
         clientName = `Promotor(a) ${pName}`
     }
-    const txNotes = `Cliente: ${clientName}${notes ? ` | Obs: ${notes}` : ''}`
+    
+    let txNotes = `Venda #${nextSaleId}`
+    if (clientName) {
+      txNotes += ` | Cliente: ${clientName}`
+    }
+    if (notes) {
+      txNotes += ` | Obs: ${notes}`
+    }
 
     try {
       if (mode !== 'EXCHANGE') {
@@ -1111,7 +1118,7 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                     className="w-4 h-4 text-brand-plum rounded focus:ring-brand-plum"
                   />
                   <label htmlFor="isConsumer" className="text-sm font-medium text-slate-700">
-                    Venda Consumidor (Venda #{nextConsumerId})
+                    Venda sem cadastro (Venda #{nextSaleId})
                   </label>
                 </div>
                 {!isConsumerSale && (
