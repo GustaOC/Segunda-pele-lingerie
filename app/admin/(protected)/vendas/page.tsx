@@ -1178,12 +1178,12 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
               </div>
             </div>
 
-            {/* always show cart for all modes */} ( <div className="pt-6 border-t border-slate-100">
-                <Button type="button" onClick={addToCart} disabled={maxQuantity === 0} className="w-full bg-white hover:bg-slate-50 border border-brand-plum text-brand-plum rounded-xl py-4 font-bold text-md shadow-sm transition-all mb-4">
-                  + Adicionar Peça
-                </Button>
-              </div>
-            )}
+            {/* always show cart for all modes */}
+            <div className="pt-6 border-t border-slate-100">
+              <Button type="button" onClick={addToCart} disabled={maxQuantity === 0} className="w-full bg-white hover:bg-slate-50 border border-brand-plum text-brand-plum rounded-xl py-4 font-bold text-md shadow-sm transition-all mb-4">
+                + Adicionar Peça
+              </Button>
+            </div>
             
             {cartItems.length > 0 && (
               <div className="bg-white border border-slate-200 rounded-xl p-4 mb-6">
