@@ -24,6 +24,10 @@ export default function EstoqueGeralPage() {
   const [loading, setLoading] = useState(true)
   const [inventory, setInventory] = useState<InventoryRow[]>([])
   
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
+  
   // Modals state
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isCreateProductModalOpen, setIsCreateProductModalOpen] = useState(false)
@@ -243,6 +247,9 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
 
   const selectedProductObj = products.find(p => p.id === selectedProductId)
 
+  const totalPages = Math.ceil(inventory.length / itemsPerPage)
+  const currentInventory = inventory.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
   return (
     <div className={`min-h-screen bg-slate-50 relative overflow-hidden ${inter.variable} ${playfair.variable} font-sans pb-20`}>
       <div className="container mx-auto px-4 py-8">
@@ -296,15 +303,15 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {inventory.length === 0 ? (
+                  {currentInventory.length === 0 ? (
                     <tr>
                       <td colSpan={5} className="px-6 py-8 text-center text-slate-500">
                         Nenhum item em estoque ainda. Registre uma nova movimentação.
                       </td>
                     </tr>
                   ) : (
-                    inventory.map((item) => (
-                      <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                    currentInventory.map((item) => (
+                      <tr key={item.id} className="hover:bg-slate-50 transition-colors">
                         <td className="px-6 py-4 text-slate-500 font-mono text-sm">{item.sku || '-'}</td>
                         <td className="px-6 py-4 font-medium text-slate-800">{item.product_name}</td>
                         <td className="px-6 py-4">
@@ -328,6 +335,62 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                 </tbody>
               </table>
             </div>
+            
+            {totalPages > 1 && (
+              <div className="flex justify-center items-center py-4 gap-4 border-t border-slate-200">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  className="rounded-xl border-slate-200 text-slate-600 font-semibold"
+                >
+                  Anterior
+                </Button>
+                
+                <div className="flex items-center gap-2">
+                  {Array.from({ length: totalPages }).map((_, index) => {
+                    const page = index + 1;
+                    // Mostrar apenas primeira, última, atual, e as duas em volta da atual
+                    if (
+                      page === 1 || 
+                      page === totalPages || 
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    ) {
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => setCurrentPage(page)}
+                          className={`w-8 h-8 flex items-center justify-center rounded-lg text-sm font-semibold transition-colors ${
+                            currentPage === page 
+                              ? 'bg-brand-plum text-white' 
+                              : 'text-slate-600 hover:bg-slate-100'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    } else if (
+                      page === currentPage - 2 || 
+                      page === currentPage + 2
+                    ) {
+                      return <span key={page} className="text-slate-400">...</span>;
+                    }
+                    return null;
+                  })}
+                </div>
+
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  disabled={currentPage === totalPages}
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  className="rounded-xl border-slate-200 text-slate-600 font-semibold"
+                >
+                  Próxima
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </div>
