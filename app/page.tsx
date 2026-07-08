@@ -42,6 +42,8 @@ const CATEGORIES = [
 export default function EcommerceHome() {
   const [scrolled, setScrolled] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [bestSellers, setBestSellers] = useState<any[]>([])
+  const [leastSellers, setLeastSellers] = useState<any[]>([])
   const [products, setProducts] = useState<any[]>([])
   const [cartCount, setCartCount] = useState(0)
   const supabase = createClient()
@@ -68,8 +70,36 @@ export default function EcommerceHome() {
 
     const checkAdmin = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      if (session?.user?.email === 'admin@segundapele.com') {
-        setIsAdmin(true)
+      if (session?.user) {
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single()
+        if (profile?.role === 'ADMIN' || session.user.email === 'admin@segundapele.com') {
+          setIsAdmin(true)
+          fetchAdminStats()
+        }
+      }
+    }
+    
+    const fetchAdminStats = async () => {
+      const { data: allProds } = await supabase.from('products').select('id, name, image, price')
+      const { data: txs } = await supabase.from('inventory_transactions').select('product_id, quantity').in('type', ['OUT_RETAIL', 'OUT_WHOLESALE', 'PROMOTER_SALE'])
+      
+      if (allProds) {
+         const salesByProduct: Record<string, any> = {}
+         allProds.forEach((p:any) => {
+           salesByProduct[p.id] = { id: p.id, name: p.name, image: p.image || '', price: p.price || 0, qty: 0 }
+         })
+         
+         if (txs) {
+           txs.forEach((tx:any) => {
+             if (tx.product_id && salesByProduct[tx.product_id]) {
+               salesByProduct[tx.product_id].qty += tx.quantity
+             }
+           })
+         }
+         
+         const sorted = Object.values(salesByProduct).sort((a:any,b:any) => b.qty - a.qty)
+         setBestSellers(sorted.slice(0, 5))
+         setLeastSellers([...sorted].reverse().slice(0, 5))
       }
     }
     checkAdmin()
@@ -182,6 +212,75 @@ export default function EcommerceHome() {
           </div>
         </div>
       </div>
+
+      {/* Admin Panel Stats */}
+      {isAdmin && bestSellers.length > 0 && (
+        <section className="py-16 bg-brand-plum/5 border-b border-brand-plum/10">
+          <div className="container mx-auto px-4 max-w-7xl">
+            <div className="flex items-center gap-3 mb-8">
+              <div className="p-3 bg-brand-plum/10 rounded-xl">
+                <ShieldCheck className="w-6 h-6 text-brand-plum" />
+              </div>
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Visão do Administrador</h2>
+                <p className="text-slate-500">Relatório rápido de vendas do E-commerce e PDV (Somente para você)</p>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+               {/* Mais vendidos */}
+               <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+                  <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2"><ArrowUp className="w-5 h-5 text-green-500"/> Mais Vendidos (Top 5)</h3>
+                  <div className="space-y-4">
+                    {bestSellers.map((p, idx) => (
+                      <div key={p.id} className="flex items-center gap-4 p-3 bg-slate-50 hover:bg-slate-100 transition-colors rounded-xl border border-slate-100">
+                        <div className="font-bold text-slate-400 w-4">{idx + 1}º</div>
+                        {p.image ? (
+                          <img src={p.image} className="w-16 h-16 rounded-lg object-cover bg-white" alt={p.name} />
+                        ) : (
+                          <div className="w-16 h-16 rounded-lg bg-slate-200 flex items-center justify-center text-slate-400 font-bold text-xs">Sem foto</div>
+                        )}
+                        <div className="flex-1">
+                          <p className="font-semibold text-slate-800 line-clamp-1">{p.name}</p>
+                          <p className="text-brand-plum font-bold">R$ {p.price?.toFixed(2)}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-slate-500">Qtd.</p>
+                          <p className="font-bold text-lg text-slate-800">{p.qty}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+               </div>
+               
+               {/* Menos vendidos */}
+               <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
+                  <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2"><ArrowDown className="w-5 h-5 text-red-500"/> Menos Vendidos (Encalhados)</h3>
+                  <div className="space-y-4">
+                    {leastSellers.map((p, idx) => (
+                      <div key={p.id} className="flex items-center gap-4 p-3 bg-slate-50 hover:bg-slate-100 transition-colors rounded-xl border border-slate-100">
+                        <div className="font-bold text-slate-400 w-4">{idx + 1}º</div>
+                        {p.image ? (
+                          <img src={p.image} className="w-16 h-16 rounded-lg object-cover bg-white" alt={p.name} />
+                        ) : (
+                          <div className="w-16 h-16 rounded-lg bg-slate-200 flex items-center justify-center text-slate-400 font-bold text-xs">Sem foto</div>
+                        )}
+                        <div className="flex-1">
+                          <p className="font-semibold text-slate-800 line-clamp-1">{p.name}</p>
+                          <p className="text-brand-plum font-bold">R$ {p.price?.toFixed(2)}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs text-slate-500">Qtd.</p>
+                          <p className="font-bold text-lg text-slate-800">{p.qty}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+               </div>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Shop by Category */}
       <section className="py-24 max-w-7xl mx-auto px-6">
