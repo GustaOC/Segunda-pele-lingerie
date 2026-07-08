@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ShoppingCart, Search, Heart, User, ArrowRight, Menu, Star, StarHalf, Truck, ShieldCheck, CreditCard, Plus, Trash2, ChevronLeft, ChevronRight, Facebook, Instagram } from "lucide-react"
+import { ShoppingCart, Search, Heart, User, ArrowRight, Menu, Star, StarHalf, Truck, ShieldCheck, CreditCard, Plus, Trash2, ChevronLeft, ChevronRight, Facebook, Instagram, ArrowUp, ArrowDown } from "lucide-react"
 import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect, useRef } from "react"
