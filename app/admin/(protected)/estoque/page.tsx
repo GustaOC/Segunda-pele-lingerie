@@ -4,8 +4,9 @@ import { Playfair_Display, Inter } from "next/font/google"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
-import { Loader2, Plus, ArrowDown, ArrowUp, Package, History, X, Palette, List, ArrowLeft } from "lucide-react"
-
+import { Loader2, Plus, ArrowDown, ArrowUp, Package, History, X, Palette, List, ArrowLeft, FileText } from "lucide-react"
+import jsPDF from "jspdf"
+import autoTable from "jspdf-autotable"
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" })
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inter" })
 
@@ -245,6 +246,33 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
     }
   }
 
+  const exportToPDF = () => {
+    const doc = new jsPDF()
+    doc.text("Relatório de Estoque Geral", 14, 15)
+    
+    const tableColumn = ["SKU", "Produto", "Tamanho", "Cor", "Qtd. em Estoque"]
+    const tableRows: any[] = []
+
+    inventory.forEach(item => {
+      const rowData = [
+        item.sku || '-',
+        item.product_name,
+        item.size,
+        item.color,
+        item.quantity.toString()
+      ]
+      tableRows.push(rowData)
+    })
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 20,
+    })
+    
+    doc.save(`estoque_geral_${new Date().toLocaleDateString('pt-BR').replace(/\//g, '-')}.pdf`)
+  }
+
   const selectedProductObj = products.find(p => p.id === selectedProductId)
 
   const totalPages = Math.ceil(inventory.length / itemsPerPage)
@@ -270,6 +298,10 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
             <p className="text-slate-500 mt-1">Gerencie a entrada e saída de peças do centro de distribuição.</p>
           </div>
           <div className="flex flex-wrap gap-3">
+            <Button onClick={exportToPDF} className="bg-red-500 text-white hover:bg-red-600 rounded-xl px-4 py-2 shadow-sm font-semibold">
+              <FileText className="w-5 h-5 mr-2" />
+              PDF
+            </Button>
             <Button onClick={() => router.push('/admin/estoque/historico')} className="bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 rounded-xl px-4 py-2 shadow-sm font-semibold">
               <List className="w-5 h-5 mr-2" />
               Histórico
