@@ -58,8 +58,12 @@ export default function ContasPagar() {
     fetchTransactions();
   }, []);
 
-  const handleAddSubmit = async (e: React.FormEvent) => {
+  const handleAddSubmit = async (e: React.MouseEvent | React.FormEvent) => {
     e.preventDefault();
+    if (!formData.description || !formData.total_value || !formData.due_date) {
+      toast({ title: "Erro", description: "Preencha a descrição, valor total e vencimento.", variant: "destructive" });
+      return;
+    }
     setIsAdding(true);
     try {
       const res = await fetch("/api/admin/financeiro", {
@@ -193,7 +197,7 @@ export default function ContasPagar() {
                 <DialogTitle className="font-playfair text-xl">Nova Conta a Pagar</DialogTitle>
                 <DialogDescription>Cadastre uma nova obrigação financeira.</DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleAddSubmit} className="space-y-4 mt-4">
+              <form className="space-y-4 mt-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Descrição *</label>
@@ -232,7 +236,7 @@ export default function ContasPagar() {
                   <DialogTrigger asChild>
                     <Button id="close-add-modal" type="button" variant="ghost">Cancelar</Button>
                   </DialogTrigger>
-                  <Button type="submit" disabled={isAdding} className="bg-purple-700 hover:bg-purple-800 text-white">
+                  <Button type="button" onClick={handleAddSubmit} disabled={isAdding} className="bg-purple-700 hover:bg-purple-800 text-white">
                     {isAdding ? <Loader2 className="w-4 h-4 animate-spin" /> : "Salvar Conta"}
                   </Button>
                 </div>
