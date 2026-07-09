@@ -25,7 +25,7 @@ import {
   Users, UserCheck, Clock, MessageCircle, LogOut, BarChart3, FileText, TrendingUp,
   Calendar, Search, AlertCircle, Download, Eye, FileSpreadsheet, Send, CheckCircle,
   XCircle, Loader2, RefreshCw, Mail, MapPin, Target, Activity, Filter, ChevronDown,
-  ChevronRight, Plus, MoreHorizontal, ArrowUpRight, ArrowDownRight, Sparkles, MessageSquare, Bot, Package, ShoppingCart, User, FolderOpen
+  ChevronRight, Plus, MoreHorizontal, ArrowUpRight, ArrowDownRight, Sparkles, MessageSquare, Bot, Package, ShoppingCart, User, FolderOpen, Wallet
 } from "lucide-react";
 import {
   AreaChart, Area, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell,
@@ -941,6 +941,20 @@ export default function DashboardClient({ user }: { user: User }) {
                                               <div className="text-xs text-slate-400" style={{ fontFamily: "var(--font-inter)" }}>Bloqueado</div>
                                           </div>
                                       </Button>
+                                    )}
+                                    
+                                    {!isPromoter && (
+                                        <Button 
+                                            variant="ghost" 
+                                            onClick={() => router.push('/admin/financeiro')}
+                                            className="w-full justify-start text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 py-6 border border-white/30 rounded-2xl transition-all duration-300"
+                                        >
+                                            <Wallet className="w-5 h-5 mr-4" style={{ color: "#10b981" }} />
+                                            <div className="text-left">
+                                                <div className="font-medium text-base" style={{ fontFamily: "var(--font-inter)" }}>Financeiro</div>
+                                                <div className="text-xs text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>Contas a pagar e receber</div>
+                                            </div>
+                                        </Button>
                                     )}
                                 </CardContent>
                             </Card>
