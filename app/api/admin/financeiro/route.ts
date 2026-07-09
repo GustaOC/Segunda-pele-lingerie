@@ -1,24 +1,15 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { supabaseAdmin } from "@/lib/supabase-server";
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    
-    // Auth check
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const { searchParams } = new URL(request.url);
     const type = searchParams.get('type');
     const status = searchParams.get('status');
 
-    let query = supabase
+    let query = supabaseAdmin
       .from('financial_transactions')
       .select('*')
       .order('due_date', { ascending: false });
@@ -46,14 +37,6 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    
-    // Auth check
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
     
     const payload = Array.isArray(body) ? body : [body];
@@ -73,7 +56,7 @@ export async function POST(request: Request) {
       category: b.category || null
     }));
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('financial_transactions')
       .insert(insertData)
       .select();

@@ -1,6 +1,5 @@
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
 import { NextResponse } from 'next/server';
+import { supabaseAdmin } from "@/lib/supabase-server";
 
 export const dynamic = 'force-dynamic';
 
@@ -9,17 +8,9 @@ export async function PUT(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    
-    // Auth check
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const body = await request.json();
     
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('financial_transactions')
       .update({
         ...body,
@@ -46,15 +37,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    
-    // Auth check
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('financial_transactions')
       .delete()
       .eq('id', params.id);
