@@ -38,6 +38,8 @@ import Link from "next/link";
 import { format, subDays, startOfMonth, endOfMonth, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 // Fontes
 const playfair = Playfair_Display({
@@ -135,8 +137,7 @@ export default function DashboardClient({ user }: { user: User }) {
         const rejected = allLeads.filter((l: any) => l.status === 'REPROVADO').length;
         const rate = total > 0 ? ((approved / total) * 100).toFixed(1) : "0.0";
         
-        // Whatsapp clicks (filtering them is harder if they lack timestamps, but assume we just show the whole system clicks or simulate if needed. 
-        // For now, let's keep whatsappResponse as is if they don't have timestamps in metrics endpoint)
+        // Whatsapp clicks
         const clicks = whatsappResponse?.data?.length || 0;
 
         // Calcular crescimento considerando a semana escolhida vs semana anterior
@@ -199,6 +200,67 @@ export default function DashboardClient({ user }: { user: User }) {
             averageProcessingTime: avgTime
         };
     }, [leadsResponse, whatsappResponse, startDate]);
+
+    // Formatadores
+    const formatPercent = (val: string) => `${val}%`;
+
+    const exportDashboardToPDF = () => {
+        const doc = new jsPDF();
+        const pageWidth = doc.internal.pageSize.width;
+        
+        // Cores da marca
+        const primaryColor = [93, 58, 91]; // #5D3A5B
+        
+        doc.setFontSize(22);
+        doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+        doc.text("Relatório Detalhado - Analytics", 14, 20);
+        
+        doc.setFontSize(11);
+        doc.setTextColor(100, 100, 100);
+        doc.text(`Período: ${format(new Date(startDate), 'dd/MM/yyyy')} - ${format(addDays(new Date(startDate), 6), 'dd/MM/yyyy')}`, 14, 30);
+        
+        // Tabela de Métricas Principais
+        (doc as any).autoTable({
+            startY: 40,
+            head: [['Métrica', 'Valor']],
+            body: [
+                ['Total de Cadastros', totalLeads],
+                ['Aprovados', approvedLeadsCount],
+                ['Reprovados', rejectedLeadsCount],
+                ['Em Análise', pendingRegistrations.length],
+                ['Engajamento WhatsApp', whatsappClicks],
+                ['Taxa de Conversão', formatPercent(conversionRate)],
+                ['Taxa de Aprovação', formatPercent(approvalRate)],
+                ['Crescimento', formatPercent(growthRate)],
+                ['Tempo Médio', `${averageProcessingTime} dias`],
+            ],
+            theme: 'grid',
+            headStyles: { fillColor: primaryColor, textColor: [255, 255, 255] },
+            alternateRowStyles: { fillColor: [245, 245, 245] },
+            styles: { fontSize: 10, cellPadding: 6 }
+        });
+        
+        // Tabela de Metas
+        (doc as any).autoTable({
+            startY: (doc as any).lastAutoTable.finalY + 15,
+            head: [['Metas do Mês', 'Status']],
+            body: [
+                ['Meta Mensal', '500'],
+                ['Atingido', `${((totalLeads / 500) * 100).toFixed(1)}%`],
+                ['Restante', Math.max(500 - totalLeads, 0)],
+            ],
+            theme: 'grid',
+            headStyles: { fillColor: primaryColor, textColor: [255, 255, 255] },
+            alternateRowStyles: { fillColor: [245, 245, 245] },
+            styles: { fontSize: 10, cellPadding: 6 }
+        });
+        
+        doc.setFontSize(9);
+        doc.setTextColor(150, 150, 150);
+        doc.text(`Gerado em: ${format(new Date(), 'dd/MM/yyyy HH:mm')}`, 14, (doc as any).lastAutoTable.finalY + 15);
+        
+        doc.save(`relatorio-dashboard-${format(new Date(), 'dd-MM-yyyy')}.pdf`);
+    };
 
     const getStatusBadge = (status: string) => {
         switch (status) {
@@ -1256,6 +1318,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                                         Última atualização: {format(new Date(), 'dd/MM/yyyy HH:mm')}
                                                     </div>
                                                     <Button
+                                                        onClick={exportDashboardToPDF}
                                                         className="text-white font-semibold py-2 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-purple-500/20"
                                                         style={{
                                                             background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
