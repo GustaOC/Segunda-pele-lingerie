@@ -258,7 +258,27 @@ export default function ContasPagar() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Categoria/Grupo (Opcional)</label>
-                    <Input value={formData.category} onChange={e => setFormData({...formData, category: e.target.value})} placeholder="Ex: Despesas Fixas" />
+                    <Select value={formData.category} onValueChange={val => setFormData({...formData, category: val})}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Selecione o grupo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Acessoria Juridica">Acessoria Juridica</SelectItem>
+                        <SelectItem value="AGUA">AGUA</SelectItem>
+                        <SelectItem value="Aluguel predio comercial">Aluguel predio comercial</SelectItem>
+                        <SelectItem value="Consorcios">Consorcios</SelectItem>
+                        <SelectItem value="Contador">Contador</SelectItem>
+                        <SelectItem value="Diversos">Diversos</SelectItem>
+                        <SelectItem value="IPTU imoveis">IPTU imoveis</SelectItem>
+                        <SelectItem value="Manutenção">Manutenção</SelectItem>
+                        <SelectItem value="Receita de Campanhas">Receita de Campanhas</SelectItem>
+                        <SelectItem value="SISTEMA DE GESTÃO COMERCIAL">SISTEMA DE GESTÃO COMERCIAL</SelectItem>
+                        <SelectItem value="Spc/ Serasa">Spc/ Serasa</SelectItem>
+                        <SelectItem value="Troca">Troca</SelectItem>
+                        <SelectItem value="Vendas">Vendas</SelectItem>
+                        <SelectItem value="Vendas Varejo">Vendas Varejo</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
                 <div className="pt-4 flex justify-end gap-2">
