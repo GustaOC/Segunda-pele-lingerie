@@ -48,7 +48,8 @@ const isPeriodExpired = (period: string | null | undefined) => {
   return true;
 };
 
-export default function EstoquePromotoresPage() {
+export default function EstoquePromotores() {
+  const supabase = createClient()
   const [loading, setLoading] = useState(true)
   const [userRole, setUserRole] = useState("")
   const [inventory, setInventory] = useState<PromoterInventoryRow[]>([])
@@ -83,8 +84,6 @@ export default function EstoquePromotoresPage() {
   const [kitItems, setKitItems] = useState<KitItem[]>([])
 
   const [submitting, setSubmitting] = useState(false)
-
-  const supabase = createClient()
 
   const fetchData = async () => {
     setLoading(true)
@@ -353,25 +352,18 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
   const selectedProductObj = products.find(p => p.id === selectedProductId)
 
   return (
-    <div className={`min-h-screen bg-slate-50 relative overflow-hidden ${inter.variable} ${playfair.variable} font-sans pb-20`}>
-      <div className="container mx-auto px-4 py-8">
-        
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 gap-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <button 
-                onClick={() => router.push('/admin/dashboard')}
-                className="p-2 hover:bg-slate-100 rounded-full transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5 text-slate-600" />
-              </button>
-              <h1 className="text-3xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
-                Estoque de Promotores
-              </h1>
-            </div>
-            <p className="text-slate-500 mt-1">Veja quais peças estão com cada promotor / revendedora.</p>
+    <div className="w-full">
+    <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-3xl shadow-sm border border-slate-200 gap-4">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
+              Estoque com Promotores
+            </h1>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <p className="text-slate-500 mt-1">Veja quais peças estão com cada promotor / revendedora.</p>
+        </div>
+        <div className="flex flex-wrap gap-3">
             <Button 
               onClick={() => setIsResellerModalOpen(true)}
               variant="outline"

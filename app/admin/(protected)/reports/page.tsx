@@ -99,6 +99,22 @@ const engagementData = [
   { periodo: "Este mês", whatsappClicks: 687, emailClicks: 398, cadastros: 298, conversao: 36.8 },
 ]
 
+const topSellingProducts = [
+  { rank: 1, nome: "Conjunto Renda Elegance Preto", vendas: 345, receita: 30705, estoque: 42, tendencia: "+12%" },
+  { rank: 2, nome: "Sutiã Push-Up Conforto Bege", vendas: 289, receita: 20230, estoque: 15, tendencia: "+8%" },
+  { rank: 3, nome: "Calcinha Fio Dental Renda Vermelha", vendas: 256, receita: 10240, estoque: 65, tendencia: "+5%" },
+  { rank: 4, nome: "Conjunto Sensual Bicolor Rosa", vendas: 210, receita: 23100, estoque: 8, tendencia: "+15%" },
+  { rank: 5, nome: "Top Rendado Sem Bojo Branco", vendas: 187, receita: 11220, estoque: 55, tendencia: "-2%" }
+]
+
+const leastSellingProducts = [
+  { rank: 1, nome: "Sutiã Básico Algodão Verde", vendas: 12, receita: 540, estoque: 140, tendencia: "-10%" },
+  { rank: 2, nome: "Conjunto Inverno Veludo Azul", vendas: 15, receita: 1800, estoque: 95, tendencia: "-15%" },
+  { rank: 3, nome: "Calcinha Modeladora Bege", vendas: 18, receita: 900, estoque: 110, tendencia: "-5%" },
+  { rank: 4, nome: "Camisola Seda Manga Longa", vendas: 22, receita: 3300, estoque: 45, tendencia: "-8%" },
+  { rank: 5, nome: "Meia-calça Arrastão Preta", vendas: 25, receita: 750, estoque: 200, tendencia: "-1%" }
+]
+
 const cityData = [
   { cidade: "Campo Grande", consultoras: 487, percentual: 39.5, vendas: 1050000 },
   { cidade: "Dourados", consultoras: 156, percentual: 12.6, vendas: 378000 },
@@ -481,6 +497,9 @@ export default function ReportsPage() {
                 <TabsTrigger value="engagement" className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-md py-2">
                   Engajamento
                 </TabsTrigger>
+                <TabsTrigger value="products" className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-md py-2">
+                  Produtos
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="overview" className="space-y-6">
@@ -567,6 +586,80 @@ export default function ReportsPage() {
                     </ResponsiveContainer>
                   </CardContent>
                 </Card>
+              </TabsContent>
+
+              <TabsContent value="products" className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {/* Produtos Mais Vendidos */}
+                  <Card className="border-0 shadow-md">
+                    <CardHeader className="bg-emerald-50 rounded-t-xl border-b border-emerald-100">
+                      <CardTitle className="text-emerald-900 flex items-center" style={{ fontFamily: "var(--font-playfair)" }}>
+                        <TrendingUp className="w-5 h-5 mr-2 text-emerald-600" />
+                        Mais Vendidos (Top 5)
+                      </CardTitle>
+                      <CardDescription className="text-emerald-700">Produtos com maior volume de vendas</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-slate-50">
+                            <TableHead className="w-12 text-center">#</TableHead>
+                            <TableHead>Produto</TableHead>
+                            <TableHead className="text-right">Vendas</TableHead>
+                            <TableHead className="text-right">Estoque</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {topSellingProducts.map((p) => (
+                            <TableRow key={p.rank}>
+                              <TableCell className="font-bold text-center text-slate-500">{p.rank}</TableCell>
+                              <TableCell className="font-medium text-slate-800">{p.nome}</TableCell>
+                              <TableCell className="text-right text-emerald-600 font-bold">{p.vendas} un</TableCell>
+                              <TableCell className="text-right text-slate-600">
+                                {p.estoque <= 15 ? <span className="text-red-500 font-bold">{p.estoque} un</span> : `${p.estoque} un`}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+
+                  {/* Produtos Menos Vendidos */}
+                  <Card className="border-0 shadow-md">
+                    <CardHeader className="bg-red-50 rounded-t-xl border-b border-red-100">
+                      <CardTitle className="text-red-900 flex items-center" style={{ fontFamily: "var(--font-playfair)" }}>
+                        <Activity className="w-5 h-5 mr-2 text-red-600" />
+                        Menos Vendidos (Top 5)
+                      </CardTitle>
+                      <CardDescription className="text-red-700">Atenção ao estoque parado nestes itens</CardDescription>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-slate-50">
+                            <TableHead className="w-12 text-center">#</TableHead>
+                            <TableHead>Produto</TableHead>
+                            <TableHead className="text-right">Vendas</TableHead>
+                            <TableHead className="text-right">Estoque</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {leastSellingProducts.map((p) => (
+                            <TableRow key={p.rank}>
+                              <TableCell className="font-bold text-center text-slate-500">{p.rank}</TableCell>
+                              <TableCell className="font-medium text-slate-800">{p.nome}</TableCell>
+                              <TableCell className="text-right text-red-600 font-bold">{p.vendas} un</TableCell>
+                              <TableCell className="text-right text-slate-600">
+                                {p.estoque >= 100 ? <span className="text-amber-500 font-bold">{p.estoque} un</span> : `${p.estoque} un`}
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </div>
               </TabsContent>
 
               <TabsContent value="promoters" className="space-y-6">

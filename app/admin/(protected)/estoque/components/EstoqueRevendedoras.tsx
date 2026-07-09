@@ -29,11 +29,10 @@ type Reseller = {
   promoter_id: string
 }
 
-export default function EstoqueRevendedorasPage() {
+export default function EstoqueRevendedoras() {
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const supabase = createClient()
-  const router = useRouter()
 
   // Selectors state
   const [promoters, setPromoters] = useState<any[]>([])
@@ -405,25 +404,18 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
   
   // Funcao de transferencia de pecas removida a pedido do usuario
   return (
-    <div className={`min-h-screen bg-slate-50 relative overflow-hidden ${inter.variable} ${playfair.variable} font-sans pb-20`}>
-      <div className="container mx-auto px-4 py-8">
-        
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 gap-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <button 
-                onClick={() => router.push('/admin/dashboard')}
-                className="p-2 hover:bg-slate-100 rounded-full transition-colors"
-              >
-                <ArrowLeft className="w-5 h-5 text-slate-600" />
-              </button>
-              <h1 className="text-3xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
-                Estoque das Revendedoras
-              </h1>
-            </div>
-            <p className="text-slate-500 mt-1">Gerencie e transfira o estoque dos promotores para as suas revendedoras.</p>
+    <div className="w-full">
+    <div className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center bg-white p-6 rounded-3xl shadow-sm border border-slate-200 gap-4">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-2xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
+              Estoque Revendedoras
+            </h1>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <p className="text-slate-500 mt-1">Gerencie e transfira o estoque dos promotores para as suas revendedoras.</p>
+        </div>
+        <div className="flex flex-wrap gap-3">
             {userRole === 'ADMIN' && (
               <Button 
                 disabled={!selectedResellerId}
@@ -520,6 +512,7 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
             {/* Secao de Pecas Soltas removida a pedido do usuario */}
           </div>
         )}
+      </div>
         
         {/* Modals para Transferencia */}
         {isTransferKitModalOpen && (
@@ -673,10 +666,7 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
             </div>
           </div>
         )}
-
         {/* Modal de transferencia de pecas removido */}
-
       </div>
-    </div>
-  )
+    )
 }

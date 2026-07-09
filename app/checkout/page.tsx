@@ -17,7 +17,7 @@ export default function CheckoutPage() {
   const [items, setItems] = useState<any[]>([])
   
   // Checkout State
-  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'pix'>('credit_card')
+  const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'pix' | 'boleto'>('credit_card')
   const [deliveryMethod, setDeliveryMethod] = useState<'delivery' | 'pickup'>('delivery')
   const [cep, setCep] = useState("")
   const [address, setAddress] = useState<{ logradouro: string, bairro: string, localidade: string, uf: string } | null>(null)
@@ -112,16 +112,49 @@ export default function CheckoutPage() {
     
     setIsProcessing(true)
     
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    // Clear cart
-    const { data: { session } } = await supabase.auth.getSession()
-    if (session) {
-      await supabase.from('cart_items').delete().eq('user_id', session.user.id)
+    try {
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      const payload = {
+        items: items,
+        payer: {
+          email: session?.user?.email || "",
+          name: session?.user?.user_metadata?.full_name || "",
+        },
+        shippingCost: effectiveFrete,
+        metadata: {
+          user_id: session?.user?.id,
+          delivery_method: deliveryMethod,
+          payment_method: paymentMethod
+        }
+      }
+
+      const res = await fetch('/api/checkout/mercado-pago', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        throw new Error(data.error || "Erro ao processar pagamento")
+      }
+
+      if (data.init_point) {
+        // Redireciona para o Checkout Pro do Mercado Pago
+        window.location.href = data.init_point
+      } else {
+        throw new Error("URL de pagamento não retornada.")
+      }
+
+    } catch (err: any) {
+      console.error(err)
+      alert("Erro: " + err.message)
+      setIsProcessing(false)
     }
-    
-    router.push("/sucesso")
   }
 
   if (isLoadingAuth) {
@@ -233,7 +266,7 @@ export default function CheckoutPage() {
                 <h2 className="text-xl font-bold text-slate-900">Método de Pagamento</h2>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                 <button 
                   onClick={() => setPaymentMethod('credit_card')}
                   className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${paymentMethod === 'credit_card' ? 'border-brand-plum bg-brand-peach/30' : 'border-slate-100 bg-white hover:border-slate-200'}`}
@@ -246,57 +279,40 @@ export default function CheckoutPage() {
                   className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${paymentMethod === 'pix' ? 'border-teal-500 bg-teal-50/30' : 'border-slate-100 bg-white hover:border-slate-200'}`}
                 >
                   <QrCode className={`w-8 h-8 mb-2 ${paymentMethod === 'pix' ? 'text-teal-600' : 'text-slate-400'}`} />
-                  <span className={`font-medium ${paymentMethod === 'pix' ? 'text-teal-600' : 'text-slate-600'}`}>PIX (Aprovação na hora)</span>
+                  <span className={`font-medium ${paymentMethod === 'pix' ? 'text-teal-600' : 'text-slate-600'}`}>PIX</span>
+                </button>
+                <button 
+                  onClick={() => setPaymentMethod('boleto')}
+                  className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all ${paymentMethod === 'boleto' ? 'border-blue-500 bg-blue-50/30' : 'border-slate-100 bg-white hover:border-slate-200'}`}
+                >
+                  <div className="w-8 h-8 mb-2 flex items-center justify-center">
+                     {/* Ícone customizado de Boleto */}
+                     <svg className={`w-7 h-7 ${paymentMethod === 'boleto' ? 'text-blue-600' : 'text-slate-400'}`} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M4 4h16v16H4z"></path>
+                        <path d="M8 8h.01"></path>
+                        <path d="M12 8h.01"></path>
+                        <path d="M16 8h.01"></path>
+                        <path d="M8 12h.01"></path>
+                        <path d="M12 12h.01"></path>
+                        <path d="M16 12h.01"></path>
+                        <path d="M8 16h.01"></path>
+                        <path d="M12 16h.01"></path>
+                        <path d="M16 16h.01"></path>
+                     </svg>
+                  </div>
+                  <span className={`font-medium ${paymentMethod === 'boleto' ? 'text-blue-600' : 'text-slate-600'}`}>Boleto Bancário</span>
                 </button>
               </div>
 
-              {paymentMethod === 'credit_card' && (
-                <div className="space-y-4 animate-in fade-in slide-in-from-top-4 duration-300">
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Número do Cartão</label>
-                    <input type="text" placeholder="0000 0000 0000 0000" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum transition-all" />
+              <div className="bg-brand-peach/10 border border-brand-peach/30 rounded-2xl p-6 text-center animate-in fade-in slide-in-from-top-4 duration-300">
+                  <div className="w-16 h-16 bg-white rounded-full mx-auto flex items-center justify-center shadow-sm mb-4 border border-brand-peach/20">
+                      <Lock className="w-8 h-8 text-brand-plum" />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Nome Impresso no Cartão</label>
-                    <input type="text" placeholder="Ex: MARIA DA SILVA" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum transition-all uppercase" />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">Validade</label>
-                      <input type="text" placeholder="MM/AA" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum transition-all" />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">CVV</label>
-                      <input type="text" placeholder="123" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum transition-all" />
-                    </div>
-                  </div>
-                  <div className="pt-2">
-                    <label className="block text-sm font-medium text-slate-700 mb-2">Parcelamento</label>
-                    <select className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum transition-all appearance-none cursor-pointer">
-                      <option>1x de R$ {total.toFixed(2).replace('.', ',')} sem juros</option>
-                      <option>2x de R$ {(total/2).toFixed(2).replace('.', ',')} sem juros</option>
-                      <option>3x de R$ {(total/3).toFixed(2).replace('.', ',')} sem juros</option>
-                      <option>4x de R$ {(total/4).toFixed(2).replace('.', ',')} sem juros</option>
-                      <option>5x de R$ {(total/5).toFixed(2).replace('.', ',')} sem juros</option>
-                      <option>6x de R$ {(total/6).toFixed(2).replace('.', ',')} sem juros</option>
-                    </select>
-                  </div>
-                </div>
-              )}
-
-              {paymentMethod === 'pix' && (
-                <div className="flex flex-col items-center justify-center p-8 bg-slate-50 rounded-2xl border border-slate-100 animate-in fade-in slide-in-from-top-4 duration-300">
-                  <div className="w-48 h-48 bg-white border border-slate-200 rounded-xl p-4 mb-6 shadow-sm flex items-center justify-center">
-                    <QrCode className="w-full h-full text-slate-800 opacity-20" />
-                    <span className="absolute text-sm font-medium text-slate-500">QR Code Simulador</span>
-                  </div>
-                  <h3 className="text-lg font-bold text-slate-900 mb-2">Pague via PIX e libere seu pedido mais rápido</h3>
-                  <p className="text-slate-500 text-sm text-center mb-6">Abra o app do seu banco e escaneie o código acima, ou copie o código Pix Copia e Cola clicando no botão abaixo.</p>
-                  <Button variant="outline" className="rounded-full w-full border-teal-200 text-teal-700 hover:bg-teal-50 hover:text-teal-800 h-12">
-                    Copiar Código PIX
-                  </Button>
-                </div>
-              )}
+                  <h3 className="text-lg font-bold text-slate-900 mb-2">Ambiente Seguro Mercado Pago</h3>
+                  <p className="text-slate-600 text-sm">
+                      Ao clicar em Confirmar Pagamento, você será redirecionado para o ambiente 100% seguro do Mercado Pago para concluir sua compra utilizando <strong>{paymentMethod === 'credit_card' ? 'Cartão de Crédito' : paymentMethod === 'pix' ? 'PIX' : 'Boleto'}</strong>.
+                  </p>
+              </div>
             </div>
 
           </div>
