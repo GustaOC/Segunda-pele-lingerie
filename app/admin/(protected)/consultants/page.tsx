@@ -58,9 +58,10 @@ export default function ConsultantManagement() {
   const router = useRouter()
   const { toast } = useToast()
   
-  // Fetching leads and promoters
+  // Fetching leads, promoters table, and system users
   const { data: leadsResponse, error: leadsError, isLoading: leadsLoading } = useSWR('/api/leads/id', fetcher, { refreshInterval: 5000 });
   const { data: promotersResponse, error: promotersError, isLoading: promotersLoading } = useSWR('/api/promoters', fetcher);
+  const { data: usersResponse } = useSWR('/api/admin/user', fetcher);
 
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -74,7 +75,17 @@ export default function ConsultantManagement() {
   const itemsPerPage = 10
   
   const consultants = useMemo(() => leadsResponse?.data || [], [leadsResponse]);
-  const promoters = useMemo(() => promotersResponse?.data || [], [promotersResponse]);
+  const promoters = useMemo(() => {
+    const fromPromotersTable = promotersResponse?.data || [];
+    const fromUsersTable = (usersResponse?.data || [])
+      .filter((u: any) => u.role === 'PROMOTOR' || u.role === 'ADMIN')
+      .map((u: any) => ({ id: u.id, name: u.nome, phone: u.telefone || '' }));
+    
+    // Merge avoiding duplicates by name
+    const combined = [...fromPromotersTable, ...fromUsersTable];
+    const unique = Array.from(new Map(combined.map(item => [item.name, item])).values());
+    return unique;
+  }, [promotersResponse, usersResponse]);
 
   const filteredConsultants = useMemo(() => consultants.filter((consultant: any) => {
     const c = consultant.consultant;
