@@ -429,7 +429,7 @@ Por favor, entre em contato para os próximos passos.
                     <TableCell>
                       <div className="flex items-center gap-1 text-sm text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>
                         <Calendar className="w-3 h-3" />
-                        {new Date(lead.createdAt).toLocaleDateString("pt-BR")}
+                        {new Date(lead.created_at || lead.createdAt).toLocaleDateString("pt-BR")}
                       </div>
                     </TableCell>
                     <TableCell>

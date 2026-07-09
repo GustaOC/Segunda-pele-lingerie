@@ -68,14 +68,14 @@ export default function DetailedReportsPage() {
         if (period) {
             const days = parseInt(period, 10);
             const startDate = subDays(new Date(), days);
-            leads = leads.filter((lead: any) => new Date(lead.createdAt) >= startDate);
+            leads = leads.filter((lead: any) => new Date(lead.created_at || lead.createdAt) >= startDate);
         }
 
         if (promoter) {
             leads = leads.filter((lead: any) => lead.promotorId === promoter);
         }
 
-        return leads.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        return leads.sort((a: any, b: any) => new Date(b.created_at || b.createdAt).getTime() - new Date(a.created_at || a.createdAt).getTime());
     }, [leadsResponse, period, promoter]);
 
     // Estatísticas
@@ -113,7 +113,7 @@ export default function DetailedReportsPage() {
             "CPF": lead.consultant?.cpf,
             "Telefone": lead.consultant?.telefone,
             "Status": lead.status,
-            "Data Cadastro": format(new Date(lead.createdAt), 'dd/MM/yyyy HH:mm'),
+            "Data Cadastro": format(new Date(lead.created_at || lead.createdAt), 'dd/MM/yyyy HH:mm'),
             "Promotor": lead.promotorId || 'N/A',
             "Data de Transferência": lead.encaminhadoEm ? format(new Date(lead.encaminhadoEm), 'dd/MM/yyyy HH:mm') : 'N/A',
             "Observações": lead.observacoes || 'N/A'
@@ -300,7 +300,7 @@ export default function DetailedReportsPage() {
                       </TableCell>
                       <TableCell className="text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>{lead.consultant?.telefone}</TableCell>
                       <TableCell>{getStatusBadge(lead.status)}</TableCell>
-                      <TableCell className="text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>{format(new Date(lead.createdAt), 'dd/MM/yyyy HH:mm')}</TableCell>
+                      <TableCell className="text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>{format(new Date(lead.created_at || lead.createdAt), 'dd/MM/yyyy HH:mm')}</TableCell>
                       <TableCell className="text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>{lead.promotorId || 'N/A'}</TableCell>
                       <TableCell className="text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>
                         {lead.encaminhadoEm ? format(new Date(lead.encaminhadoEm), 'dd/MM/yyyy HH:mm') : 'N/A'}

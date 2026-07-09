@@ -123,8 +123,9 @@ export default function DashboardClient({ user }: { user: User }) {
 
         // Filter leads based on selected 7-day period
         const allLeads = rawLeads.filter((l: any) => {
-            if (!l.createdAt) return false;
-            const d = new Date(l.createdAt);
+            const createdAt = l.created_at || l.createdAt;
+            if (!createdAt) return false;
+            const d = new Date(createdAt);
             return d >= start && d <= end;
         });
 
@@ -143,8 +144,9 @@ export default function DashboardClient({ user }: { user: User }) {
         const previousEnd = subDays(end, 7);
         const thisPeriodLeads = total;
         const lastPeriodLeads = rawLeads.filter((l: any) => {
-            if (!l.createdAt) return false;
-            const d = new Date(l.createdAt);
+            const createdAt = l.created_at || l.createdAt;
+            if (!createdAt) return false;
+            const d = new Date(createdAt);
             return d >= previousStart && d <= previousEnd;
         }).length;
 
@@ -170,8 +172,9 @@ export default function DashboardClient({ user }: { user: User }) {
         }
 
         allLeads.forEach((lead: any) => {
-            if (lead.createdAt) {
-                const leadDate = format(new Date(lead.createdAt), 'dd/MM');
+            const createdAt = lead.created_at || lead.createdAt;
+            if (createdAt) {
+                const leadDate = format(new Date(createdAt), 'dd/MM');
                 if (dailyData[leadDate]) {
                     dailyData[leadDate].cadastros += 1;
                     if (lead.status === 'APROVADO') dailyData[leadDate].aprovados += 1;
@@ -332,7 +335,7 @@ export default function DashboardClient({ user }: { user: User }) {
                 Cidade: lead.consultant?.address?.cidade || 'N/A',
                 UF: lead.consultant?.address?.uf || 'MS',
                 Status: lead.status,
-                'Data Cadastro': lead.createdAt ? format(new Date(lead.createdAt), 'dd/MM/yyyy HH:mm') : 'N/A',
+                'Data Cadastro': (lead.created_at || lead.createdAt) ? format(new Date(lead.created_at || lead.createdAt), 'dd/MM/yyyy HH:mm') : 'N/A',
                 Observações: lead.observacoes || ''
             }));
 
@@ -1100,7 +1103,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                                                     {lead.consultant?.address?.cidade || 'N/A'}
                                                                 </TableCell>
                                                                 <TableCell style={{ fontFamily: "var(--font-inter)" }}>
-                                                                    {lead.createdAt ? format(new Date(lead.createdAt), 'dd/MM/yyyy HH:mm') : 'N/A'}
+                                                                    {(lead.created_at || lead.createdAt) ? format(new Date(lead.created_at || lead.createdAt), 'dd/MM/yyyy HH:mm') : 'N/A'}
                                                                 </TableCell>
                                                                 <TableCell className="text-right">
                                                                     <div className="flex gap-2 justify-end">
