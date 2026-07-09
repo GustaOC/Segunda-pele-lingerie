@@ -221,7 +221,20 @@ export default function ContasPagar() {
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Forma de Pagamento (Opcional)</label>
-                    <Input value={formData.payment_method} onChange={e => setFormData({...formData, payment_method: e.target.value})} placeholder="Ex: Boleto" />
+                    <Select value={formData.payment_method} onValueChange={val => setFormData({...formData, payment_method: val})}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Selecione a forma" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Boleto Bancário">Boleto Bancário</SelectItem>
+                        <SelectItem value="Cartão de Débito">Cartão de Débito</SelectItem>
+                        <SelectItem value="Cartão de Crédito">Cartão de Crédito</SelectItem>
+                        <SelectItem value="Cheque">Cheque</SelectItem>
+                        <SelectItem value="Dinheiro">Dinheiro</SelectItem>
+                        <SelectItem value="Depósito Bancário">Depósito Bancário</SelectItem>
+                        <SelectItem value="Transferência bancária">Transferência bancária</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Parcela (Opcional)</label>
