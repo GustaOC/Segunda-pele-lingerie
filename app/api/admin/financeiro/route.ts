@@ -56,26 +56,27 @@ export async function POST(request: Request) {
 
     const body = await request.json();
     
+    const payload = Array.isArray(body) ? body : [body];
+    
+    const insertData = payload.map((b: any) => ({
+      type: b.type,
+      reference: b.reference || null,
+      description: b.description,
+      invoice: b.invoice || null,
+      total_value: b.total_value,
+      paid_value: b.paid_value || 0,
+      installment: b.installment || '1/1',
+      due_date: b.due_date,
+      payment_date: b.payment_date || null,
+      status: b.status || 'NAO_PAGO',
+      payment_method: b.payment_method || null,
+      category: b.category || null
+    }));
+
     const { data, error } = await supabase
       .from('financial_transactions')
-      .insert([
-        {
-          type: body.type,
-          reference: body.reference || null,
-          description: body.description,
-          invoice: body.invoice || null,
-          total_value: body.total_value,
-          paid_value: body.paid_value || 0,
-          installment: body.installment || '1/1',
-          due_date: body.due_date,
-          payment_date: body.payment_date || null,
-          status: body.status || 'NAO_PAGO',
-          payment_method: body.payment_method || null,
-          category: body.category || null
-        }
-      ])
-      .select()
-      .single();
+      .insert(insertData)
+      .select();
 
     if (error) throw error;
 

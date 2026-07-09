@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Playfair_Display, Inter } from "next/font/google";
 import { Loader2, Plus, Download, Search, CheckCircle, FileText, Check } from "lucide-react";
-import { format } from "date-fns";
+import { format, addMonths } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -36,7 +36,7 @@ export default function ContasPagar() {
     due_date: "",
     category: "",
     payment_method: "",
-    installment: "1/1"
+    installment: "1"
   });
 
   const fetchTransactions = async () => {
@@ -66,20 +66,36 @@ export default function ContasPagar() {
     }
     setIsAdding(true);
     try {
+      const qtdParcelas = parseInt(formData.installment) || 1;
+      const totalParsed = parseFloat(formData.total_value);
+      const valorPorParcela = totalParsed / qtdParcelas;
+      
+      const payload = [];
+      
+      for (let i = 0; i < qtdParcelas; i++) {
+        // We add i months to the base date. Adding 'T12:00:00' prevents timezone bugs.
+        const baseDate = new Date(formData.due_date + "T12:00:00Z");
+        const dueDate = addMonths(baseDate, i);
+        
+        payload.push({
+          type: "PAYABLE",
+          ...formData,
+          total_value: parseFloat(valorPorParcela.toFixed(2)),
+          installment: `${i + 1}/${qtdParcelas}`,
+          due_date: dueDate.toISOString().split("T")[0] // YYYY-MM-DD
+        });
+      }
+
       const res = await fetch("/api/admin/financeiro", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "PAYABLE",
-          ...formData,
-          total_value: parseFloat(formData.total_value),
-        }),
+        body: JSON.stringify(payload),
       });
       if (res.ok) {
         toast({ title: "Sucesso", description: "Conta a pagar cadastrada com sucesso." });
         setFormData({
           description: "", reference: "", invoice: "", total_value: "",
-          due_date: "", category: "", payment_method: "", installment: "1/1"
+          due_date: "", category: "", payment_method: "", installment: "1"
         });
         document.getElementById("close-add-modal")?.click();
         fetchTransactions();
@@ -208,7 +224,7 @@ export default function ContasPagar() {
                     <Input required type="number" step="0.01" value={formData.total_value} onChange={e => setFormData({...formData, total_value: e.target.value})} placeholder="0.00" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Data de Vencimento *</label>
+                    <label className="text-sm font-medium">1º Vencimento *</label>
                     <Input required type="date" value={formData.due_date} onChange={e => setFormData({...formData, due_date: e.target.value})} />
                   </div>
                   <div className="space-y-2">
@@ -237,8 +253,8 @@ export default function ContasPagar() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-medium">Parcela (Opcional)</label>
-                    <Input value={formData.installment} onChange={e => setFormData({...formData, installment: e.target.value})} placeholder="Ex: 1/1" />
+                    <label className="text-sm font-medium">Qtd. de Parcelas</label>
+                    <Input type="number" min="1" value={formData.installment} onChange={e => setFormData({...formData, installment: e.target.value})} placeholder="Ex: 1" />
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-medium">Categoria/Grupo (Opcional)</label>
