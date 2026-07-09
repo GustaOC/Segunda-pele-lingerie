@@ -39,7 +39,7 @@ import { format, subDays, startOfMonth, endOfMonth, addDays } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 
 // Fontes
 const playfair = Playfair_Display({
@@ -220,7 +220,7 @@ export default function DashboardClient({ user }: { user: User }) {
         doc.text(`Período: ${format(new Date(startDate), 'dd/MM/yyyy')} - ${format(addDays(new Date(startDate), 6), 'dd/MM/yyyy')}`, 14, 30);
         
         // Tabela de Métricas Principais
-        (doc as any).autoTable({
+        autoTable(doc, {
             startY: 40,
             head: [['Métrica', 'Valor']],
             body: [
@@ -241,7 +241,7 @@ export default function DashboardClient({ user }: { user: User }) {
         });
         
         // Tabela de Metas
-        (doc as any).autoTable({
+        autoTable(doc, {
             startY: (doc as any).lastAutoTable.finalY + 15,
             head: [['Metas do Mês', 'Status']],
             body: [
