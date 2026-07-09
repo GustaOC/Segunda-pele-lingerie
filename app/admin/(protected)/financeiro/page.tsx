@@ -5,7 +5,7 @@ import { Playfair_Display, Inter } from "next/font/google";
 import { Wallet, ArrowDownCircle, ArrowUpCircle, LineChart } from "lucide-react";
 import ContasPagar from "./components/ContasPagar";
 import ContasReceber from "./components/ContasReceber";
-// import FluxoCaixa from "./components/FluxoCaixa"; // For future
+import FluxoCaixa from "./components/FluxoCaixa";
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" });
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inter" });
@@ -50,7 +50,7 @@ export default function FinanceiroPage() {
             Contas a Receber
           </button>
           
-          {/* <button 
+          <button 
             onClick={() => setActiveTab("fluxo")}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all duration-300 ${
               activeTab === "fluxo" ? "bg-purple-50 text-purple-700 font-medium shadow-sm" : "text-slate-500 hover:bg-slate-50"
@@ -58,14 +58,14 @@ export default function FinanceiroPage() {
           >
             <LineChart className="w-4 h-4" />
             Fluxo de Caixa
-          </button> */}
+          </button>
         </div>
 
         {/* Content */}
         <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
           {activeTab === "pagar" && <ContasPagar />}
           {activeTab === "receber" && <ContasReceber />}
-          {/* {activeTab === "fluxo" && <FluxoCaixa />} */}
+          {activeTab === "fluxo" && <FluxoCaixa />}
         </div>
 
       </div>
