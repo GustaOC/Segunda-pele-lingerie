@@ -17,5 +17,10 @@ export const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY,
   {
     auth: { persistSession: false }, // server-side, não persiste sesssão
+    global: {
+      fetch: (url, options) => {
+        return fetch(url, { ...options, cache: 'no-store' });
+      },
+    },
   }
 );
