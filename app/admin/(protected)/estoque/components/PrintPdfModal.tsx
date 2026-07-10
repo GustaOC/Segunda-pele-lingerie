@@ -100,7 +100,7 @@ export default function PrintPdfModal({ isOpen, onClose, kit, reseller, promoter
           : `${item.sku || '-'} - ${item.product_name} (${item.size}|${item.color})`
       row.push(prodName)
       row.push("") // D
-      if (showQtyVendida) row.push("") // V
+      if (showQtyVendida) row.push(item.quantity.toString()) // V
       const itemPrice = item.price || 0
       if (showPrecoUnit) row.push(itemPrice.toFixed(2).replace('.', ','))
       if (showTotalItem) row.push((itemPrice * item.quantity).toFixed(2).replace('.', ','))
