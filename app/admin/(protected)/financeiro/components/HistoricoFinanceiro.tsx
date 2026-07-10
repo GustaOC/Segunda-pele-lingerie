@@ -8,17 +8,22 @@ import { ptBR } from "date-fns/locale";
 export default function HistoricoFinanceiro() {
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   const fetchLogs = async () => {
     setLoading(true);
+    setErrorMsg(null);
     try {
-      const res = await fetch("/api/admin/financeiro/history");
-      const { data } = await res.json();
-      if (data) {
-        setLogs(data);
+      const res = await fetch("/api/admin/financeiro/history", { cache: 'no-store' });
+      const json = await res.json();
+      if (res.ok && json.data) {
+        setLogs(json.data);
+      } else {
+        setErrorMsg(json.error || "Erro desconhecido ao carregar o histórico.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error fetching logs:", error);
+      setErrorMsg(error.message || "Erro na requisição.");
     } finally {
       setLoading(false);
     }
@@ -75,7 +80,9 @@ export default function HistoricoFinanceiro() {
         </div>
 
         <div className="p-0">
-          {logs.length === 0 ? (
+          {errorMsg ? (
+            <div className="p-12 text-center text-red-500">Erro: {errorMsg}</div>
+          ) : logs.length === 0 ? (
             <div className="p-12 text-center text-slate-500">Nenhum histórico encontrado.</div>
           ) : (
             <div className="divide-y divide-slate-50">
