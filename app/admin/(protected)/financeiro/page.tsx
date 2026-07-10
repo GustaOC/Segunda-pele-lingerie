@@ -22,7 +22,7 @@ export default function FinanceiroPage() {
         {/* Header */}
         <div>
           <Link 
-            href="/admin" 
+            href="/admin/dashboard" 
             className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors mb-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
