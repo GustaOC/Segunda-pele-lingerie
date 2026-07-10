@@ -69,6 +69,34 @@ export default function EstoquePromotores() {
   const [isResellerModalOpen, setIsResellerModalOpen] = useState(false)
   const [resellerName, setResellerName] = useState("")
   const [resellerPromoterId, setResellerPromoterId] = useState("")
+  const [resellerRg, setResellerRg] = useState("")
+  const [resellerCpf, setResellerCpf] = useState("")
+  const [resellerPhone, setResellerPhone] = useState("")
+  const [resellerIndication, setResellerIndication] = useState("")
+  const [resellerZipcode, setResellerZipcode] = useState("")
+  const [resellerAddress, setResellerAddress] = useState("")
+  const [resellerNeighborhood, setResellerNeighborhood] = useState("")
+  const [resellerCity, setResellerCity] = useState("")
+  
+  const handleZipcodeChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    let cep = e.target.value.replace(/\D/g, '')
+    if (cep.length > 8) cep = cep.slice(0, 8)
+    setResellerZipcode(cep)
+    
+    if (cep.length === 8) {
+      try {
+        const res = await fetch(`https://viacep.com.br/ws/${cep}/json/`)
+        const data = await res.json()
+        if (!data.erro) {
+          setResellerAddress(data.logradouro || "")
+          setResellerNeighborhood(data.bairro || "")
+          setResellerCity(`${data.localidade || ""} - ${data.uf || ""}`)
+        }
+      } catch (err) {
+        console.error("Erro ao buscar CEP:", err)
+      }
+    }
+  }
   
   // Transfer state
   const [selectedPromoterId, setSelectedPromoterId] = useState("")
@@ -329,18 +357,34 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
 
   const handleCreateReseller = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!resellerName || !resellerPromoterId) return alert("Preencha todos os campos")
+    if (!resellerName || !resellerPromoterId) return alert("Preencha os campos obrigatórios")
     setSubmitting(true)
     try {
       const { error } = await supabase.from('resellers').insert({
         name: resellerName,
-        promoter_id: resellerPromoterId
+        promoter_id: resellerPromoterId,
+        rg: resellerRg || null,
+        cpf: resellerCpf || null,
+        phone: resellerPhone || null,
+        indication: resellerIndication || null,
+        zipcode: resellerZipcode || null,
+        address: resellerAddress || null,
+        neighborhood: resellerNeighborhood || null,
+        city: resellerCity || null
       })
       if (error) throw error
       alert("Revendedora cadastrada com sucesso!")
       setIsResellerModalOpen(false)
       setResellerName("")
       setResellerPromoterId("")
+      setResellerRg("")
+      setResellerCpf("")
+      setResellerPhone("")
+      setResellerIndication("")
+      setResellerZipcode("")
+      setResellerAddress("")
+      setResellerNeighborhood("")
+      setResellerCity("")
     } catch (err: any) {
       console.error(err)
       alert(err.message || "Erro ao cadastrar revendedora.")
@@ -483,8 +527,8 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
 
       {/* Modal Cadastro de Revendedora */}
       {isResellerModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl w-full max-w-md shadow-xl overflow-hidden">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm overflow-y-auto">
+          <div className="bg-white rounded-3xl w-full max-w-2xl shadow-xl overflow-hidden my-auto">
             <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50">
               <h2 className="text-xl font-bold text-slate-800 flex items-center">
                 <User className="w-5 h-5 mr-2 text-brand-plum" />
@@ -520,7 +564,98 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                   ))}
                 </select>
               </div>
-              <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">CPF</label>
+                  <input
+                    type="text"
+                    value={resellerCpf}
+                    onChange={(e) => setResellerCpf(e.target.value)}
+                    placeholder="Somente números"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">RG (Opcional)</label>
+                  <input
+                    type="text"
+                    value={resellerRg}
+                    onChange={(e) => setResellerRg(e.target.value)}
+                    placeholder="Número do RG"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">Telefone</label>
+                  <input
+                    type="text"
+                    value={resellerPhone}
+                    onChange={(e) => setResellerPhone(e.target.value)}
+                    placeholder="DDD + Número"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">Indicação</label>
+                  <input
+                    type="text"
+                    value={resellerIndication}
+                    onChange={(e) => setResellerIndication(e.target.value)}
+                    placeholder="Quem indicou?"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-[150px_1fr] gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">CEP</label>
+                  <input
+                    type="text"
+                    value={resellerZipcode}
+                    onChange={handleZipcodeChange}
+                    placeholder="00000000"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">Endereço</label>
+                  <input
+                    type="text"
+                    value={resellerAddress}
+                    onChange={(e) => setResellerAddress(e.target.value)}
+                    placeholder="Rua, Avenida, etc."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">Bairro</label>
+                  <input
+                    type="text"
+                    value={resellerNeighborhood}
+                    onChange={(e) => setResellerNeighborhood(e.target.value)}
+                    placeholder="Nome do Bairro"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-1">Cidade - UF</label>
+                  <input
+                    type="text"
+                    value={resellerCity}
+                    onChange={(e) => setResellerCity(e.target.value)}
+                    placeholder="Ex: São Paulo - SP"
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
+                  />
+                </div>
+              </div>
+              <div className="pt-4 border-t border-slate-100 flex justify-end gap-3 mt-4">
                 <Button type="button" variant="ghost" onClick={() => setIsResellerModalOpen(false)}>
                   Cancelar
                 </Button>
