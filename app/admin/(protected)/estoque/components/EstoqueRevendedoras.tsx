@@ -5,7 +5,8 @@ import { Playfair_Display, Inter } from "next/font/google"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
-import { Loader2, Package, ShoppingCart, Trash2, X, RefreshCw, Plus, ArrowLeft } from "lucide-react"
+import { Loader2, Package, ShoppingCart, Trash2, X, RefreshCw, Plus, ArrowLeft, Printer } from "lucide-react"
+import PrintPdfModal from "./PrintPdfModal"
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" })
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inter" })
@@ -61,6 +62,10 @@ export default function EstoqueRevendedoras() {
   const [transferKitId, setTransferKitId] = useState("")
   const [transferPieceId, setTransferPieceId] = useState("")
   const [transferQuantity, setTransferQuantity] = useState(1)
+
+  // Print PDF Modal State
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false)
+  const [printKit, setPrintKit] = useState<any>(null)
 
   // Edit Kit State
   const [isEditKitModalOpen, setIsEditKitModalOpen] = useState(false)
@@ -480,6 +485,11 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                       <div className="flex justify-between items-start mb-4">
                         <h3 className="font-bold text-slate-800 text-lg">{kit.name}</h3>
                         <div className="flex gap-2 items-center">
+                          {userRole === 'ADMIN' && (
+                            <button onClick={() => { setPrintKit(kit); setIsPrintModalOpen(true); }} className="text-slate-400 hover:text-brand-plum transition-colors p-1.5 bg-slate-50 rounded-full hover:bg-brand-plum/10" title="Imprimir Cobrança / Fechamento">
+                              <Printer className="w-4 h-4" />
+                            </button>
+                          )}
                           {(userRole === 'ADMIN' || (Date.now() - new Date(kit.updated_at || kit.created_at).getTime() <= 3600000)) && (
                             <button onClick={() => handleEditKit(kit)} className="text-slate-400 hover:text-brand-plum transition-colors p-1.5 bg-slate-50 rounded-full hover:bg-brand-plum/10" title="Editar Kit">
                               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
@@ -668,5 +678,17 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
         )}
         {/* Modal de transferencia de pecas removido */}
       </div>
-    )
+
+      {/* Print PDF Modal */}
+      {isPrintModalOpen && printKit && (
+        <PrintPdfModal 
+          isOpen={isPrintModalOpen} 
+          onClose={() => { setIsPrintModalOpen(false); setPrintKit(null); }} 
+          kit={printKit}
+          reseller={resellers.find(r => r.id === selectedResellerId)}
+          promoter={promoters.find(p => p.id === selectedPromoterId)}
+        />
+      )}
+    </div>
+  )
 }
