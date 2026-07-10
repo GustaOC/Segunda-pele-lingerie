@@ -25,12 +25,10 @@ import {
   Users, UserCheck, Clock, MessageCircle, LogOut, BarChart3, FileText, TrendingUp,
   Calendar, Search, AlertCircle, Download, Eye, FileSpreadsheet, Send, CheckCircle,
   XCircle, Loader2, RefreshCw, Mail, MapPin, Target, Activity, Filter, ChevronDown,
-  ChevronRight, Plus, MoreHorizontal, ArrowUpRight, ArrowDownRight, Sparkles, MessageSquare, Bot, Package, ShoppingCart, User, FolderOpen, Wallet
+  ChevronRight, Plus, MoreHorizontal, ArrowUpRight, ArrowDownRight, Sparkles, MessageSquare, Bot, Package, ShoppingCart, User, FolderOpen, Wallet, Map
 } from "lucide-react";
-import {
-  AreaChart, Area, BarChart, Bar, PieChart as RechartsPieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line
-} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { AgendaCalendar } from './components/AgendaCalendar';
 import ShaderBackground from "@/components/shader-background";
 import { Playfair_Display, Inter } from "next/font/google";
 import Image from "next/image";
@@ -114,7 +112,7 @@ export default function DashboardClient({ user }: { user: User }) {
     const {
         totalLeads, approvedLeadsCount, pendingRegistrations, rejectedLeadsCount,
         approvalRate, whatsappClicks, statusData, registrationChartData,
-        growthRate, conversionRate, averageProcessingTime
+        growthRate, conversionRate, averageProcessingTime, topCities, filteredLeads
     } = useMemo(() => {
         let rawLeads = leadsResponse?.data || [];
         
@@ -189,6 +187,18 @@ export default function DashboardClient({ user }: { user: User }) {
 
         const chartData = Object.keys(dailyData).map(date => ({ date, ...dailyData[date] }));
 
+        // Cities
+        const cityMap: any = {};
+        allLeads.forEach((l: any) => {
+            const city = l.consultant?.address?.cidade || 'Não informado';
+            if (!cityMap[city]) cityMap[city] = { city, count: 0, status: { APROVADO: 0, PENDENTE: 0, REPROVADO: 0 } };
+            cityMap[city].count++;
+            if (l.status === 'APROVADO') cityMap[city].status.APROVADO++;
+            else if (l.status === 'EM_ANALISE') cityMap[city].status.PENDENTE++;
+            else if (l.status === 'REPROVADO') cityMap[city].status.REPROVADO++;
+        });
+        const topCities = Object.values(cityMap).sort((a: any, b: any) => b.count - a.count).slice(0, 5);
+
         return {
             totalLeads: total,
             approvedLeadsCount: approved,
@@ -200,9 +210,11 @@ export default function DashboardClient({ user }: { user: User }) {
             registrationChartData: chartData,
             growthRate: growth,
             conversionRate: conversion,
-            averageProcessingTime: avgTime
+            averageProcessingTime: avgTime,
+            topCities,
+            filteredLeads: allLeads
         };
-    }, [leadsResponse, whatsappResponse, startDate]);
+    }, [leadsResponse, whatsappResponse, startDate, endDate]);
 
     // Formatadores
     const formatPercent = (val: string) => `${val}%`;
@@ -220,7 +232,7 @@ export default function DashboardClient({ user }: { user: User }) {
         
         doc.setFontSize(11);
         doc.setTextColor(100, 100, 100);
-        doc.text(`Período: ${format(new Date(startDate), 'dd/MM/yyyy')} - ${format(addDays(new Date(startDate), 6), 'dd/MM/yyyy')}`, 14, 30);
+        doc.text(`Período: ${format(new Date(startDate), 'dd/MM/yyyy')} - ${format(new Date(endDate), 'dd/MM/yyyy')}`, 14, 30);
         
         // Tabela de Métricas Principais
         autoTable(doc, {
@@ -280,7 +292,7 @@ export default function DashboardClient({ user }: { user: User }) {
 
     // Função para calcular relatório detalhado
     const generateDetailedReport = useMemo(() => {
-        const endOfPeriod = addDays(startDate, 6);
+        const endOfPeriod = endDate;
 
         return {
             periodo: `${format(startDate, "dd/MM/yyyy", { locale: ptBR })} - ${format(endOfPeriod, "dd/MM/yyyy", { locale: ptBR })}`,
@@ -297,7 +309,7 @@ export default function DashboardClient({ user }: { user: User }) {
             metaMensal: 500,
             percentualMeta: ((totalLeads / 500) * 100).toFixed(1)
         };
-    }, [totalLeads, approvedLeadsCount, rejectedLeadsCount, pendingRegistrations.length, approvalRate, growthRate, averageProcessingTime, whatsappClicks, conversionRate, startDate]);
+    }, [totalLeads, approvedLeadsCount, rejectedLeadsCount, pendingRegistrations.length, approvalRate, growthRate, averageProcessingTime, whatsappClicks, conversionRate, startDate, endDate]);
 
     // Funções de ação melhoradas
     const handleApprove = async (leadId: string) => {
@@ -731,7 +743,7 @@ export default function DashboardClient({ user }: { user: User }) {
 
                 {/* Tabs melhoradas */}
                 <Tabs defaultValue="overview" className="space-y-6">
-                    <TabsList className={isPromoter ? "hidden" : "grid w-full grid-cols-4 bg-white/50 backdrop-blur-sm p-1 rounded-2xl border border-white/30"}>
+                    <TabsList className={isPromoter ? "hidden" : "grid w-full grid-cols-6 bg-white/50 backdrop-blur-sm p-1 rounded-2xl border border-white/30"}>
                         <TabsTrigger
                             value="overview"
                             className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-2xl py-2 transition-all duration-300"
@@ -759,6 +771,13 @@ export default function DashboardClient({ user }: { user: User }) {
                             style={{ fontFamily: "var(--font-inter)" }}
                         >
                             Geografia
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="agenda"
+                            className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-2xl py-2 transition-all duration-300"
+                            style={{ fontFamily: "var(--font-inter)" }}
+                        >
+                            Agenda
                         </TabsTrigger>
                     </TabsList>
 
@@ -1620,6 +1639,10 @@ export default function DashboardClient({ user }: { user: User }) {
                                 </ResponsiveContainer>
                             </CardContent>
                         </Card>
+                    </TabsContent>
+
+                    <TabsContent value="agenda" className="space-y-6 mt-6">
+                        <AgendaCalendar leads={filteredLeads} />
                     </TabsContent>
                 </Tabs>
             </div>
