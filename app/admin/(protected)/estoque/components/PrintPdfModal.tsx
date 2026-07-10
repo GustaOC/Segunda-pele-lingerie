@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import jsPDF from "jspdf"
-import "jspdf-autotable"
+import autoTable from "jspdf-autotable"
 import { FileText } from "lucide-react"
 
 type PrintPdfModalProps = {
@@ -111,7 +111,7 @@ export default function PrintPdfModal({ isOpen, onClose, kit, reseller, promoter
     })
 
     // @ts-ignore
-    doc.autoTable({
+    autoTable(doc, {
       startY: 63,
       head: head,
       body: body,
@@ -129,7 +129,7 @@ export default function PrintPdfModal({ isOpen, onClose, kit, reseller, promoter
 
     // 3. Footer Summary (Totals)
     // @ts-ignore
-    let finalY = doc.lastAutoTable.finalY || 65
+    let finalY = doc.lastAutoTable?.finalY || 65
     
     doc.setFont("helvetica", "bold")
     doc.setFontSize(9)
