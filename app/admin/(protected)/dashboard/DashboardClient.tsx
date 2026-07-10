@@ -89,7 +89,8 @@ export default function DashboardClient({ user }: { user: User }) {
     const { toast } = useToast();
 
     // Estados
-    const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 6));
+    const [startDate, setStartDate] = useState<Date>(startOfMonth(new Date()));
+    const [endDate, setEndDate] = useState<Date>(new Date());
     const [searchTerm, setSearchTerm] = useState("");
     const [showPendingModal, setShowPendingModal] = useState(false);
     const [showClientModal, setShowClientModal] = useState(false);
@@ -120,10 +121,10 @@ export default function DashboardClient({ user }: { user: User }) {
         // Setup dates for filtering
         const start = new Date(startDate);
         start.setHours(0, 0, 0, 0);
-        const end = addDays(start, 6);
+        const end = new Date(endDate);
         end.setHours(23, 59, 59, 999);
 
-        // Filter leads based on selected 7-day period
+        // Filter leads based on selected period
         const allLeads = rawLeads.filter((l: any) => {
             const createdAt = l.created_at || l.createdAt;
             if (!createdAt) return false;
@@ -140,9 +141,10 @@ export default function DashboardClient({ user }: { user: User }) {
         // Whatsapp clicks
         const clicks = whatsappResponse?.data?.length || 0;
 
-        // Calcular crescimento considerando a semana escolhida vs semana anterior
-        const previousStart = subDays(start, 7);
-        const previousEnd = subDays(end, 7);
+        // Calcular crescimento considerando o mesmo número de dias no período anterior
+        const diffDays = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+        const previousStart = subDays(start, diffDays || 1);
+        const previousEnd = subDays(end, diffDays || 1);
         const thisPeriodLeads = total;
         const lastPeriodLeads = rawLeads.filter((l: any) => {
             const createdAt = l.created_at || l.createdAt;
@@ -165,9 +167,10 @@ export default function DashboardClient({ user }: { user: User }) {
             { name: "Reprovados", value: rejected, color: "#ef4444" },
         ];
 
-        // Dados para gráfico dos 7 dias selecionados
+        // Dados para gráfico do período selecionado
         const dailyData: { [key: string]: { cadastros: number, aprovados: number, reprovados: number } } = {};
-        for (let i = 0; i <= 6; i++) {
+        const daysToLoop = Math.ceil((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
+        for (let i = 0; i <= daysToLoop; i++) {
             const date = format(addDays(start, i), 'dd/MM');
             dailyData[date] = { cadastros: 0, aprovados: 0, reprovados: 0 };
         }
@@ -620,23 +623,27 @@ export default function DashboardClient({ user }: { user: User }) {
                                     className="w-[240px] justify-start text-left font-normal bg-white/80 backdrop-blur-sm border-white/50 focus:ring-purple-500 focus:border-purple-500 rounded-2xl shadow-lg"
                                 >
                                     <Calendar className="mr-2 h-4 w-4" style={{ color: "#5D3A5B" }} />
-                                    {startDate ? (
-                                        `${format(startDate, 'dd/MM/yyyy')} - ${format(addDays(startDate, 6), 'dd/MM/yyyy')}`
+                                    {startDate && endDate ? (
+                                        `${format(startDate, 'dd/MM/yyyy')} - ${format(endDate, 'dd/MM/yyyy')}`
                                     ) : (
-                                        <span>Selecione uma data</span>
+                                        <span>Selecione um período</span>
                                     )}
                                 </Button>
                             </PopoverTrigger>
                             <PopoverContent className="w-auto p-0 rounded-2xl border-white/50 shadow-2xl bg-white/95 backdrop-blur-lg" align="start">
                                 <CalendarUI
-                                    mode="single"
-                                    selected={startDate}
-                                    onSelect={(date) => date && setStartDate(date)}
+                                    mode="range"
+                                    selected={{ from: startDate, to: endDate }}
+                                    onSelect={(range) => {
+                                        if (range?.from) setStartDate(range.from);
+                                        if (range?.to) setEndDate(range.to);
+                                    }}
                                     initialFocus
+                                    locale={ptBR}
                                     className="p-3"
                                 />
                                 <div className="p-3 border-t text-xs text-slate-500 text-center">
-                                    O sistema selecionará automaticamente a semana (7 dias) a partir da data escolhida.
+                                    Selecione o intervalo de datas para filtrar os dados.
                                 </div>
                             </PopoverContent>
                         </Popover>
