@@ -6,7 +6,8 @@ import FluxoCaixa from "./components/FluxoCaixa";
 import HistoricoFinanceiro from "./components/HistoricoFinanceiro";
 import ContasPagar from "./components/ContasPagar";
 import ContasReceber from "./components/ContasReceber";
-import { Wallet, ArrowDownCircle, ArrowUpCircle, LineChart, History } from "lucide-react";
+import Link from "next/link";
+import { Wallet, ArrowDownCircle, ArrowUpCircle, LineChart, History, ArrowLeft } from "lucide-react";
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" });
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inter" });
@@ -20,6 +21,13 @@ export default function FinanceiroPage() {
         
         {/* Header */}
         <div>
+          <Link 
+            href="/admin" 
+            className="inline-flex items-center text-sm font-medium text-slate-500 hover:text-slate-800 transition-colors mb-4"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Voltar para o Dashboard
+          </Link>
           <h1 className="text-3xl font-playfair font-bold text-slate-800 flex items-center">
             <Wallet className="w-8 h-8 mr-3" style={{ color: "#5D3A5B" }} />
             Módulo Financeiro
