@@ -9,6 +9,7 @@ export default function HistoricoFinanceiro() {
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [rawResponse, setRawResponse] = useState<any>(null);
 
   const fetchLogs = async () => {
     setLoading(true);
@@ -16,6 +17,7 @@ export default function HistoricoFinanceiro() {
     try {
       const res = await fetch("/api/admin/financeiro/history", { cache: 'no-store' });
       const json = await res.json();
+      setRawResponse(json);
       if (res.ok && json.data) {
         setLogs(json.data);
       } else {
@@ -83,7 +85,15 @@ export default function HistoricoFinanceiro() {
           {errorMsg ? (
             <div className="p-12 text-center text-red-500">Erro: {errorMsg}</div>
           ) : logs.length === 0 ? (
-            <div className="p-12 text-center text-slate-500">Nenhum histórico encontrado.</div>
+            <div className="p-12 text-center text-slate-500">
+              Nenhum histórico encontrado.
+              {rawResponse && (
+                <div className="mt-4 p-4 bg-slate-100 rounded text-left text-xs overflow-auto">
+                  <strong>Debug (Raw Response):</strong>
+                  <pre>{JSON.stringify(rawResponse, null, 2)}</pre>
+                </div>
+              )}
+            </div>
           ) : (
             <div className="divide-y divide-slate-50">
               {logs.map((log) => (
