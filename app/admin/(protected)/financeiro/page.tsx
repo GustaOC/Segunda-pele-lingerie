@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { Playfair_Display, Inter } from "next/font/google";
-import { Wallet, ArrowDownCircle, ArrowUpCircle, LineChart } from "lucide-react";
+import FluxoCaixa from "./components/FluxoCaixa";
+import HistoricoFinanceiro from "./components/HistoricoFinanceiro";
 import ContasPagar from "./components/ContasPagar";
 import ContasReceber from "./components/ContasReceber";
-import FluxoCaixa from "./components/FluxoCaixa";
+import { Wallet, ArrowDownCircle, ArrowUpCircle, LineChart, History } from "lucide-react";
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" });
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inter" });
@@ -59,13 +60,23 @@ export default function FinanceiroPage() {
             <LineChart className="w-4 h-4" />
             Fluxo de Caixa
           </button>
+
+          <button 
+            onClick={() => setActiveTab("historico")}
+            className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all duration-300 ${
+              activeTab === "historico" ? "bg-slate-800 text-white font-medium shadow-sm" : "text-slate-500 hover:bg-slate-50"
+            }`}
+          >
+            <History className="w-4 h-4" />
+            Histórico
+          </button>
         </div>
 
-        {/* Content */}
-        <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+        <div className="mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           {activeTab === "pagar" && <ContasPagar />}
           {activeTab === "receber" && <ContasReceber />}
           {activeTab === "fluxo" && <FluxoCaixa />}
+          {activeTab === "historico" && <HistoricoFinanceiro />}
         </div>
 
       </div>

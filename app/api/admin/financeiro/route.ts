@@ -41,9 +41,18 @@ export async function POST(request: Request) {
     
     const payload = Array.isArray(body) ? body : [body];
     
+    // Obter referência base caso esteja vazia
+    let baseReference = payload[0].reference || "";
+    if (!baseReference) {
+      const { data: refId, error: refError } = await supabaseAdmin.rpc('get_next_financial_ref');
+      if (!refError && refId) {
+        baseReference = refId.toString();
+      }
+    }
+    
     const insertData = payload.map((b: any) => ({
       type: b.type,
-      reference: b.reference || null,
+      reference: b.reference || baseReference || null,
       description: b.description,
       invoice: b.invoice || null,
       total_value: b.total_value,
@@ -62,6 +71,18 @@ export async function POST(request: Request) {
       .select();
 
     if (error) throw error;
+
+    // Inserir logs de histórico
+    if (data && data.length > 0) {
+      const historyLogs = data.map((t: any) => ({
+        transaction_id: t.id,
+        user_name: 'Usuário Admin', // Aqui poderia vir o usuário logado futuramente
+        action: 'CRIOU CONTA',
+        details: `Criou conta a ${t.type === 'PAYABLE' ? 'pagar' : 'receber'} - Ref: ${t.reference} - Valor: R$ ${t.total_value}`
+      }));
+      
+      await supabaseAdmin.from('financial_history').insert(historyLogs);
+    }
 
     return NextResponse.json({ data });
   } catch (error: any) {
