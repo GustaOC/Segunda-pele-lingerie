@@ -345,6 +345,11 @@ export default function ContasPagar() {
                       }`}>
                         {t.status === 'NAO_PAGO' ? 'Não Pago' : t.status === 'QUITADO' ? 'Quitado' : 'Vencido'}
                       </span>
+                      {t.status === 'QUITADO' && t.payment_date && (
+                        <div className="text-[10px] text-slate-400 mt-1 font-medium whitespace-nowrap">
+                          em {format(new Date(t.payment_date), "dd/MM/yyyy")}
+                        </div>
+                      )}
                     </TableCell>
                     <TableCell>
                       {t.status !== 'QUITADO' && (
