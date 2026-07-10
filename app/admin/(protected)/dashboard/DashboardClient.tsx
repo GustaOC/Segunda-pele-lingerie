@@ -27,7 +27,10 @@ import {
   XCircle, Loader2, RefreshCw, Mail, MapPin, Target, Activity, Filter, ChevronDown,
   ChevronRight, Plus, MoreHorizontal, ArrowUpRight, ArrowDownRight, Sparkles, MessageSquare, Bot, Package, ShoppingCart, User, FolderOpen, Wallet, Map
 } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from 'recharts';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
+  LineChart, Line, PieChart as RechartsPieChart, Pie, Cell, AreaChart, Area 
+} from 'recharts';
 import { AgendaCalendar } from './components/AgendaCalendar';
 import ShaderBackground from "@/components/shader-background";
 import { Playfair_Display, Inter } from "next/font/google";
