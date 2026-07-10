@@ -26,6 +26,7 @@ export function AgendaCalendar({ leads }: AgendaCalendarProps) {
   const [categories, setCategories] = useState<any[]>([]);
   const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Modal State
   const [showEventModal, setShowEventModal] = useState(false);
@@ -76,7 +77,8 @@ export function AgendaCalendar({ leads }: AgendaCalendarProps) {
 
   // Create Category
   const handleCreateCategory = async () => {
-    if (!categoryName) return;
+    if (!categoryName || isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const res = await fetch('/api/admin/agenda/categories', {
         method: 'POST',
@@ -91,6 +93,8 @@ export function AgendaCalendar({ leads }: AgendaCalendarProps) {
       }
     } catch (e) {
       toast({ title: 'Erro', description: 'Falha ao criar categoria.', variant: 'destructive' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -111,6 +115,8 @@ export function AgendaCalendar({ leads }: AgendaCalendarProps) {
       toast({ title: 'Atenção', description: 'Preencha todos os campos.', variant: 'destructive' });
       return;
     }
+    if (isSubmitting) return;
+    setIsSubmitting(true);
     try {
       const res = await fetch('/api/admin/agenda/events', {
         method: 'POST',
@@ -125,6 +131,8 @@ export function AgendaCalendar({ leads }: AgendaCalendarProps) {
       }
     } catch (e) {
       toast({ title: 'Erro', description: 'Falha ao criar marcação.', variant: 'destructive' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -266,7 +274,7 @@ export function AgendaCalendar({ leads }: AgendaCalendarProps) {
               <div className="flex gap-2">
                 <Input value={categoryName} onChange={e => setCategoryName(e.target.value)} placeholder="Ex: Financeiro" />
                 <Input type="color" value={categoryColor} onChange={e => setCategoryColor(e.target.value)} className="w-12 p-1 h-10" />
-                <Button onClick={handleCreateCategory}>Criar</Button>
+                <Button onClick={handleCreateCategory} disabled={isSubmitting}>Criar</Button>
               </div>
             </div>
             
@@ -328,7 +336,7 @@ export function AgendaCalendar({ leads }: AgendaCalendarProps) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowEventModal(false)}>Cancelar</Button>
-            <Button onClick={handleCreateEvent} className="bg-purple-600 hover:bg-purple-700 text-white">Salvar Marcação</Button>
+            <Button onClick={handleCreateEvent} disabled={isSubmitting} className="bg-purple-600 hover:bg-purple-700 text-white">Salvar Marcação</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
