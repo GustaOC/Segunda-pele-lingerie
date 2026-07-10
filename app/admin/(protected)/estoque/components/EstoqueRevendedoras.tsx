@@ -154,7 +154,9 @@ export default function EstoqueRevendedoras() {
           const p = products.find((prod: any) => prod.id === item.product_id)
           return {
             ...item,
-            product_name: p ? p.name : 'Desconhecido'
+            product_name: p ? p.name : 'Desconhecido',
+            sku: p ? p.sku : '-',
+            price: p ? (p.resale_price || p.price || 0) : 0
           }
         })
       }))

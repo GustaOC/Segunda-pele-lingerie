@@ -101,12 +101,13 @@ export default function PrintPdfModal({ isOpen, onClose, kit, reseller, promoter
       row.push(prodName)
       row.push("") // D
       if (showQtyVendida) row.push("") // V
-      if (showPrecoUnit) row.push(item.price.toFixed(2).replace('.', ','))
-      if (showTotalItem) row.push((item.price * item.quantity).toFixed(2).replace('.', ','))
+      const itemPrice = item.price || 0
+      if (showPrecoUnit) row.push(itemPrice.toFixed(2).replace('.', ','))
+      if (showTotalItem) row.push((itemPrice * item.quantity).toFixed(2).replace('.', ','))
       
       body.push(row)
       totalPieces += item.quantity
-      totalValue += item.price * item.quantity
+      totalValue += itemPrice * item.quantity
     })
 
     // @ts-ignore
