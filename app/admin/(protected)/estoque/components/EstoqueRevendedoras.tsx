@@ -677,18 +677,17 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
           </div>
         )}
         {/* Modal de transferencia de pecas removido */}
-      </div>
 
-      {/* Print PDF Modal */}
-      {isPrintModalOpen && printKit && (
-        <PrintPdfModal 
-          isOpen={isPrintModalOpen} 
-          onClose={() => { setIsPrintModalOpen(false); setPrintKit(null); }} 
-          kit={printKit}
-          reseller={resellers.find(r => r.id === selectedResellerId)}
-          promoter={promoters.find(p => p.id === selectedPromoterId)}
-        />
-      )}
-    </div>
+        {/* Print PDF Modal */}
+        {isPrintModalOpen && printKit && (
+          <PrintPdfModal 
+            isOpen={isPrintModalOpen} 
+            onClose={() => { setIsPrintModalOpen(false); setPrintKit(null); }} 
+            kit={printKit}
+            reseller={resellers.find(r => r.id === selectedResellerId)}
+            promoter={promoters.find(p => p.id === selectedPromoterId)}
+          />
+        )}
+      </div>
   )
 }
