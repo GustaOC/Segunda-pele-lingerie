@@ -423,7 +423,6 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
           <p className="text-slate-500 mt-1">Gerencie e transfira o estoque dos promotores para as suas revendedoras.</p>
         </div>
         <div className="flex flex-wrap gap-3">
-            {userRole === 'ADMIN' && (
               <Button 
                 disabled={!selectedResellerId}
                 onClick={() => setIsTransferKitModalOpen(true)}
@@ -431,7 +430,6 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
               >
                 <ShoppingCart className="w-4 h-4 mr-2" /> Transferir Kit
               </Button>
-            )}
           </div>
         </div>
 
