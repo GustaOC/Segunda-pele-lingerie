@@ -24,6 +24,7 @@ export default function EstoqueGeral() {
   const router = useRouter()
   const supabase = createClient()
   const [loading, setLoading] = useState(true)
+  const [userRole, setUserRole] = useState("")
   const [inventory, setInventory] = useState<InventoryRow[]>([])
   
   // Pagination state
@@ -59,6 +60,12 @@ export default function EstoqueGeral() {
   const fetchData = async () => {
     setLoading(true)
     
+    const { data: { session } } = await supabase.auth.getSession()
+    if (session) {
+      const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).maybeSingle()
+      setUserRole(profile?.role || session.user.user_metadata?.role || "")
+    }
+
     // Fetch products
     const { data: prodData } = await supabase.from('products').select('id, name, sku, colors, sizes')
     if (prodData) setProducts(prodData)
@@ -289,23 +296,23 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
             </div>
             <p className="text-slate-500 mt-1">Gerencie a entrada e saída de peças do centro de distribuição.</p>
           </div>
-          <div className="flex flex-wrap gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             <Button onClick={exportToPDF} className="bg-red-500 text-white hover:bg-red-600 rounded-xl px-4 py-2 shadow-sm font-semibold">
-              <FileText className="w-5 h-5 mr-2" />
-              PDF
+              <FileText className="w-4 h-4 mr-2" /> PDF Geral
             </Button>
             <Button onClick={() => router.push('/admin/estoque/historico')} className="bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300 rounded-xl px-4 py-2 shadow-sm font-semibold">
-              <List className="w-5 h-5 mr-2" />
-              Histórico
+              <History className="w-4 h-4 mr-2" /> Histórico
             </Button>
-            <Button onClick={() => setIsCreateProductModalOpen(true)} className="bg-brand-plum text-white hover:bg-brand-plum/90 rounded-xl px-4 py-2 shadow-sm font-semibold">
-              <Plus className="w-5 h-5 mr-2" />
-              Criar Produto Base
-            </Button>
-            <Button onClick={() => setIsModalOpen(true)} className="bg-slate-800 text-white hover:bg-slate-700 rounded-xl px-4 py-2 shadow-sm font-semibold">
-              <Plus className="w-5 h-5 mr-2" />
-              Adicionar Estoque
-            </Button>
+            {userRole === 'ADMIN' && (
+              <>
+                <Button onClick={() => setIsCreateProductModalOpen(true)} className="bg-brand-plum text-white hover:bg-brand-plum/90 rounded-xl px-4 py-2 shadow-sm font-semibold">
+                  <Palette className="w-4 h-4 mr-2" /> Criar Produto Base
+                </Button>
+                <Button onClick={() => setIsModalOpen(true)} className="bg-slate-800 text-white hover:bg-slate-700 rounded-xl px-4 py-2 shadow-sm font-semibold">
+                  <Plus className="w-4 h-4 mr-2" /> Registrar Movimentação
+                </Button>
+              </>
+            )}
           </div>
         </div>
 

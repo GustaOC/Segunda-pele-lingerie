@@ -836,7 +836,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                           </div>
                                       </Button>
                                     )}
-                                    {!isPromoter ? (<Link href="/admin/estoque">
+                                    <Link href="/admin/estoque">
                                         <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-6 border border-white/30 rounded-2xl transition-all duration-300">
                                             <Package className="w-5 h-5 mr-4" style={{ color: "#5D3A5B" }} />
                                             <div className="text-left">
@@ -844,15 +844,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                                 <div className="text-xs text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>Central de Controle</div>
                                             </div>
                                         </Button>
-                                    </Link>) : (
-                                      <Button variant="ghost" disabled className="w-full justify-start text-slate-400 py-6 border border-white/30 rounded-2xl cursor-not-allowed">
-                                          <Package className="w-5 h-5 mr-4 text-slate-300" />
-                                          <div className="text-left">
-                                              <div className="font-medium text-base" style={{ fontFamily: "var(--font-inter)" }}>Gestão de Estoques</div>
-                                              <div className="text-xs text-slate-400" style={{ fontFamily: "var(--font-inter)" }}>Bloqueado</div>
-                                          </div>
-                                      </Button>
-                                    )}
+                                    </Link>
                                     {!isPromoter ? (<Link href="/admin/vendas">
                                         <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-6 border border-white/30 rounded-2xl transition-all duration-300">
                                             <ShoppingCart className="w-5 h-5 mr-4" style={{ color: "#5D3A5B" }} />
