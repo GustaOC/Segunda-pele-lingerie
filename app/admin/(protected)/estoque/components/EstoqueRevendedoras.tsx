@@ -395,7 +395,7 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
       if (!transferKitId || !selectedResellerId) return alert("Selecione um Kit.")
       setSubmitting(true)
       try {
-          const { error } = await supabase.from('promoter_kits').update({ reseller_id: selectedResellerId, updated_at: new Date().toISOString() }).eq('id', transferKitId)
+          const { error } = await supabase.from('promoter_kits').update({ reseller_id: selectedResellerId }).eq('id', transferKitId)
           if (error) throw error
           alert("Kit transferido com sucesso!")
           setIsTransferKitModalOpen(false)
