@@ -8,6 +8,9 @@ const supabaseAdmin = createClient(
 
 async function main() {
   const { data, error } = await supabaseAdmin.from('resellers').select('*').limit(1);
-  console.log('resellers schema:', data, error);
+  console.log("Data:", data);
+  if (data && data.length > 0) {
+    console.log("Columns:", Object.keys(data[0]));
+  }
 }
 main();

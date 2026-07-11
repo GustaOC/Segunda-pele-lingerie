@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 import { FileText } from "lucide-react"
+import { getISOWeek, getYear } from "date-fns"
 
 type PrintPdfModalProps = {
   isOpen: boolean
@@ -44,18 +45,21 @@ export default function PrintPdfModal({ isOpen, onClose, kit, reseller, promoter
     doc.text(`Nome: ${reseller?.id?.substring(0, 4) || '0000'} - ${revendedoraName}`, 14, 22)
     
     doc.setFont("helvetica", "normal")
-    doc.text(`RG................: ________________`, 14, 28)
-    doc.text(`CPF: __________________`, 70, 28)
-    doc.text(`Tel: __________________`, 130, 28)
+    doc.text(`RG................: ${reseller?.rg || '________________'}`, 14, 28)
+    doc.text(`CPF: ${reseller?.cpf || '__________________'}`, 70, 28)
+    doc.text(`Tel: ${reseller?.phone || '__________________'}`, 130, 28)
     
-    doc.text(`Indicação: ____________________________________________________________________`, 14, 34)
-    doc.text(`Endereço: ____________________________________________________________________`, 14, 40)
+    doc.text(`Indicação: ${reseller?.indication || '____________________________________________________________________'}`, 14, 34)
+    doc.text(`Endereço: ${reseller?.address || '____________________________________________________________________'}`, 14, 40)
     
-    doc.text(`Bairro......: ________________`, 14, 46)
-    doc.text(`Cidade......: ________________`, 70, 46)
-    doc.text(`CEP: _______________`, 140, 46)
+    doc.text(`Bairro......: ${reseller?.neighborhood || '________________'}`, 14, 46)
+    doc.text(`Cidade......: ${reseller?.city || '________________'}`, 70, 46)
+    doc.text(`CEP: ${reseller?.zipcode || '_______________'}`, 140, 46)
 
-    doc.text(`Ano/Semana: ___/___`, 14, 52)
+    const now = new Date()
+    const ano = getYear(now)
+    const semana = getISOWeek(now)
+    doc.text(`Ano/Semana: ${ano}/${semana.toString().padStart(2, '0')}`, 14, 52)
     doc.text(`1º Ped......: ___/___`, 70, 52)
     doc.text(`Ult. Venda: ___/___`, 110, 52)
     
