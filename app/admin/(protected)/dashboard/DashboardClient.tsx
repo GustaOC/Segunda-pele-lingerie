@@ -1421,13 +1421,13 @@ export default function DashboardClient({ user }: { user: User }) {
                         <Card className="border border-white/50 bg-white/70 backdrop-blur-lg shadow-xl rounded-2xl">
                             <CardHeader>
                                 <CardTitle className="text-lg text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Evolução dos Cadastros</CardTitle>
-                                <CardDescription style={{ fontFamily: "var(--font-inter)" }}>Histórico mensal detalhado</CardDescription>
+                                <CardDescription style={{ fontFamily: "var(--font-inter)" }}>Histórico diário do período selecionado</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <ResponsiveContainer width="100%" height={400}>
-                                    <AreaChart data={monthlyEvolution}>
+                                    <AreaChart data={registrationChartData}>
                                         <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
-                                        <XAxis dataKey="mes" stroke="#6b7280" />
+                                        <XAxis dataKey="date" stroke="#6b7280" />
                                         <YAxis stroke="#6b7280" />
                                         <Tooltip
                                             contentStyle={{
