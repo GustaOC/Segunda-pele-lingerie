@@ -286,6 +286,15 @@ export default function EstoqueRevendedoras() {
     }).filter(item => item.quantity > 0))
   }
 
+  const handleIncrementItemFromEdit = (id: string) => {
+    setEditKitItems(editKitItems.map(item => {
+      if (item.id === id) {
+        return { ...item, quantity: item.quantity + 1 }
+      }
+      return item
+    }))
+  }
+
   const handleSaveEditKit = async (e: React.FormEvent) => {
     e.preventDefault()
     
@@ -653,6 +662,7 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                         <div className="flex items-center gap-3">
                           <span className="font-bold text-slate-700">{item.quantity}x</span>
                           <div className="flex flex-col gap-1 border-l border-slate-200 pl-3">
+                            <button onClick={() => handleIncrementItemFromEdit(item.id)} className="text-slate-400 hover:text-green-500 p-1"><Plus className="w-3 h-3" /></button>
                             {(!isKitLocked || !item.originalQuantity || item.quantity > item.originalQuantity) && (
                               <button onClick={() => handleDecrementItemFromEdit(item.id)} className="text-slate-400 hover:text-orange-500 p-1"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3"><path strokeLinecap="round" strokeLinejoin="round" d="M20 12H4"></path></svg></button>
                             )}
