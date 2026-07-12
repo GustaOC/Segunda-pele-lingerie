@@ -204,7 +204,7 @@ export function AgendaCalendar({ leads }: AgendaCalendarProps) {
             {days.map((day, idx) => {
               const isToday = isSameDay(day, new Date());
               return (
-              <div key={idx} className={`py-2 text-center text-xs font-medium ${isToday ? 'bg-purple-100 text-brand-plum' : 'text-slate-500 bg-slate-50/80'}`}>
+              <div key={idx} className={`py-2 text-center text-xs font-medium ${isToday ? 'bg-brand-plum/10 text-brand-plum' : 'text-slate-500 bg-slate-50/80'}`}>
                 <span className="capitalize">{format(day, 'E', { locale: ptBR })}</span> {format(day, 'd/M')}
               </div>
             )})}
@@ -219,7 +219,7 @@ export function AgendaCalendar({ leads }: AgendaCalendarProps) {
               const sacoleiras = dayLeads.filter(l => l.status === 'APROVADO' || l.status === 'PENDENTE');
               
               return (
-                <div key={idx} className={`relative p-2 flex flex-col gap-2 group transition-colors border-b ${isToday ? 'bg-purple-50/50 hover:bg-purple-50' : 'bg-white hover:bg-slate-50/30'}`}>
+                <div key={idx} className={`relative p-2 flex flex-col gap-2 group transition-colors border-b ${isToday ? 'bg-brand-plum/5 hover:bg-brand-plum/10' : 'bg-white hover:bg-slate-50/30'}`}>
                   {idx === 0 && (
                      <span className="absolute top-1 left-1 text-[10px] text-slate-400 font-medium">
                        Sm {weekNumber}
