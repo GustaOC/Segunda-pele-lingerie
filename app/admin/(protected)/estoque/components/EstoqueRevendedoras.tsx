@@ -287,12 +287,33 @@ export default function EstoqueRevendedoras() {
   }
 
   const handleIncrementItemFromEdit = (id: string) => {
-    setEditKitItems(editKitItems.map(item => {
+    let hasError = false;
+    const newItems = editKitItems.map(item => {
       if (item.id === id) {
+        const neededFromLoose = item.quantity + 1 - (item.originalQuantity || 0);
+        if (neededFromLoose > 0) {
+          const invItem = promoterInventory.find((i: any) => 
+            i.product_id === item.product_id && 
+            i.size === item.size && 
+            i.color === item.color && 
+            (i.period || 'null') === (editKitPeriod || 'null')
+          )
+          const maxAvailable = invItem ? invItem.quantity : 0;
+          
+          if (neededFromLoose > maxAvailable) {
+            hasError = true;
+            alert(`Estoque insuficiente no promotor para o produto ${item.product_name}.`);
+            return item;
+          }
+        }
         return { ...item, quantity: item.quantity + 1 }
       }
       return item
-    }))
+    });
+
+    if (!hasError) {
+      setEditKitItems(newItems)
+    }
   }
 
   const handleSaveEditKit = async (e: React.FormEvent) => {
