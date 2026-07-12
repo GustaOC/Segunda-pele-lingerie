@@ -83,8 +83,6 @@ const monthlyEvolution = [
   { mes: "Mar", cadastros: 134, aprovados: 98, vendas: 478000 }
 ];
 
-const promoters = ["Carlos Mendes", "Juliana Santos", "Roberto Silva", "Patricia Lima", "Anderson Costa"];
-
 export default function DashboardClient({ user }: { user: User }) {
     const router = useRouter();
     const { toast } = useToast();
@@ -110,6 +108,15 @@ export default function DashboardClient({ user }: { user: User }) {
     // Busca de dados em tempo real
     const { data: leadsResponse, error: leadsError, mutate: mutateLeads } = useSWR('/api/leads/id', fetcher, { refreshInterval: 10000 });
     const { data: whatsappResponse, error: whatsappError } = useSWR('/api/metrics/whatsapp-clicks', fetcher, { refreshInterval: 30000 });
+    const { data: usersResponse } = useSWR('/api/admin/user', fetcher);
+
+    const promoters = useMemo(() => {
+        if (!usersResponse?.data) return [];
+        return usersResponse.data
+            .filter((u: any) => ['CONSULTANT', 'PROMOTOR', 'ADMIN'].includes(u.role))
+            .map((u: any) => u.nome || u.name || "Sem Nome")
+            .filter((value: any, index: any, self: any) => self.indexOf(value) === index);
+    }, [usersResponse]);
 
     // Processamento de dados
     const {
