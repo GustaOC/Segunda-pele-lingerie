@@ -444,9 +444,9 @@ export default function KitsPromotoraPage() {
     <div className={`min-h-screen bg-slate-50 relative overflow-hidden ${inter.variable} ${playfair.variable} font-sans pb-20`}>
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         
-        <Link href="/admin/estoque/promotores" className="inline-flex items-center text-slate-500 hover:text-brand-plum mb-6 transition-colors font-medium">
+        <Link href="/admin/estoque" className="inline-flex items-center text-slate-500 hover:text-brand-plum mb-6 transition-colors font-medium">
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Voltar para Estoque dos Promotores
+          Voltar para Estoque
         </Link>
         
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 bg-white p-6 rounded-3xl shadow-sm border border-slate-200 gap-4">
