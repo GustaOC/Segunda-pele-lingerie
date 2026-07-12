@@ -96,7 +96,7 @@ export default function DashboardClient({ user }: { user: User }) {
     const [showPromoterReportModal, setShowPromoterReportModal] = useState(false);
     const [showDetailedReportModal, setShowDetailedReportModal] = useState(false);
     const [selectedPromoter, setSelectedPromoter] = useState("all");
-    const [detailedReportPeriod, setDetailedReportPeriod] = useState("7");
+    const [detailedReportPeriod, setDetailedReportPeriod] = useState("30");
     const [dateFrom, setDateFrom] = useState("");
     const [dateTo, setDateTo] = useState("");
     const [isExporting, setIsExporting] = useState(false);
@@ -898,6 +898,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                                         <SelectItem value="7">Últimos 7 dias</SelectItem>
                                                         <SelectItem value="15">Últimos 15 dias</SelectItem>
                                                         <SelectItem value="30">Últimos 30 dias</SelectItem>
+                                                        <SelectItem value="all">Todo o período</SelectItem>
                                                     </SelectContent>
                                                 </Select>
                                                 <Button

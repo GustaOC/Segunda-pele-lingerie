@@ -65,7 +65,7 @@ export default function DetailedReportsPage() {
         if (!leadsResponse?.data) return [];
         let leads = leadsResponse.data;
 
-        if (period) {
+        if (period && period !== "all") {
             const days = parseInt(period, 10);
             const startDate = subDays(new Date(), days);
             leads = leads.filter((lead: any) => new Date(lead.created_at || lead.createdAt) >= startDate);
@@ -207,7 +207,7 @@ export default function DetailedReportsPage() {
                   {promoter ? `Relatório do Promotor: ${promoter}` : 'Relatório de Cadastros'}
                 </h1>
                 <p className="text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>
-                  {period ? `Exibindo cadastros dos últimos ${period} dias.` : 'Exibindo todos os cadastros do promotor.'}
+                  {period && period !== "all" ? `Exibindo cadastros dos últimos ${period} dias.` : 'Exibindo todos os cadastros.'}
                 </p>
               </div>
               <div className="flex items-center gap-4">
