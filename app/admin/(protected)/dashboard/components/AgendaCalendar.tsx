@@ -201,22 +201,25 @@ export function AgendaCalendar({ leads }: AgendaCalendarProps) {
 
           {/* Cabeçalho dos Dias */}
           <div className="grid grid-cols-7 border-b divide-x">
-            {days.map((day, idx) => (
-              <div key={idx} className="py-2 text-center text-xs text-slate-500 font-medium bg-slate-50/80">
+            {days.map((day, idx) => {
+              const isToday = isSameDay(day, new Date());
+              return (
+              <div key={idx} className={`py-2 text-center text-xs font-medium ${isToday ? 'bg-purple-100 text-brand-plum' : 'text-slate-500 bg-slate-50/80'}`}>
                 <span className="capitalize">{format(day, 'E', { locale: ptBR })}</span> {format(day, 'd/M')}
               </div>
-            ))}
+            )})}
           </div>
 
           {/* Células dos Dias */}
           <div className="grid grid-cols-7 divide-x" style={{ minHeight: '60vh' }}>
             {days.map((day, idx) => {
+              const isToday = isSameDay(day, new Date());
               const dayLeads = leadsByDay(day);
               const dayEvents = eventsByDay(day);
               const sacoleiras = dayLeads.filter(l => l.status === 'APROVADO' || l.status === 'PENDENTE');
               
               return (
-                <div key={idx} className="relative p-2 bg-white flex flex-col gap-2 group hover:bg-slate-50/30 transition-colors border-b">
+                <div key={idx} className={`relative p-2 flex flex-col gap-2 group transition-colors border-b ${isToday ? 'bg-purple-50/50 hover:bg-purple-50' : 'bg-white hover:bg-slate-50/30'}`}>
                   {idx === 0 && (
                      <span className="absolute top-1 left-1 text-[10px] text-slate-400 font-medium">
                        Sm {weekNumber}
