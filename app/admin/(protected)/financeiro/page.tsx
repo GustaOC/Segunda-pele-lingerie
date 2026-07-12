@@ -62,7 +62,7 @@ export default function FinanceiroPage() {
           <button 
             onClick={() => setActiveTab("fluxo")}
             className={`flex items-center gap-2 px-6 py-3 rounded-xl transition-all duration-300 ${
-              activeTab === "fluxo" ? "bg-purple-50 text-purple-700 font-medium shadow-sm" : "text-slate-500 hover:bg-slate-50"
+              activeTab === "fluxo" ? "bg-[#4B2C4E]/10 text-[#4B2C4E] font-medium shadow-sm" : "text-slate-500 hover:bg-slate-50"
             }`}
           >
             <LineChart className="w-4 h-4" />
