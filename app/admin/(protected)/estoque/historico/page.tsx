@@ -88,7 +88,7 @@ export default function EstoqueHistoricoPage() {
       case 'TRANSFER_RESELLER': return { label: 'Transf. Revendedora', color: 'bg-indigo-100 text-indigo-700' }
       case 'OUT_RETAIL': return { label: 'Venda Varejo', color: 'bg-blue-100 text-blue-700' }
       case 'OUT_WHOLESALE': return { label: 'Venda Atacado', color: 'bg-cyan-100 text-cyan-700' }
-      case 'OUT_PROMOTER': return { label: 'Venda Promotora', color: 'bg-purple-100 text-purple-700' }
+      case 'OUT_PROMOTER': return { label: 'Venda Promotora', color: 'bg-[#4B2C4E]/10 text-[#4B2C4E]' }
       case 'EXCHANGE_IN': return { label: 'Entrada (Troca)', color: 'bg-teal-100 text-teal-700' }
       case 'EXCHANGE_OUT': return { label: 'Saída (Troca)', color: 'bg-orange-100 text-orange-700' }
       case 'EXCHANGE_DEFECT': return { label: 'Defeito (Troca)', color: 'bg-red-100 text-red-700' }
