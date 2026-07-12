@@ -132,12 +132,23 @@ export default function DashboardClient({ user }: { user: User }) {
         const end = new Date(endDate);
         end.setHours(23, 59, 59, 999);
 
-        // Filter leads based on selected period
+        // Filter leads based on selected period and search term
+        const term = searchTerm.toLowerCase().trim();
         const allLeads = rawLeads.filter((l: any) => {
             const createdAt = l.created_at || l.createdAt;
             if (!createdAt) return false;
             const d = new Date(createdAt);
-            return d >= start && d <= end;
+            const inDateRange = d >= start && d <= end;
+            
+            if (!inDateRange) return false;
+            if (!term) return true;
+            
+            const nome = (l.consultant?.nome || '').toLowerCase();
+            const cpf = (l.consultant?.cpf || '').toLowerCase();
+            const email = (l.consultant?.email || '').toLowerCase();
+            const cidade = (l.consultant?.address?.cidade || '').toLowerCase();
+            
+            return nome.includes(term) || cpf.includes(term) || email.includes(term) || cidade.includes(term);
         });
 
         const total = allLeads.length;
@@ -224,7 +235,7 @@ export default function DashboardClient({ user }: { user: User }) {
             topCities,
             filteredLeads: allLeads
         };
-    }, [leadsResponse, whatsappResponse, startDate, endDate]);
+    }, [leadsResponse, whatsappResponse, startDate, endDate, searchTerm]);
 
     // Formatadores
     const formatPercent = (val: string) => `${val}%`;
