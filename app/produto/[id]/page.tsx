@@ -318,22 +318,29 @@ export default function ProdutoPage() {
               <div className="mb-6">
                 <span className="block text-sm font-bold text-slate-900 uppercase tracking-wider mb-3">Selecione a Cor {selectedColor && <span className="text-brand-plum font-medium capitalize ml-1">- {selectedColor.name}</span>}</span>
                 <div className="flex space-x-3">
-                  {product.colors.map((color: any, index: number) => (
+                  {product.colors.map((color: any, index: number) => {
+                    const inStock = isVariationInStock(color.name, null);
+                    return (
                     <button
                       key={index}
-                      disabled={!isVariationInStock(color.name, null)}
+                      disabled={!inStock}
                       onClick={() => {
                         setSelectedColor(color)
                         if (color.images && color.images.length > 0) {
                           setCurrentImage(color.images[0])
                         }
                       }}
-                      className={`relative w-10 h-10 rounded-full border-2 transition-all group flex items-center justify-center disabled:opacity-30 disabled:cursor-not-allowed ${selectedColor?.hex === color.hex ? "border-brand-plum scale-110 shadow-md" : "border-slate-200 hover:border-slate-300"}`}
+                      className={`relative w-10 h-10 rounded-full border-2 transition-all group flex items-center justify-center overflow-hidden disabled:cursor-not-allowed ${selectedColor?.hex === color.hex ? "border-brand-plum scale-110 shadow-md" : "border-slate-200 hover:border-slate-300"} ${!inStock ? "opacity-40" : ""}`}
                       title={color.name}
                     >
                       <span className="w-7 h-7 rounded-full border border-slate-100" style={{ backgroundColor: getDisplayColor(color.hex, color.name) }}></span>
+                      {!inStock && (
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                          <div className="w-[120%] h-[2px] bg-red-500 rotate-45 transform origin-center shadow-sm"></div>
+                        </div>
+                      )}
                     </button>
-                  ))}
+                  )})}
                 </div>
               </div>
             )}
@@ -341,16 +348,23 @@ export default function ProdutoPage() {
             <div className="mb-6">
               <span className="block text-sm font-bold text-slate-900 uppercase tracking-wider mb-3">Selecione o Tamanho</span>
               <div className="flex space-x-3">
-                {product.sizes.map((size: string) => (
+                {product.sizes.map((size: string) => {
+                  const inStock = !(selectedColor && !isVariationInStock(selectedColor.name, size));
+                  return (
                   <button
                     key={size}
-                    disabled={selectedColor && !isVariationInStock(selectedColor.name, size)}
+                    disabled={!inStock}
                     onClick={() => setSelectedSize(size)}
-                    className={`w-12 h-12 rounded-full flex items-center justify-center text-base font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed ${selectedSize === size ? "bg-brand-plum text-white shadow-lg scale-110" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}
+                    className={`relative w-12 h-12 rounded-full flex items-center justify-center overflow-hidden text-base font-medium transition-all disabled:cursor-not-allowed ${selectedSize === size ? "bg-brand-plum text-white shadow-lg scale-110" : "bg-slate-100 text-slate-600 hover:bg-slate-200"} ${!inStock ? "opacity-40" : ""}`}
                   >
                     {size}
+                    {!inStock && (
+                      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className="w-[120%] h-[2px] bg-red-500 -rotate-45 transform origin-center shadow-sm"></div>
+                      </div>
+                    )}
                   </button>
-                ))}
+                )})}
               </div>
             </div>
 
@@ -363,7 +377,7 @@ export default function ProdutoPage() {
               if (!hasAnyStock) {
                 return (
                   <Button size="lg" disabled className="w-full rounded-2xl h-14 text-base shadow-lg transition-all bg-slate-300 text-slate-500 cursor-not-allowed">
-                    Esgotado
+                    Indisponível
                   </Button>
                 )
               }
@@ -375,7 +389,7 @@ export default function ProdutoPage() {
                   disabled={!inStock}
                   className={`w-full rounded-2xl h-14 text-base shadow-lg transition-all ${added ? "bg-green-500 hover:bg-green-600" : (inStock ? "bg-brand-plum hover:bg-brand-rose" : "bg-slate-300 text-slate-500")}`}
                 >
-                  {added ? "Adicionado ao Carrinho! ✓" : (inStock ? "Adicionar ao Carrinho" : "Variação Esgotada")}
+                  {added ? "Adicionado ao Carrinho! ✓" : (inStock ? "Adicionar ao Carrinho" : "Indisponível")}
                 </Button>
               )
             })()}

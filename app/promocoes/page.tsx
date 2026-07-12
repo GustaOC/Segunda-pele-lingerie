@@ -94,7 +94,7 @@ export default function SalePage() {
                       return (
                         <div className="absolute inset-0 bg-white/40 backdrop-blur-[2px] z-20 flex items-center justify-center">
                           <span className="bg-slate-900 text-white text-sm font-bold px-6 py-2 rounded-full shadow-lg uppercase tracking-wider">
-                            Esgotado
+                            Indisponível
                           </span>
                         </div>
                       );
