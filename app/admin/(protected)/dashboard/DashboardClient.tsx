@@ -1561,27 +1561,31 @@ export default function DashboardClient({ user }: { user: User }) {
                                 </CardHeader>
                                 <CardContent>
                                     <div className="space-y-4">
-                                        {cityData.map((city, index) => (
-                                            <div key={city.cidade} className="flex items-center justify-between p-3 bg-slate-50/70 backdrop-blur-sm rounded-2xl border border-white/30">
+                                        {topCities.length > 0 ? topCities.map((city: any, index: number) => (
+                                            <div key={city.city} className="flex items-center justify-between p-3 bg-slate-50/70 backdrop-blur-sm rounded-2xl border border-white/30">
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold" style={{ background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)" }}>
                                                         {index + 1}
                                                     </div>
                                                     <div>
-                                                        <div className="font-medium text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>{city.cidade}</div>
-                                                        <div className="text-sm text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>{city.cadastros} consultoras</div>
+                                                        <div className="font-medium text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>{city.city}</div>
+                                                        <div className="text-sm text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>{city.count} consultoras</div>
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
                                                     <div className="font-medium text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>
-                                                        R$ {(city.vendas / 1000).toFixed(0)}k
+                                                        {city.status?.APROVADO || 0} aprovadas
                                                     </div>
-                                                    <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700 border-purple-200 rounded-lg">
-                                                        {((city.cadastros / cityData.reduce((a, b) => a + b.cadastros, 0)) * 100).toFixed(1)}%
+                                                    <Badge variant="outline" className="text-xs bg-[#4B2C4E]/10 text-[#4B2C4E] border-[#4B2C4E]/20 rounded-lg">
+                                                        {((city.count / Math.max(1, topCities.reduce((a: any, b: any) => a + b.count, 0))) * 100).toFixed(1)}%
                                                     </Badge>
                                                 </div>
                                             </div>
-                                        ))}
+                                        )) : (
+                                            <div className="text-center text-slate-500 py-8" style={{ fontFamily: "var(--font-inter)" }}>
+                                                Nenhum dado de cidade disponível no período selecionado.
+                                            </div>
+                                        )}
                                     </div>
                                 </CardContent>
                             </Card>
