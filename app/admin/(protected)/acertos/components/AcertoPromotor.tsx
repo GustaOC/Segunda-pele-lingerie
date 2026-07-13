@@ -426,7 +426,7 @@ export default function AcertoPromotor() {
                       
                       <Button 
                           onClick={handleFinalize} 
-                          disabled={submitting || totalSoldValue === 0 && promoterInventory.every(i => i.returned === 0)} 
+                          disabled={submitting} 
                           className="w-full bg-brand-plum hover:bg-brand-rose text-white h-12 rounded-xl text-base font-bold transition-all shadow-md hover:shadow-lg"
                       >
                           {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
