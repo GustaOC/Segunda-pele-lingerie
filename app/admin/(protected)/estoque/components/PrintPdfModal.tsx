@@ -51,25 +51,24 @@ export default function PrintPdfModal({ isOpen, onClose, kit, reseller, promoter
     doc.text(`CPF: ${reseller?.cpf || '__________________'}`, 70, 28)
     doc.text(`Tel: ${reseller?.phone || '__________________'}`, 130, 28)
     
-    doc.text(`Indicação: ${reseller?.indication || '____________________________________________________________________'}`, 14, 34)
-    doc.text(`Endereço: ${reseller?.address || '____________________________________________________________________'}`, 14, 40)
+    doc.text(`Endereço: ${reseller?.address || '____________________________________________________________________'}`, 14, 34)
     
-    doc.text(`Bairro......: ${reseller?.neighborhood || '________________'}`, 14, 46)
-    doc.text(`Cidade......: ${reseller?.city || '________________'}`, 70, 46)
-    doc.text(`CEP: ${reseller?.zipcode || '_______________'}`, 140, 46)
+    doc.text(`Bairro......: ${reseller?.neighborhood || '________________'}`, 14, 40)
+    doc.text(`Cidade......: ${reseller?.city || '________________'}`, 70, 40)
+    doc.text(`CEP: ${reseller?.zipcode || '_______________'}`, 140, 40)
 
     const now = new Date()
     const ano = getYear(now)
     const semana = getISOWeek(now)
-    doc.text(`Ano/Semana: ${ano}/${semana.toString().padStart(2, '0')}`, 14, 52)
-    doc.text(`1º Ped......: ___/___`, 70, 52)
-    doc.text(`Ult. Venda: ___/___`, 110, 52)
+    doc.text(`Ano/Semana: ${ano}/${semana.toString().padStart(2, '0')}`, 14, 46)
+    doc.text(`1º Ped......: ___/___`, 70, 46)
+    doc.text(`Ult. Venda: ___/___`, 110, 46)
     
     const promoterName = promoter ? promoter.nome.toUpperCase() : "NÃO INFORMADO"
     doc.setFont("helvetica", "bold")
     const transferDateFormatted = format(transferDate, 'dd/MM/yyyy')
-    doc.text(`Praça: ${reseller?.city || 'N/A'} - ${transferDateFormatted} à ${cobrancaDate}`, 14, 58)
-    doc.text(`Vendedor: ${promoter?.id?.substring(0, 4) || '0000'} - ${promoterName}`, 110, 58)
+    doc.text(`Praça: ${reseller?.city || 'N/A'} - ${transferDateFormatted} à ${cobrancaDate}`, 14, 52)
+    doc.text(`Vendedor: ${promoter?.id?.substring(0, 4) || '0000'} - ${promoterName}`, 110, 52)
 
     // 2. Table Data
     const head = [[] as string[]]
@@ -119,7 +118,7 @@ export default function PrintPdfModal({ isOpen, onClose, kit, reseller, promoter
 
     // @ts-ignore
     autoTable(doc, {
-      startY: 63,
+      startY: 57,
       head: head,
       body: body,
       theme: 'grid',
@@ -173,7 +172,7 @@ export default function PrintPdfModal({ isOpen, onClose, kit, reseller, promoter
     doc.text(`VALOR DO KIT :  R$ ${totalValue.toFixed(2).replace('.', ',')}`, 100, finalY + 4)
     doc.text(`COMISSÃO : R$ 0,00 - 0%`, 100, finalY + 12)
     doc.text(`A PAGAR : R$ ${totalValue.toFixed(2).replace('.', ',')}`, 100, finalY + 20)
-    doc.text(`VOLTAREI DIA: ${cobrancaDate}`, 100, finalY + 28)
+    doc.text(`DATA DE COBRANÇA: ${cobrancaDate}`, 100, finalY + 28)
 
     // Signature box
     doc.setDrawColor(0)
