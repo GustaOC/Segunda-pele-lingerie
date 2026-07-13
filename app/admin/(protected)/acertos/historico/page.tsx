@@ -18,10 +18,28 @@ export default function HistoricoAcertosPage() {
   }, []);
 
   const fetchHistory = async () => {
-    const { data } = await supabase.from('promoter_acertos')
-      .select('*, profiles!promoter_acertos_promoter_id_fkey(nome)')
+    // Busca acertos
+    const { data: acertosData } = await supabase.from('promoter_acertos')
+      .select('*')
       .order('created_at', { ascending: false });
-    if (data) setHistoryData(data);
+      
+    if (acertosData) {
+      // Busca promotores
+      const { data: profilesData } = await supabase.from('profiles')
+        .select('id, nome');
+        
+      const profilesMap = new Map();
+      if (profilesData) {
+        profilesData.forEach((p: any) => profilesMap.set(p.id, p.nome));
+      }
+      
+      const mappedData = acertosData.map((a: any) => ({
+        ...a,
+        profiles: { nome: profilesMap.get(a.promoter_id) }
+      }));
+      
+      setHistoryData(mappedData);
+    }
     setLoading(false);
   };
 
