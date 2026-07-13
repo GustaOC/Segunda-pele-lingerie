@@ -5,7 +5,7 @@ import { Users, Package, Search, Calculator, CheckCircle, Loader2, History } fro
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import Link from "next/link";
 
 export default function AcertoPromotor() {
   const [loading, setLoading] = useState(true);
@@ -16,8 +16,6 @@ export default function AcertoPromotor() {
   const [products, setProducts] = useState<any[]>([]);
   const [promoterInventory, setPromoterInventory] = useState<any[]>([]);
   const [pendingKits, setPendingKits] = useState<string[]>([]);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [historyData, setHistoryData] = useState<any[]>([]);
   
   const [periods, setPeriods] = useState<string[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState("");
@@ -252,13 +250,24 @@ export default function AcertoPromotor() {
           }
           
           // 4. Save Acerto History
+          const itemsDetails = promoterInventory
+              .filter(item => item.returned > 0 || item.sold > 0)
+              .map(item => ({
+                  id: item.id,
+                  name: item.name,
+                  price: item.price,
+                  returned: item.returned,
+                  sold: item.sold
+              }));
+
           await supabase.from('promoter_acertos').insert({
               promoter_id: selectedPromoterId,
               period: selectedPeriod,
               total_sold: totalSoldValue,
               total_commission: totalCommission,
               total_paid: finalAmountToPay,
-              created_by: adminId
+              created_by: adminId,
+              details: itemsDetails
           });
           
           toast({
@@ -281,26 +290,20 @@ export default function AcertoPromotor() {
       }
   };
 
-  const fetchHistory = async () => {
-    const { data } = await supabase.from('promoter_acertos')
-      .select('*, profiles!promoter_acertos_promoter_id_fkey(nome)')
-      .order('created_at', { ascending: false });
-    if (data) setHistoryData(data);
-  };
-
   if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-8 h-8 animate-spin text-brand-plum" /></div>;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-end">
-          <Button 
-              variant="outline" 
-              onClick={() => { fetchHistory(); setIsHistoryOpen(true); }}
-              className="text-brand-plum border-brand-plum hover:bg-brand-plum hover:text-white"
-          >
-              <History className="w-4 h-4 mr-2" />
-              Ver Histórico de Acertos
-          </Button>
+          <Link href="/admin/acertos/historico">
+              <Button 
+                  variant="outline" 
+                  className="text-brand-plum border-brand-plum hover:bg-brand-plum hover:text-white"
+              >
+                  <History className="w-4 h-4 mr-2" />
+                  Ver Histórico de Acertos
+              </Button>
+          </Link>
       </div>
       
       {/* SELETORES */}
@@ -450,46 +453,6 @@ export default function AcertoPromotor() {
           </div>
       )}
 
-      {/* HISTORICO MODAL */}
-      <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Histórico de Acertos</DialogTitle>
-          </DialogHeader>
-          <div className="mt-4">
-            {historyData.length === 0 ? (
-              <div className="text-center py-8 text-slate-500">Nenhum acerto registrado.</div>
-            ) : (
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
-                <table className="w-full text-left text-sm">
-                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600">
-                    <tr>
-                      <th className="px-4 py-3 font-semibold">Data</th>
-                      <th className="px-4 py-3 font-semibold">Promotor</th>
-                      <th className="px-4 py-3 font-semibold">Período</th>
-                      <th className="px-4 py-3 font-semibold text-right">Faturado</th>
-                      <th className="px-4 py-3 font-semibold text-right">Comissão</th>
-                      <th className="px-4 py-3 font-semibold text-right">Valor Pago</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 bg-white">
-                    {historyData.map(h => (
-                      <tr key={h.id} className="hover:bg-slate-50/50">
-                        <td className="px-4 py-3 text-slate-600">{new Date(h.created_at).toLocaleDateString('pt-BR')}</td>
-                        <td className="px-4 py-3 font-medium text-slate-800">{h.profiles?.nome || 'Desconhecido'}</td>
-                        <td className="px-4 py-3 text-slate-600">{h.period}</td>
-                        <td className="px-4 py-3 text-right text-slate-800">R$ {h.total_sold.toFixed(2)}</td>
-                        <td className="px-4 py-3 text-right text-brand-plum">R$ {h.total_commission.toFixed(2)}</td>
-                        <td className="px-4 py-3 text-right font-bold text-emerald-600">R$ {h.total_paid.toFixed(2)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
