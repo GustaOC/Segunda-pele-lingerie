@@ -264,13 +264,13 @@ export default function AcertoPromotor() {
               .filter(item => item.returned > 0 || item.sold > 0)
               .map(item => ({
                   id: item.id,
-                  name: item.name,
+                  name: item.product_name,
                   price: item.price,
                   returned: item.returned,
                   sold: item.sold
               }));
 
-          await supabase.from('promoter_acertos').insert({
+          const { error: insertError } = await supabase.from('promoter_acertos').insert({
               promoter_id: selectedPromoterId,
               period: selectedPeriod,
               total_sold: totalSoldValue,
@@ -279,6 +279,8 @@ export default function AcertoPromotor() {
               created_by: adminId,
               details: itemsDetails
           });
+          
+          if (insertError) throw insertError;
           
           toast({
               title: "Acerto Finalizado!",
