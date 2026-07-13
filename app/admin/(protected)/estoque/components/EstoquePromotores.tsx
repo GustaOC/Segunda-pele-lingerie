@@ -9,6 +9,7 @@ import { Playfair_Display, Inter } from "next/font/google"
 import React, { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
+import { useToast } from "@/components/ui/use-toast"
 import { Loader2, Plus, ArrowRight, User, ShoppingCart, Trash2, Package, X, Calendar, ArrowLeft } from "lucide-react"
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" })
@@ -56,6 +57,7 @@ export default function EstoquePromotores() {
   const [inventory, setInventory] = useState<PromoterInventoryRow[]>([])
   const [promoters, setPromoters] = useState<any[]>([])
   const router = useRouter()
+  const { toast } = useToast()
   const [transferKitId, setTransferKitId] = useState("")
   const [transferPieceId, setTransferPieceId] = useState("")
   const [transferQuantity, setTransferQuantity] = useState(1)
