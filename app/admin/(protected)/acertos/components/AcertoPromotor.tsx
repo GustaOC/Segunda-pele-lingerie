@@ -58,7 +58,7 @@ export default function AcertoPromotor() {
   }, [selectedPromoterId]);
 
   const fetchPeriods = async (promoterId: string) => {
-      const { data: invData } = await supabase.from('promoter_inventory').select('period').eq('promoter_id', promoterId);
+      const { data: invData } = await supabase.from('promoter_inventory').select('period, em_posse').eq('promoter_id', promoterId);
       const { data: kitsData } = await supabase.from('promoter_kits').select('period').eq('promoter_id', promoterId).like('name', '%[FINALIZADO]%').not('name', 'like', '%[ACERTADO]%');
       
       // Fetch finalized periods
@@ -66,8 +66,18 @@ export default function AcertoPromotor() {
       const finalizedPeriods = new Set(acertosData?.map(a => a.period) || []);
       
       const periodSet = new Set<string>();
-      if (invData) invData.forEach(i => i.period && !finalizedPeriods.has(i.period) && periodSet.add(i.period));
-      if (kitsData) kitsData.forEach(k => k.period && !finalizedPeriods.has(k.period) && periodSet.add(k.period));
+      if (invData) {
+          invData.forEach(i => {
+              if (!i.period) return;
+              if (i.em_posse > 0) periodSet.add(i.period);
+              else if (!finalizedPeriods.has(i.period)) periodSet.add(i.period);
+          });
+      }
+      if (kitsData) {
+          kitsData.forEach(k => {
+              if (k.period) periodSet.add(k.period);
+          });
+      }
       
       const uniquePeriods = Array.from(periodSet).sort();
       setPeriods(uniquePeriods);
