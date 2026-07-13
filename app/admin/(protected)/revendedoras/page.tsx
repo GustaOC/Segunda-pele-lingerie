@@ -89,17 +89,19 @@ export default function ConsultantManagement() {
 
   const filteredConsultants = useMemo(() => consultants.filter((consultant: any) => {
     const c = consultant.consultant;
-    const address = c?.address;
-    if (!c || !address) return false;
+    if (!c) return false;
+    
+    const address = c?.address || {};
+    const cidade = address?.cidade || "";
 
     const matchesSearch =
       c.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.cpf.includes(searchTerm) ||
-      c.telefone.includes(searchTerm) ||
-      address.cidade.toLowerCase().includes(searchTerm.toLowerCase())
+      (c.cpf && c.cpf.includes(searchTerm)) ||
+      (c.telefone && c.telefone.includes(searchTerm)) ||
+      cidade.toLowerCase().includes(searchTerm.toLowerCase())
 
     const matchesStatus = statusFilter === "all" || consultant.status === statusFilter
-    const matchesCity = cityFilter === "all" || address.cidade === cityFilter
+    const matchesCity = cityFilter === "all" || cidade === cityFilter
 
     return matchesSearch && matchesStatus && matchesCity
   }), [consultants, searchTerm, statusFilter, cityFilter]);
@@ -422,7 +424,7 @@ Por favor, entre em contato para os próximos passos.
                     <TableCell>
                       <div className="flex items-center gap-1 text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>
                         <MapPin className="w-3 h-3" />
-                        {lead.consultant?.address?.cidade}, {lead.consultant?.address?.uf}
+                        {lead.consultant?.address ? `${lead.consultant?.address?.cidade || ''}${lead.consultant?.address?.uf ? `, ${lead.consultant?.address?.uf}` : ''}` : 'Não informado'}
                       </div>
                     </TableCell>
                     <TableCell>{getStatusBadge(lead.status)}</TableCell>
