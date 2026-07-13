@@ -14,6 +14,7 @@ export default function AcertoPromotor() {
   
   const [products, setProducts] = useState<any[]>([]);
   const [promoterInventory, setPromoterInventory] = useState<any[]>([]);
+  const [pendingKits, setPendingKits] = useState<string[]>([]);
   
   const [commissionPercent, setCommissionPercent] = useState(10); // Standard manual 10%
   
@@ -51,34 +52,87 @@ export default function AcertoPromotor() {
   }, [selectedPromoterId]);
 
   const fetchPromoterInventory = async (promoterId: string) => {
-      const { data } = await supabase.from('promoter_inventory')
+      // 1. Fetch physical inventory
+      const { data: invData } = await supabase.from('promoter_inventory')
         .select('*')
         .eq('promoter_id', promoterId);
         
-      if (data) {
-          const mapped = data.map(inv => {
-              const p = products.find(prod => prod.id === inv.product_id);
-              return {
-                  ...inv,
-                  product_name: p ? p.name : 'Desconhecido',
-                  price: p ? p.price : 0,
-                  sku: p ? p.sku : '',
-                  returned: 0,
-                  sold: 0, // Since this is pooled inventory, 'sold' means they don't return it and we deduct it
-                  toPay: 0
-              };
-          });
-          setPromoterInventory(mapped);
+      // 2. Fetch sold items from finalized kits
+      const { data: kits } = await supabase.from('promoter_kits')
+          .select('id')
+          .eq('promoter_id', promoterId)
+          .like('name', '%[FINALIZADO]%')
+          .not('name', 'like', '%[ACERTADO]%');
+          
+      let soldItems: any[] = [];
+      if (kits && kits.length > 0) {
+          const kitIds = kits.map((k: any) => k.id);
+          const { data: kitItems } = await supabase.from('promoter_kit_items')
+              .select('*')
+              .in('kit_id', kitIds);
+          if (kitItems) soldItems = kitItems;
       }
+      
+      setPendingKits(kits ? kits.map((k: any) => k.id) : []);
+      
+      // 3. Combine them
+      const combinedMap = new Map();
+      
+      if (invData) {
+          invData.forEach((inv: any) => {
+              const key = `${inv.product_id}_${inv.size}_${inv.color}`;
+              combinedMap.set(key, {
+                  id: inv.id,
+                  product_id: inv.product_id,
+                  size: inv.size,
+                  color: inv.color,
+                  em_posse: inv.quantity,
+                  vendido_revendedora: 0,
+                  returned: 0
+              });
+          });
+      }
+      
+      soldItems.forEach((sold: any) => {
+          const key = `${sold.product_id}_${sold.size}_${sold.color}`;
+          if (combinedMap.has(key)) {
+              const item = combinedMap.get(key);
+              item.vendido_revendedora += sold.quantity;
+          } else {
+              combinedMap.set(key, {
+                  id: `sold_${key}`,
+                  product_id: sold.product_id,
+                  size: sold.size,
+                  color: sold.color,
+                  em_posse: 0,
+                  vendido_revendedora: sold.quantity,
+                  returned: 0
+              });
+          }
+      });
+      
+      const mapped = Array.from(combinedMap.values()).map(item => {
+          const p = products.find(prod => prod.id === item.product_id);
+          return {
+              ...item,
+              product_name: p ? p.name : 'Desconhecido',
+              price: p ? p.price : 0,
+              sku: p ? p.sku : '',
+              quantity: item.em_posse, // for compatibility
+              sold: item.vendido_revendedora + (item.em_posse - item.returned)
+          };
+      });
+      
+      setPromoterInventory(mapped);
   };
 
   const handleReturnedChange = (itemId: string, value: string) => {
       let returned = parseInt(value) || 0;
       setPromoterInventory(prev => prev.map(item => {
           if (item.id === itemId) {
-              if (returned > item.quantity) returned = item.quantity;
+              if (returned > item.em_posse) returned = item.em_posse;
               if (returned < 0) returned = 0;
-              return { ...item, returned, sold: item.quantity - returned };
+              return { ...item, returned, sold: item.vendido_revendedora + (item.em_posse - returned) };
           }
           return item;
       }));
@@ -89,7 +143,7 @@ export default function AcertoPromotor() {
   let totalSoldValue = 0;
   
   promoterInventory.forEach(item => {
-      totalInventoryValue += (item.quantity * item.price);
+      totalInventoryValue += (item.em_posse * item.price);
       totalSoldValue += (item.sold * item.price);
   });
   
@@ -140,17 +194,19 @@ export default function AcertoPromotor() {
               }
               
               // 2. Reduce promoter inventory (for both returned AND sold)
-              // If it's returned, it goes to general stock. If it's sold, it disappears from system.
-              // So the new quantity in promoter_inventory is 0 for those processed, or just delete it if all is settled.
-              // Wait, if they don't settle everything, what happens? 
-              // Acerto usually means settling a specific amount. If they say 'sold = 2, returned = 1', we deduct 3.
-              const totalProcessed = item.returned + item.sold;
-              if (totalProcessed > 0) {
-                  const newQty = item.quantity - totalProcessed;
-                  if (newQty > 0) {
-                      await supabase.from('promoter_inventory').update({ quantity: newQty }).eq('id', item.id);
-                  } else {
-                      await supabase.from('promoter_inventory').delete().eq('id', item.id);
+              if (item.id && !item.id.startsWith('sold_')) {
+                  // The item is either returned or sold, meaning it leaves the promoter's physical possession.
+                  // Since 'sold' auto-computes as (em_posse - returned), ALL 'em_posse' is consumed.
+                  await supabase.from('promoter_inventory').delete().eq('id', item.id);
+              }
+          }
+          
+          // 3. Mark pending kits as [ACERTADO]
+          if (pendingKits.length > 0) {
+              for (const kitId of pendingKits) {
+                  const { data: kitData } = await supabase.from('promoter_kits').select('name').eq('id', kitId).single();
+                  if (kitData && !kitData.name.includes('[ACERTADO]')) {
+                      await supabase.from('promoter_kits').update({ name: `${kitData.name} [ACERTADO]` }).eq('id', kitId);
                   }
               }
           }
@@ -236,15 +292,16 @@ export default function AcertoPromotor() {
                                           <div className="font-medium text-slate-800">{item.sku} - {item.product_name}</div>
                                           <div className="text-xs text-slate-500">{item.size} | {item.color}</div>
                                       </td>
-                                      <td className="px-4 py-3 text-center font-medium bg-slate-50/50">{item.quantity}</td>
+                                      <td className="px-4 py-3 text-center font-medium bg-slate-50/50">{item.em_posse}</td>
                                       <td className="px-4 py-3 text-center">
                                           <input 
                                               type="number" 
                                               min="0" 
-                                              max={item.quantity}
+                                              max={item.em_posse}
                                               value={item.returned}
+                                              disabled={item.em_posse === 0}
                                               onChange={(e) => handleReturnedChange(item.id, e.target.value)}
-                                              className="w-20 mx-auto text-center border border-slate-200 rounded-lg p-1 outline-none focus:border-brand-plum bg-white"
+                                              className="w-20 mx-auto text-center border border-slate-200 rounded-lg p-1 outline-none focus:border-brand-plum bg-white disabled:bg-slate-100 disabled:text-slate-400"
                                           />
                                       </td>
                                       <td className="px-4 py-3 text-center font-bold text-slate-800">{item.sold}</td>
