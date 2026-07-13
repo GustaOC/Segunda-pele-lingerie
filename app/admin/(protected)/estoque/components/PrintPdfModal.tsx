@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 import { FileText } from "lucide-react"
-import { getISOWeek, getYear } from "date-fns"
+import { getISOWeek, getYear, addDays, format } from "date-fns"
 
 type PrintPdfModalProps = {
   isOpen: boolean
@@ -34,9 +34,11 @@ export default function PrintPdfModal({ isOpen, onClose, kit, reseller, promoter
     // Dates
     const today = new Date().toLocaleDateString('pt-BR')
     doc.text(`EMISSÃO: ${today}`, 14, 15)
-    doc.text(`COBRANÇA: ___/___/___`, 70, 15)
     doc.text(`VISITA: ___/___/___`, 130, 15)
     doc.text(`PEDIDO: ${kit.id.substring(0, 8).toUpperCase()}`, 170, 15)
+
+    const transferDate = kit?.created_at ? new Date(kit.created_at) : new Date()
+    const cobrancaDate = format(addDays(transferDate, 45), 'dd/MM/yyyy')
 
     // Revendedora
     doc.setFont("helvetica", "normal")
@@ -170,7 +172,7 @@ export default function PrintPdfModal({ isOpen, onClose, kit, reseller, promoter
     doc.text(`VALOR DO KIT :  R$ ${totalValue.toFixed(2).replace('.', ',')}`, 100, finalY + 4)
     doc.text(`COMISSÃO : R$ 0,00 - 0%`, 100, finalY + 12)
     doc.text(`A PAGAR : R$ ${totalValue.toFixed(2).replace('.', ',')}`, 100, finalY + 20)
-    doc.text(`VOLTAREI DIA: ____/____/____`, 100, finalY + 28)
+    doc.text(`VOLTAREI DIA: ${cobrancaDate}`, 100, finalY + 28)
 
     // Signature box
     doc.setDrawColor(0)
