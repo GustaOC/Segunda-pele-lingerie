@@ -449,7 +449,47 @@ export default function AcertoPromotor() {
               <p className="text-slate-500">Este promotor não possui estoque pendente.</p>
           </div>
       )}
-      
+
+      {/* HISTORICO MODAL */}
+      <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Histórico de Acertos</DialogTitle>
+          </DialogHeader>
+          <div className="mt-4">
+            {historyData.length === 0 ? (
+              <div className="text-center py-8 text-slate-500">Nenhum acerto registrado.</div>
+            ) : (
+              <div className="border border-slate-200 rounded-xl overflow-hidden">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-slate-50 border-b border-slate-200 text-slate-600">
+                    <tr>
+                      <th className="px-4 py-3 font-semibold">Data</th>
+                      <th className="px-4 py-3 font-semibold">Promotor</th>
+                      <th className="px-4 py-3 font-semibold">Período</th>
+                      <th className="px-4 py-3 font-semibold text-right">Faturado</th>
+                      <th className="px-4 py-3 font-semibold text-right">Comissão</th>
+                      <th className="px-4 py-3 font-semibold text-right">Valor Pago</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 bg-white">
+                    {historyData.map(h => (
+                      <tr key={h.id} className="hover:bg-slate-50/50">
+                        <td className="px-4 py-3 text-slate-600">{new Date(h.created_at).toLocaleDateString('pt-BR')}</td>
+                        <td className="px-4 py-3 font-medium text-slate-800">{h.profiles?.nome || 'Desconhecido'}</td>
+                        <td className="px-4 py-3 text-slate-600">{h.period}</td>
+                        <td className="px-4 py-3 text-right text-slate-800">R$ {h.total_sold.toFixed(2)}</td>
+                        <td className="px-4 py-3 text-right text-brand-plum">R$ {h.total_commission.toFixed(2)}</td>
+                        <td className="px-4 py-3 text-right font-bold text-emerald-600">R$ {h.total_paid.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
