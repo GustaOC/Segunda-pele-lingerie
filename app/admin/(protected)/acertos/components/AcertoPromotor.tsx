@@ -148,7 +148,7 @@ export default function AcertoPromotor() {
               price: p ? p.price : 0,
               sku: p ? p.sku : '',
               quantity: item.em_posse, // for compatibility
-              sold: item.vendido_revendedora + (item.em_posse - item.returned)
+              sold: item.vendido_revendedora
           };
       });
       
@@ -161,7 +161,7 @@ export default function AcertoPromotor() {
           if (item.id === itemId) {
               if (returned > item.em_posse) returned = item.em_posse;
               if (returned < 0) returned = 0;
-              return { ...item, returned, sold: item.vendido_revendedora + (item.em_posse - returned) };
+              return { ...item, returned, sold: item.vendido_revendedora };
           }
           return item;
       }));
@@ -222,11 +222,15 @@ export default function AcertoPromotor() {
                   });
               }
               
-              // 2. Reduce promoter inventory (for both returned AND sold)
+              // 2. Reduce promoter inventory (only for returned items)
               if (item.id && !item.id.startsWith('sold_')) {
-                  // The item is either returned or sold, meaning it leaves the promoter's physical possession.
-                  // Since 'sold' auto-computes as (em_posse - returned), ALL 'em_posse' is consumed.
-                  await supabase.from('promoter_inventory').delete().eq('id', item.id);
+                  if (item.returned > 0) {
+                      if (item.returned >= item.em_posse) {
+                          await supabase.from('promoter_inventory').delete().eq('id', item.id);
+                      } else {
+                          await supabase.from('promoter_inventory').update({ quantity: item.em_posse - item.returned }).eq('id', item.id);
+                      }
+                  }
               }
           }
           
