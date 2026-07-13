@@ -403,7 +403,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                           <span className="text-slate-500 font-bold">Total Comissão</span>
                           <span className="font-bold text-brand-plum">
                               R$ {totalCommission.toFixed(2)}
-                              {isFirstKit && totalSoldValue < 250 && <span className="block text-xs text-red-500 font-normal">Anulada (Venda < R$ 250)</span>}
+                              {isFirstKit && totalSoldValue < 250 && <span className="block text-xs text-red-500 font-normal">Anulada (Venda &lt; R$ 250)</span>}
                           </span>
                       </div>
                       
