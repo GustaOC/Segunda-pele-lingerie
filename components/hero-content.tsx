@@ -37,7 +37,7 @@ export default function HeroContent() {
               size="sm"
               className="bg-white/10 backdrop-blur-sm border-white/20 text-white hover:bg-white/20 hover:border-white/30"
             >
-              Seja Consultora
+              Seja Revendedora
             </Button>
           </Link>
           <Button className="bg-white text-black hover:bg-white/90">Get Started</Button>

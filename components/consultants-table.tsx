@@ -25,7 +25,7 @@ export default function ConsultantsTable() {
   return (
     <div className="mt-12 w-full overflow-x-auto">
       <Table>
-        <TableCaption>Lista de consultoras cadastradas</TableCaption>
+        <TableCaption>Lista de revendedoras cadastradas</TableCaption>
         <TableHeader>
           <TableRow>
             <TableHead>Nome</TableHead>
