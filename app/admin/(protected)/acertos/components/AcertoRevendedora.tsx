@@ -277,6 +277,8 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
 
   if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-8 h-8 animate-spin text-brand-plum" /></div>;
 
+  const isFinalizado = selectedKit?.name?.includes('[FINALIZADO]') || false;
+
   return (
     <div className="space-y-6">
       
@@ -321,10 +323,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
           </div>
       </div>
       
-      {selectedKitId && kitItems.length > 0 && (() => {
-          const isFinalizado = selectedKit?.name?.includes('[FINALIZADO]') || false;
-          
-          return (
+      {selectedKitId && kitItems.length > 0 && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
               {/* LISTA DE ITENS */}
@@ -466,8 +465,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                   </div>
               </div>
           </div>
-          );
-      })}
+      )}
       
     </div>
   );
