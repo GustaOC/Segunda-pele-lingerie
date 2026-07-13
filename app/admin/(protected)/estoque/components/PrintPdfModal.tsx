@@ -45,8 +45,8 @@ export default function PrintPdfModal({ isOpen, onClose, kit, reseller, promoter
         }
     }
     
-    doc.text(`DATA DE TROCA: ${dataTroca}`, 130, 15)
-    doc.text(`PEDIDO: ${kit.id.substring(0, 8).toUpperCase()}`, 170, 15)
+    doc.text(`DATA DE TROCA: ${dataTroca}`, 80, 15)
+    doc.text(`PEDIDO: ${kit.id.substring(0, 8).toUpperCase()}`, 155, 15)
 
     const transferDate = kit?.created_at ? new Date(kit.created_at) : new Date()
     const cobrancaDate = format(addDays(transferDate, 45), 'dd/MM/yyyy')
