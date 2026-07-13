@@ -245,11 +245,14 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
               }
           }
           
-          // 3. Mark Kit as Settled (Update updated_at to indicate exchange/acerto happened)
-          await supabase.from('promoter_kits').update({ 
-              updated_at: new Date().toISOString()
-              // Could add a status field if schema supports it, e.g. status: 'SETTLED'
-          }).eq('id', selectedKitId);
+          // 3. Mark Kit as Settled (Update name to include [FINALIZADO])
+          const kitName = selectedKit?.name || `Kit #${selectedKitId.substring(0,8)}`;
+          if (!kitName.includes('[FINALIZADO]')) {
+              await supabase.from('promoter_kits').update({ 
+                  name: `${kitName} [FINALIZADO]`,
+                  updated_at: new Date().toISOString()
+              }).eq('id', selectedKitId);
+          }
           
           toast({
               title: "Acerto Finalizado!",
@@ -305,7 +308,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                       <option value="">{kits.length === 0 ? "Nenhum kit encontrado" : "Selecione o kit..."}</option>
                       {kits.map(k => (
                           <option key={k.id} value={k.id}>
-                              {new Date(k.created_at).toLocaleDateString()} - Pedido: {k.id.substring(0,8).toUpperCase()}
+                              {new Date(k.created_at).toLocaleDateString()} - Pedido: {k.id.substring(0,8).toUpperCase()} {k.name?.includes('[FINALIZADO]') ? '✅ FINALIZADO' : ''}
                           </option>
                       ))}
                   </select>
@@ -318,7 +321,10 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
           </div>
       </div>
       
-      {selectedKitId && kitItems.length > 0 && (
+      {selectedKitId && kitItems.length > 0 && (() => {
+          const isFinalizado = selectedKit?.name?.includes('[FINALIZADO]') || false;
+          
+          return (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
               
               {/* LISTA DE ITENS */}
@@ -356,7 +362,8 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                                               max={item.quantity}
                                               value={item.returned}
                                               onChange={(e) => handleReturnedChange(item.id, e.target.value)}
-                                              className="w-20 mx-auto text-center border border-slate-200 rounded-lg p-1 outline-none focus:border-brand-plum bg-white"
+                                              disabled={isFinalizado}
+                                              className="w-20 mx-auto text-center border border-slate-200 rounded-lg p-1 outline-none focus:border-brand-plum bg-white disabled:bg-slate-100 disabled:text-slate-400"
                                           />
                                       </td>
                                       <td className="px-4 py-3 text-center font-bold text-slate-800">{item.sold}</td>
@@ -443,13 +450,13 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                       
                       <Button 
                           onClick={handleFinalize} 
-                          disabled={submitting} 
-                          className="w-full bg-brand-plum hover:bg-brand-rose text-white h-12 rounded-xl text-base font-bold transition-all shadow-md hover:shadow-lg"
+                          disabled={submitting || totalSoldValue === 0 && kitItems.every(i => i.returned === 0) || isFinalizado} 
+                          className={`w-full h-12 rounded-xl text-base font-bold transition-all shadow-md hover:shadow-lg ${isFinalizado ? 'bg-green-600 text-white hover:bg-green-600' : 'bg-brand-plum hover:bg-brand-rose text-white'}`}
                       >
                           {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : (
                               <>
                                   <CheckCircle className="w-5 h-5 mr-2" />
-                                  Finalizar Acerto
+                                  {isFinalizado ? "Acerto Finalizado" : "Finalizar Acerto"}
                               </>
                           )}
                       </Button>
@@ -459,7 +466,8 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                   </div>
               </div>
           </div>
-      )}
+          );
+      })}
       
     </div>
   );
