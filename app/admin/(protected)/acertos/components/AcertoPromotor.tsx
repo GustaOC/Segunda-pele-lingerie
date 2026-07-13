@@ -16,6 +16,9 @@ export default function AcertoPromotor() {
   const [promoterInventory, setPromoterInventory] = useState<any[]>([]);
   const [pendingKits, setPendingKits] = useState<string[]>([]);
   
+  const [periods, setPeriods] = useState<string[]>([]);
+  const [selectedPeriod, setSelectedPeriod] = useState("");
+  
   const [commissionPercent, setCommissionPercent] = useState(10); // Standard manual 10%
   
   const supabase = createClient();
@@ -46,21 +49,47 @@ export default function AcertoPromotor() {
   useEffect(() => {
     if (!selectedPromoterId) {
         setPromoterInventory([]);
+        setPeriods([]);
+        setSelectedPeriod("");
         return;
     }
-    fetchPromoterInventory(selectedPromoterId);
+    fetchPeriods(selectedPromoterId);
   }, [selectedPromoterId]);
 
-  const fetchPromoterInventory = async (promoterId: string) => {
+  const fetchPeriods = async (promoterId: string) => {
+      const { data: invData } = await supabase.from('promoter_inventory').select('period').eq('promoter_id', promoterId);
+      const { data: kitsData } = await supabase.from('promoter_kits').select('period').eq('promoter_id', promoterId).like('name', '%[FINALIZADO]%').not('name', 'like', '%[ACERTADO]%');
+      
+      const periodSet = new Set<string>();
+      if (invData) invData.forEach(i => i.period && periodSet.add(i.period));
+      if (kitsData) kitsData.forEach(k => k.period && periodSet.add(k.period));
+      
+      const uniquePeriods = Array.from(periodSet).sort();
+      setPeriods(uniquePeriods);
+      setSelectedPeriod("");
+      setPromoterInventory([]);
+  };
+
+  useEffect(() => {
+      if (!selectedPromoterId || !selectedPeriod) {
+          setPromoterInventory([]);
+          return;
+      }
+      fetchPromoterInventory(selectedPromoterId, selectedPeriod);
+  }, [selectedPromoterId, selectedPeriod]);
+
+  const fetchPromoterInventory = async (promoterId: string, period: string) => {
       // 1. Fetch physical inventory
       const { data: invData } = await supabase.from('promoter_inventory')
         .select('*')
-        .eq('promoter_id', promoterId);
+        .eq('promoter_id', promoterId)
+        .eq('period', period);
         
       // 2. Fetch sold items from finalized kits
       const { data: kits } = await supabase.from('promoter_kits')
           .select('id')
           .eq('promoter_id', promoterId)
+          .eq('period', period)
           .like('name', '%[FINALIZADO]%')
           .not('name', 'like', '%[ACERTADO]%');
           
@@ -217,7 +246,8 @@ export default function AcertoPromotor() {
               className: "bg-green-50 text-green-900 border-green-200"
           });
           
-          fetchPromoterInventory(selectedPromoterId);
+          fetchPromoterInventory(selectedPromoterId, selectedPeriod);
+          fetchPeriods(selectedPromoterId);
           
       } catch (e: any) {
           toast({
@@ -247,6 +277,20 @@ export default function AcertoPromotor() {
                   <option value="">Selecione um promotor...</option>
                   {promoters.map(p => (
                       <option key={p.id} value={p.id}>{p.nome || p.email}</option>
+                  ))}
+              </select>
+          </div>
+          <div className="flex-1">
+              <label className="block text-sm font-medium text-slate-700 mb-1">Período / Semana</label>
+              <select 
+                  value={selectedPeriod} 
+                  onChange={(e) => setSelectedPeriod(e.target.value)}
+                  disabled={!selectedPromoterId || periods.length === 0}
+                  className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-brand-plum bg-slate-50 disabled:opacity-50"
+              >
+                  <option value="">{periods.length === 0 ? "Nenhum período pendente" : "Selecione o período..."}</option>
+                  {periods.map(p => (
+                      <option key={p} value={p}>{p}</option>
                   ))}
               </select>
           </div>
