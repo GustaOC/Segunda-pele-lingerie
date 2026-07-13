@@ -993,7 +993,7 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
             </div>
           </div>
         </div>
-      </Dialog>
+      )}
       
       {/* Modal E-commerce */}
       <Dialog open={!!ecommerceTransferItem} onOpenChange={(open) => { if (!open) setEcommerceTransferItem(null) }}>
