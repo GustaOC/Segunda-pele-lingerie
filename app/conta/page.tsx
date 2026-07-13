@@ -106,7 +106,7 @@ export default function ContaPage() {
               <p className="text-slate-500">{user.email}</p>
               {isPromoter && (
                 <span className="inline-block mt-2 bg-brand-plum/10 text-brand-plum text-xs font-bold px-2 py-1 rounded">
-                  {role === 'ADMIN' ? 'Administrador' : 'Promotora / Consultora'}
+                  {role === 'ADMIN' ? 'Administrador' : 'Promotora / Revendedora'}
                 </span>
               )}
             </div>

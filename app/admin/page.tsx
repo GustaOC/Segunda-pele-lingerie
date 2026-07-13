@@ -825,7 +825,7 @@ export default function UserManagementPage() {
                   <UserCheck className="w-4 h-4 text-green-600 mt-0.5" />
                   <div>
                     <span className="text-gray-900 font-medium">Promotor:</span>
-                    <span className="text-gray-600 ml-2">Gerenciar consultoras atribuídas, relatórios próprios</span>
+                    <span className="text-gray-600 ml-2">Gerenciar revendedoras atribuídas, relatórios próprios</span>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">

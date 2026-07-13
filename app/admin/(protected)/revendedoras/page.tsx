@@ -187,7 +187,7 @@ Telefone: ${consultant.telefone}
     const { promoter, consultant } = whatsappData;
     const message = `
 Olá, ${promoter.name}!
-Um novo cadastro de consultora foi aprovado para você:
+Um novo cadastro de revendedora foi aprovado para você:
 
 *Nome:* ${consultant.nome}
 *CPF:* ${consultant.cpf}
@@ -253,7 +253,7 @@ Por favor, entre em contato para os próximos passos.
               </div>
               <div>
                 <span className="text-xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Segunda Pele Lingerie</span>
-                <p className="text-sm text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Gerenciamento de Consultoras</p>
+                <p className="text-sm text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Gerenciamento de Revendedoras</p>
               </div>
             </div>
             <div className="flex items-center space-x-3">
@@ -283,9 +283,9 @@ Por favor, entre em contato para os próximos passos.
           <div className="flex flex-col lg:flex-row lg:items-center justify-between mb-6">
             <div>
               <h1 className="text-3xl font-bold text-slate-800 mb-1" style={{ fontFamily: "var(--font-playfair)" }}>
-                Gerenciar Consultoras
+                Gerenciar Revendedoras
               </h1>
-              <p className="text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>{filteredConsultants.length} consultora(s) encontrada(s)</p>
+              <p className="text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>{filteredConsultants.length} revendedora(s) encontrada(s)</p>
             </div>
           </div>
 
@@ -383,7 +383,7 @@ Por favor, entre em contato para os próximos passos.
             <Table>
               <TableHeader>
                 <TableRow className="border-b border-white/30">
-                  <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Consultora</TableHead>
+                  <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Revendedora</TableHead>
                   <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>CPF</TableHead>
                   <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Contato</TableHead>
                   <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Localização</TableHead>
@@ -514,8 +514,8 @@ Por favor, entre em contato para os próximos passos.
       <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white/95 backdrop-blur-lg border-white/50 shadow-2xl rounded-3xl">
           <DialogHeader>
-            <DialogTitle className="text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Detalhes da Consultora</DialogTitle>
-            <DialogDescription className="text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Visualize e gerencie as informações da consultora</DialogDescription>
+            <DialogTitle className="text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Detalhes da Revendedora</DialogTitle>
+            <DialogDescription className="text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>Visualize e gerencie as informações da revendedora</DialogDescription>
           </DialogHeader>
 
           {selectedConsultant && (
@@ -535,7 +535,7 @@ Por favor, entre em contato para os próximos passos.
           <DialogHeader>
             <DialogTitle className="text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>Enviar para o Promotor?</DialogTitle>
             <DialogDescription className="text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>
-              Deseja enviar os dados desta consultora para o WhatsApp de {whatsappData?.promoter?.name}?
+              Deseja enviar os dados desta revendedora para o WhatsApp de {whatsappData?.promoter?.name}?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

@@ -164,7 +164,7 @@ export default function EcommerceHome() {
                   Ver Lançamentos
                 </Button>
               </Link>
-              <Link href="/seja-consultora" className="w-full sm:w-auto">
+              <Link href="/seja-revendedora" className="w-full sm:w-auto">
                 <Button size="lg" variant="outline" className="rounded-full border-slate-300 hover:border-brand-plum text-slate-700 hover:text-brand-plum px-8 h-14 text-base bg-white/50 backdrop-blur-sm w-full sm:w-auto">
                   Revenda e Lucre
                 </Button>
@@ -441,7 +441,7 @@ export default function EcommerceHome() {
         </div>
       </section>
 
-      {/* Consultora CTA Banner */}
+      {/* Revendedora CTA Banner */}
       <section className="py-24 max-w-7xl mx-auto px-6">
         <div className="relative w-full rounded-[3rem] overflow-hidden bg-brand-plum shadow-2xl">
           <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1550928431-ee0ecb00c1d5?q=80&w=2000&auto=format&fit=crop')] bg-cover bg-center opacity-30 mix-blend-overlay"></div>
@@ -453,12 +453,12 @@ export default function EcommerceHome() {
                 Transforme sua <span className="italic text-pink-300">Independência</span> em Realidade
               </h2>
               <p className="text-xl text-white/80 font-light">
-                Seja uma consultora Segunda Pele Lingerie. Revenda peças exclusivas, ganhe até 40% de comissão e pague apenas o que vender em consignação.
+                Seja uma revendedora Segunda Pele Lingerie. Revenda peças exclusivas, ganhe até 40% de comissão e pague apenas o que vender em consignação.
               </p>
               <div className="pt-4">
-                <Link href="/seja-consultora">
+                <Link href="/seja-revendedora">
                   <Button size="lg" className="bg-white text-brand-plum hover:bg-brand-peach hover:scale-105 transition-all shadow-xl rounded-full h-14 px-8 text-lg font-semibold">
-                    Quero ser Consultora <ArrowRight className="w-5 h-5 ml-2" />
+                    Quero ser Revendedora <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                 </Link>
               </div>
@@ -468,7 +468,7 @@ export default function EcommerceHome() {
             <div className="hidden md:block relative h-full min-h-[400px] w-full rounded-2xl overflow-hidden shadow-xl transform translate-x-4 lg:translate-x-8">
               <Image 
                 src="/modelovitrine2.jpg" 
-                alt="Seja uma Consultora" 
+                alt="Seja uma Revendedora" 
                 fill 
                 className="object-cover object-top"
               />
@@ -523,7 +523,7 @@ export default function EcommerceHome() {
               <h4 className="text-white font-semibold mb-6 uppercase tracking-wider text-sm">Empresa</h4>
               <ul className="space-y-4">
                 <li><Link href="#" className="text-white/80 hover:text-white transition-colors">Sobre Nós</Link></li>
-                <li><Link href="/seja-consultora" className="text-white/80 hover:text-white transition-colors">Seja Consultora</Link></li>
+                <li><Link href="/seja-revendedora" className="text-white/80 hover:text-white transition-colors">Seja Revendedora</Link></li>
                 <li><Link href="#" className="text-white/80 hover:text-white transition-colors">Dúvidas Frequentes</Link></li>
                 <li><Link href="#" className="text-white/80 hover:text-white transition-colors">Política de Privacidade</Link></li>
               </ul>

@@ -330,7 +330,7 @@ export default function CampaignDetailPage() {
                     <Card>
                         <CardHeader>
                             <CardTitle>Respostas Recebidas</CardTitle>
-                            <CardDescription>Mensagens enviadas pelas consultoras.</CardDescription>
+                            <CardDescription>Mensagens enviadas pelas revendedoras.</CardDescription>
                         </CardHeader>
                         <CardContent>
                         {incomingMessages.length === 0 ? (
@@ -365,7 +365,7 @@ export default function CampaignDetailPage() {
         <DialogContent className="max-w-3xl max-h-[80vh] flex flex-col">
             <DialogHeader>
                 <DialogTitle>Importar Contatos</DialogTitle>
-                <DialogDescription>Selecione as consultoras aprovadas para adicionar a esta campanha.</DialogDescription>
+                <DialogDescription>Selecione as revendedoras aprovadas para adicionar a esta campanha.</DialogDescription>
             </DialogHeader>
             <div className="flex-1 overflow-y-auto pr-2">
                 <Table>

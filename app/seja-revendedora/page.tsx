@@ -207,7 +207,7 @@ export default function HomePage() {
               className="text-5xl md:text-7xl font-bold text-slate-800 leading-tight px-4"
               style={{ fontFamily: "var(--font-playfair)" }}
             >
-              Seja uma de nossas consultoras
+              Seja uma de nossas revendedoras
             </h1>
             <div className="flex justify-center">
               <p 
@@ -269,7 +269,7 @@ export default function HomePage() {
               >
                 Faça agora mesmo seu cadastro
               </h2>
-              <p className="text-center text-slate-600 mb-8 font-medium">Junte-se à nossa equipe de consultoras</p>
+              <p className="text-center text-slate-600 mb-8 font-medium">Junte-se à nossa equipe de revendedoras</p>
               
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -481,7 +481,7 @@ export default function HomePage() {
           <div className="p-8 text-center space-y-6 text-slate-600">
             <p className="text-xl font-semibold" style={{ color: "#5D3A5B" }}>Bem-vinda à família Segunda Pele Lingerie 💕</p>
             <p className="text-base leading-relaxed">
-              Agora você faz parte de um time de consultoras que valorizam beleza, confiança e independência.
+              Agora você faz parte de um time de revendedoras que valorizam beleza, confiança e independência.
             </p>
             <p className="text-base leading-relaxed">
               Em breve, caso seu cadastro seja aprovado, um de nossos representantes entrará em contato para compartilhar todas as informações e ajudar você a iniciar essa nova jornada.

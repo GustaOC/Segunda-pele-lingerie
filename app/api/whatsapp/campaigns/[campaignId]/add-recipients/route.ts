@@ -28,9 +28,9 @@ export async function POST(
       return NextResponse.json({ error: "Campanha não encontrada." }, { status: 404 });
     }
 
-    // 2. Buscar os dados dos contatos selecionados (consultoras)
+    // 2. Buscar os dados dos contatos selecionados (revendedoras)
     const { data: contacts, error: contactsError } = await supabaseAdmin
-      .from('consultant') // Assumindo que a tabela de consultoras se chama 'consultant'
+      .from('consultant') // Assumindo que a tabela de revendedoras se chama 'consultant'
       .select('nome, telefone')
       .in('id', contactIds);
 

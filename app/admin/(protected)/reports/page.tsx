@@ -67,11 +67,11 @@ const poppins = Poppins({
 
 // Mock data for reports
 const promoterPerformance = [
-  { promoter: "Carlos Mendes", consultoras: 45, ativas: 38, vendas: 125000, comissao: 50000, conversao: 84.4 },
-  { promoter: "Juliana Santos", consultoras: 32, ativas: 28, vendas: 98000, comissao: 39200, conversao: 87.5 },
-  { promoter: "Roberto Silva", consultoras: 28, ativas: 25, vendas: 87000, comissao: 34800, conversao: 89.3 },
-  { promoter: "Patricia Lima", consultoras: 22, ativas: 19, vendas: 65000, comissao: 26000, conversao: 86.4 },
-  { promoter: "Anderson Costa", consultoras: 18, ativas: 16, vendas: 52000, comissao: 20800, conversao: 88.9 },
+  { promoter: "Carlos Mendes", revendedoras: 45, ativas: 38, vendas: 125000, comissao: 50000, conversao: 84.4 },
+  { promoter: "Juliana Santos", revendedoras: 32, ativas: 28, vendas: 98000, comissao: 39200, conversao: 87.5 },
+  { promoter: "Roberto Silva", revendedoras: 28, ativas: 25, vendas: 87000, comissao: 34800, conversao: 89.3 },
+  { promoter: "Patricia Lima", revendedoras: 22, ativas: 19, vendas: 65000, comissao: 26000, conversao: 86.4 },
+  { promoter: "Anderson Costa", revendedoras: 18, ativas: 16, vendas: 52000, comissao: 20800, conversao: 88.9 },
 ]
 
 const monthlyData = [
@@ -84,11 +84,11 @@ const monthlyData = [
 ]
 
 const regionData = [
-  { regiao: "Sudeste", consultoras: 456, percentual: 45.6, vendas: 1200000 },
-  { regiao: "Nordeste", consultoras: 234, percentual: 23.4, vendas: 680000 },
-  { regiao: "Sul", consultoras: 178, percentual: 17.8, vendas: 520000 },
-  { regiao: "Centro-Oeste", consultoras: 89, percentual: 8.9, vendas: 245000 },
-  { regiao: "Norte", consultoras: 43, percentual: 4.3, vendas: 115000 },
+  { regiao: "Sudeste", revendedoras: 456, percentual: 45.6, vendas: 1200000 },
+  { regiao: "Nordeste", revendedoras: 234, percentual: 23.4, vendas: 680000 },
+  { regiao: "Sul", revendedoras: 178, percentual: 17.8, vendas: 520000 },
+  { regiao: "Centro-Oeste", revendedoras: 89, percentual: 8.9, vendas: 245000 },
+  { regiao: "Norte", revendedoras: 43, percentual: 4.3, vendas: 115000 },
 ]
 
 const engagementData = [
@@ -116,16 +116,16 @@ const leastSellingProducts = [
 ]
 
 const cityData = [
-  { cidade: "Campo Grande", consultoras: 487, percentual: 39.5, vendas: 1050000 },
-  { cidade: "Dourados", consultoras: 156, percentual: 12.6, vendas: 378000 },
-  { cidade: "Três Lagoas", consultoras: 134, percentual: 10.9, vendas: 324000 },
-  { cidade: "Corumbá", consultoras: 98, percentual: 7.9, vendas: 245000 },
-  { cidade: "Ponta Porã", consultoras: 87, percentual: 7.1, vendas: 198000 },
-  { cidade: "Aquidauana", consultoras: 76, percentual: 6.2, vendas: 167000 },
-  { cidade: "Naviraí", consultoras: 65, percentual: 5.3, vendas: 145000 },
-  { cidade: "Nova Andradina", consultoras: 54, percentual: 4.4, vendas: 125000 },
-  { cidade: "Sidrolândia", consultoras: 43, percentual: 3.5, vendas: 98000 },
-  { cidade: "Maracaju", consultoras: 34, percentual: 2.8, vendas: 76000 },
+  { cidade: "Campo Grande", revendedoras: 487, percentual: 39.5, vendas: 1050000 },
+  { cidade: "Dourados", revendedoras: 156, percentual: 12.6, vendas: 378000 },
+  { cidade: "Três Lagoas", revendedoras: 134, percentual: 10.9, vendas: 324000 },
+  { cidade: "Corumbá", revendedoras: 98, percentual: 7.9, vendas: 245000 },
+  { cidade: "Ponta Porã", revendedoras: 87, percentual: 7.1, vendas: 198000 },
+  { cidade: "Aquidauana", revendedoras: 76, percentual: 6.2, vendas: 167000 },
+  { cidade: "Naviraí", revendedoras: 65, percentual: 5.3, vendas: 145000 },
+  { cidade: "Nova Andradina", revendedoras: 54, percentual: 4.4, vendas: 125000 },
+  { cidade: "Sidrolândia", revendedoras: 43, percentual: 3.5, vendas: 98000 },
+  { cidade: "Maracaju", revendedoras: 34, percentual: 2.8, vendas: 76000 },
 ]
 
 // Consolidated consultant statistics
@@ -340,7 +340,7 @@ export default function ReportsPage() {
                     <SelectContent>
                       <SelectItem value="overview">Visão Geral</SelectItem>
                       <SelectItem value="promoters">Performance por Promotor</SelectItem>
-                      <SelectItem value="consultants">Cadastros de Consultoras</SelectItem>
+                      <SelectItem value="consultants">Cadastros de Revendedoras</SelectItem>
                       <SelectItem value="regions">Análise Regional</SelectItem>
                       <SelectItem value="cities">Análise por Cidades</SelectItem>
                       <SelectItem value="engagement">Engajamento</SelectItem>
@@ -486,7 +486,7 @@ export default function ReportsPage() {
                   Promotores
                 </TabsTrigger>
                 <TabsTrigger value="consultants" className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-md py-2">
-                  Consultoras
+                  Revendedoras
                 </TabsTrigger>
                 <TabsTrigger value="regions" className="data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-purple-700 rounded-md py-2">
                   Regiões
@@ -508,7 +508,7 @@ export default function ReportsPage() {
                   <Card className="border-0 shadow-md hover:shadow-lg transition-shadow duration-200 bg-gradient-to-br from-white to-purple-50">
                     <CardContent className="p-6 flex items-center justify-between">
                       <div>
-                        <p className="text-sm text-gray-600 mb-1">Total Consultoras</p>
+                        <p className="text-sm text-gray-600 mb-1">Total Revendedoras</p>
                         <p className="text-2xl font-bold text-gray-900" style={{ fontFamily: "var(--font-playfair)" }}>
                           {consultantStats.total.toLocaleString()}
                         </p>
@@ -690,7 +690,7 @@ export default function ReportsPage() {
                       <TableHeader>
                         <TableRow className="border-b border-gray-200">
                           <TableHead className="text-gray-600 font-medium">Promotor</TableHead>
-                          <TableHead className="text-gray-600 font-medium">Consultoras</TableHead>
+                          <TableHead className="text-gray-600 font-medium">Revendedoras</TableHead>
                           <TableHead className="text-gray-600 font-medium">Ativas</TableHead>
                           <TableHead className="text-gray-600 font-medium">Vendas (R$)</TableHead>
                           <TableHead className="text-gray-600 font-medium">Comissão (R$)</TableHead>
@@ -701,7 +701,7 @@ export default function ReportsPage() {
                         {filteredPromoters.map((promoter) => (
                           <TableRow key={promoter.promoter} className="border-b border-gray-100 hover:bg-gray-50">
                             <TableCell className="font-medium text-gray-900">{promoter.promoter}</TableCell>
-                            <TableCell className="text-gray-900">{promoter.consultoras}</TableCell>
+                            <TableCell className="text-gray-900">{promoter.revendedoras}</TableCell>
                             <TableCell className="text-gray-900">{promoter.ativas}</TableCell>
                             <TableCell className="text-gray-900">R$ {promoter.vendas.toLocaleString("pt-BR")}</TableCell>
                             <TableCell className="text-gray-900">R$ {promoter.comissao.toLocaleString("pt-BR")}</TableCell>
@@ -755,7 +755,7 @@ export default function ReportsPage() {
                       <div className="text-3xl font-bold text-green-600 mb-2" style={{ fontFamily: "var(--font-playfair)" }}>
                         {consultantStats.approved.toLocaleString()}
                       </div>
-                      <p className="text-sm text-gray-600">Consultoras Aprovadas</p>
+                      <p className="text-sm text-gray-600">Revendedoras Aprovadas</p>
                       <p className="text-xs text-green-600 mt-1">{consultantStats.approvalRate}% do total</p>
                     </CardContent>
                   </Card>
@@ -787,7 +787,7 @@ export default function ReportsPage() {
                       Cadastros por Status
                     </CardTitle>
                     <CardDescription className="text-gray-600">
-                      Distribuição atual das {consultantStats.total.toLocaleString()} consultoras cadastradas
+                      Distribuição atual das {consultantStats.total.toLocaleString()} revendedoras cadastradas
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -836,7 +836,7 @@ export default function ReportsPage() {
                       Distribuição por Regiões
                     </CardTitle>
                     <CardDescription className="text-gray-600">
-                      Consultoras e vendas por região do Brasil
+                      Revendedoras e vendas por região do Brasil
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -855,8 +855,8 @@ export default function ReportsPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-4 text-sm">
                               <div>
-                                <p className="text-gray-600">Consultoras</p>
-                                <p className="text-gray-900 font-medium">{region.consultoras}</p>
+                                <p className="text-gray-600">Revendedoras</p>
+                                <p className="text-gray-900 font-medium">{region.revendedoras}</p>
                               </div>
                               <div>
                                 <p className="text-gray-600">Vendas</p>
@@ -908,7 +908,7 @@ export default function ReportsPage() {
                       Distribuição por Cidades - MS
                     </CardTitle>
                     <CardDescription className="text-gray-600">
-                      Consultoras e vendas por cidade de Mato Grosso do Sul
+                      Revendedoras e vendas por cidade de Mato Grosso do Sul
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -927,8 +927,8 @@ export default function ReportsPage() {
                             </div>
                             <div className="grid grid-cols-2 gap-4 text-sm">
                               <div>
-                                <p className="text-gray-600">Consultoras</p>
-                                <p className="text-gray-900 font-medium">{city.consultoras}</p>
+                                <p className="text-gray-600">Revendedoras</p>
+                                <p className="text-gray-900 font-medium">{city.revendedoras}</p>
                               </div>
                               <div>
                                 <p className="text-gray-600">Vendas</p>
@@ -980,10 +980,10 @@ export default function ReportsPage() {
                 <Card className="border-0 shadow-md">
                   <CardHeader>
                     <CardTitle className="text-gray-900" style={{ fontFamily: "var(--font-playfair)" }}>
-                      Distribuição de Consultoras por Cidade
+                      Distribuição de Revendedoras por Cidade
                     </CardTitle>
                     <CardDescription className="text-gray-600">
-                      Concentração de consultoras nas cidades de MS
+                      Concentração de revendedoras nas cidades de MS
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -997,7 +997,7 @@ export default function ReportsPage() {
                           label={({ cidade, percentual }) => `${cidade} ${percentual}%`}
                           outerRadius={80}
                           fill="#8884d8"
-                          dataKey="consultoras"
+                          dataKey="revendedoras"
                         >
                           {cityData.slice(0, 6).map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={`hsl(${250 + index * 30}, 70%, ${60 + index * 5}%)`} />

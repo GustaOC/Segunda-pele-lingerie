@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "CPF já cadastrado" }, { status: 409 })
     }
 
-    // Criar consultor
+    // Criar revendedor
     const { data: consultant, error: consultantError } = await supabaseAdmin
       .from('consultant')
       .insert({

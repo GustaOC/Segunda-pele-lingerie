@@ -780,7 +780,7 @@ export default function UserManagementPage() {
                   <UserCheck className="w-4 h-4 text-green-600 mt-0.5" />
                   <div>
                     <span className="text-slate-800 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Promotor:</span>
-                    <span className="text-slate-600 ml-2" style={{ fontFamily: "var(--font-inter)" }}>Gerenciar consultoras atribuídas, relatórios próprios</span>
+                    <span className="text-slate-600 ml-2" style={{ fontFamily: "var(--font-inter)" }}>Gerenciar revendedoras atribuídas, relatórios próprios</span>
                   </div>
                 </div>
                 <div className="flex items-start gap-2">

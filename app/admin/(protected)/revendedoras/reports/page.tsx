@@ -103,13 +103,13 @@ export default function DetailedReportsPage() {
 
     const copyToClipboard = (text: string) => {
         navigator.clipboard.writeText(text);
-        toast({ title: "CPF Copiado!", description: "O CPF da consultora foi copiado para a área de transferência." });
+        toast({ title: "CPF Copiado!", description: "O CPF da revendedora foi copiado para a área de transferência." });
     }
 
     const exportReportToExcel = () => {
         setIsExporting(true);
         const dataToExport = filteredLeads.map((lead: any) => ({
-            "Consultora": lead.consultant?.nome,
+            "Revendedora": lead.consultant?.nome,
             "CPF": lead.consultant?.cpf,
             "Telefone": lead.consultant?.telefone,
             "Status": lead.status,
@@ -275,7 +275,7 @@ export default function DetailedReportsPage() {
               <Table>
                 <TableHeader>
                   <TableRow className="border-b border-white/30">
-                    <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Consultora</TableHead>
+                    <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Revendedora</TableHead>
                     <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>CPF</TableHead>
                     <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Telefone</TableHead>
                     <TableHead className="text-slate-600 font-medium" style={{ fontFamily: "var(--font-inter)" }}>Status</TableHead>

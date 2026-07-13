@@ -129,7 +129,7 @@ export default function ConsultantRegistration() {
   }
 
   const handleWhatsAppContact = () => {
-    const message = "Olá! Gostaria de mais informações sobre como ser consultora Segunda Pele Lingerie."
+    const message = "Olá! Gostaria de mais informações sobre como ser revendedora Segunda Pele Lingerie."
     const whatsappUrl = `https://wa.me/5511999999999?text=${encodeURIComponent(message)}`
     window.open(whatsappUrl, "_blank")
   }

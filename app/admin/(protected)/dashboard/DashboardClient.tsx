@@ -513,13 +513,13 @@ export default function DashboardClient({ user }: { user: User }) {
 
     const handleViewDetailedReport = () => {
         if (detailedReportPeriod) {
-            router.push(`/admin/consultants/reports?period=${detailedReportPeriod}`);
+            router.push(`/admin/revendedoras/reports?period=${detailedReportPeriod}`);
         }
     };
 
     const handleViewPromoterReport = () => {
         if (selectedPromoter && selectedPromoter !== 'all') {
-            router.push(`/admin/consultants/reports?promoter=${selectedPromoter}`);
+            router.push(`/admin/revendedoras/reports?promoter=${selectedPromoter}`);
         } else {
             toast({
                 title: "Atenção!",
@@ -683,7 +683,7 @@ export default function DashboardClient({ user }: { user: User }) {
                         <div className="relative">
                             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
                             <Input
-                                placeholder="Buscar consultoras..."
+                                placeholder="Buscar revendedoras..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="pl-10 w-64 border-white/50 focus:border-purple-500 focus:ring-purple-500 rounded-2xl bg-white/80 backdrop-blur-sm shadow-lg"
@@ -820,11 +820,11 @@ export default function DashboardClient({ user }: { user: User }) {
                                             <div className="text-xs text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>Registrar novo cliente</div>
                                         </div>
                                     </Button>
-                                    {!isPromoter ? (<Link href="/admin/consultants">
+                                    {!isPromoter ? (<Link href="/admin/revendedoras">
                                         <Button variant="ghost" className="w-full justify-start text-slate-700 hover:bg-purple-50 hover:text-purple-700 py-6 border border-white/30 rounded-2xl transition-all duration-300">
                                             <Users className="w-5 h-5 mr-4" style={{ color: "#5D3A5B" }} />
                                             <div className="text-left">
-                                                <div className="font-medium text-base" style={{ fontFamily: "var(--font-inter)" }}>Gerenciar Consultoras</div>
+                                                <div className="font-medium text-base" style={{ fontFamily: "var(--font-inter)" }}>Gerenciar Revendedoras</div>
                                                 <div className="text-xs text-slate-500" style={{ fontFamily: "var(--font-inter)" }}>{totalLeads} cadastradas</div>
                                             </div>
                                         </Button>
@@ -832,7 +832,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                       <Button variant="ghost" disabled className="w-full justify-start text-slate-400 py-6 border border-white/30 rounded-2xl cursor-not-allowed">
                                           <Users className="w-5 h-5 mr-4 text-slate-300" />
                                           <div className="text-left">
-                                              <div className="font-medium text-base" style={{ fontFamily: "var(--font-inter)" }}>Gerenciar Consultoras</div>
+                                              <div className="font-medium text-base" style={{ fontFamily: "var(--font-inter)" }}>Gerenciar Revendedoras</div>
                                               <div className="text-xs text-slate-400" style={{ fontFamily: "var(--font-inter)" }}>Bloqueado</div>
                                           </div>
                                       </Button>
@@ -1597,7 +1597,7 @@ export default function DashboardClient({ user }: { user: User }) {
                                                     </div>
                                                     <div>
                                                         <div className="font-medium text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>{city.city}</div>
-                                                        <div className="text-sm text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>{city.count} consultoras</div>
+                                                        <div className="text-sm text-slate-600" style={{ fontFamily: "var(--font-inter)" }}>{city.count} revendedoras</div>
                                                     </div>
                                                 </div>
                                                 <div className="text-right">

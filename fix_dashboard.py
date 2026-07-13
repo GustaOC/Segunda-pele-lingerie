@@ -7,9 +7,9 @@ with open("app/admin/(protected)/dashboard/DashboardClient.tsx", "r") as f:
 if "const isPromoter = " not in content:
     content = content.replace("const userRole = user.user_metadata?.role || 'Admin';", "const userRole = user.user_metadata?.role || 'Admin';\n    const isPromoter = userRole?.toUpperCase() === 'PROMOTOR';")
 
-# 1. /admin/consultants
+# 1. /admin/revendedoras
 content = re.sub(
-    r'(<Link href="/admin/consultants">.*?Gerenciar Consultoras</div>\n.*?<div className="text-xs text-slate-500" style={{ fontFamily: "var\(--font-inter\)" }}>{totalLeads} cadastradas</div>\n.*?</div>\n.*?</Button>\n.*?</Link>)',
+    r'(<Link href="/admin/revendedoras">.*?Gerenciar Consultoras</div>\n.*?<div className="text-xs text-slate-500" style={{ fontFamily: "var\(--font-inter\)" }}>{totalLeads} cadastradas</div>\n.*?</div>\n.*?</Button>\n.*?</Link>)',
     r'{!isPromoter ? (\1) : (\n                                      <Button variant="ghost" disabled className="w-full justify-start text-slate-400 py-5 border border-white/30 rounded-2xl cursor-not-allowed">\n                                          <Users className="w-4 h-4 mr-3 text-slate-300" />\n                                          <div className="text-left">\n                                              <div className="font-medium" style={{ fontFamily: "var(--font-inter)" }}>Gerenciar Consultoras</div>\n                                              <div className="text-xs text-slate-400" style={{ fontFamily: "var(--font-inter)" }}>Bloqueado</div>\n                                          </div>\n                                      </Button>\n                                    )}',
     content,
     flags=re.DOTALL
