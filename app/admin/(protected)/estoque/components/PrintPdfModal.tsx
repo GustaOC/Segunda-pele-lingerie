@@ -34,7 +34,18 @@ export default function PrintPdfModal({ isOpen, onClose, kit, reseller, promoter
     // Dates
     const today = new Date().toLocaleDateString('pt-BR')
     doc.text(`EMISSÃO: ${today}`, 14, 15)
-    doc.text(`VISITA: ___/___/___`, 130, 15)
+    
+    // Check if kit has an updated_at that differs from created_at (indicating an edit/exchange)
+    let dataTroca = '___/___/___'
+    if (kit?.updated_at && kit?.created_at) {
+        const created = new Date(kit.created_at).setHours(0,0,0,0)
+        const updated = new Date(kit.updated_at).setHours(0,0,0,0)
+        if (updated > created) {
+            dataTroca = format(new Date(kit.updated_at), 'dd/MM/yyyy')
+        }
+    }
+    
+    doc.text(`DATA DE TROCA: ${dataTroca}`, 130, 15)
     doc.text(`PEDIDO: ${kit.id.substring(0, 8).toUpperCase()}`, 170, 15)
 
     const transferDate = kit?.created_at ? new Date(kit.created_at) : new Date()
