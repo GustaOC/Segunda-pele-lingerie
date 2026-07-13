@@ -283,7 +283,7 @@ export default function AcertoPromotor() {
 
   const fetchHistory = async () => {
     const { data } = await supabase.from('promoter_acertos')
-      .select('*, profiles!promoter_acertos_promoter_id_fkey(name)')
+      .select('*, profiles!promoter_acertos_promoter_id_fkey(nome)')
       .order('created_at', { ascending: false });
     if (data) setHistoryData(data);
   };
