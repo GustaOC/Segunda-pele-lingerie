@@ -67,8 +67,9 @@ export default function PrintPdfModal({ isOpen, onClose, kit, reseller, promoter
     
     const promoterName = promoter ? promoter.nome.toUpperCase() : "NÃO INFORMADO"
     doc.setFont("helvetica", "bold")
-    doc.text(`Praça: ___________________`, 14, 58)
-    doc.text(`Vendedor: ${promoter?.id?.substring(0, 4) || '0000'} - ${promoterName}`, 80, 58)
+    const transferDateFormatted = format(transferDate, 'dd/MM/yyyy')
+    doc.text(`Praça: ${reseller?.city || 'N/A'} - ${transferDateFormatted} à ${cobrancaDate}`, 14, 58)
+    doc.text(`Vendedor: ${promoter?.id?.substring(0, 4) || '0000'} - ${promoterName}`, 110, 58)
 
     // 2. Table Data
     const head = [[] as string[]]
