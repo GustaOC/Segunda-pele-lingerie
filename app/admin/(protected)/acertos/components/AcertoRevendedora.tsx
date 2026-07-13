@@ -249,8 +249,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
           const kitName = selectedKit?.name || `Kit #${selectedKitId.substring(0,8)}`;
           if (!kitName.includes('[FINALIZADO]')) {
               await supabase.from('promoter_kits').update({ 
-                  name: `${kitName} [FINALIZADO]`,
-                  updated_at: new Date().toISOString()
+                  name: `${kitName} [FINALIZADO]`
               }).eq('id', selectedKitId);
           }
           
