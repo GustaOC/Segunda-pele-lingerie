@@ -58,6 +58,8 @@ export default function EstoquePromotores() {
   const [transferKitId, setTransferKitId] = useState("")
   const [transferPieceId, setTransferPieceId] = useState("")
   const [transferQuantity, setTransferQuantity] = useState(1)
+  const [ecommerceTransferItem, setEcommerceTransferItem] = useState<any>(null)
+  const [ecommerceTransferQty, setEcommerceTransferQty] = useState(1)
 
   const [weeklyPeriod, setWeeklyPeriod] = useState("")
   const [weeklyPeriodDate, setWeeklyPeriodDate] = useState<Date | undefined>(undefined)
@@ -393,6 +395,68 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
     }
   }
 
+  const handleTransferToEcommerce = async () => {
+    if (!ecommerceTransferItem) return;
+    setSubmitting(true);
+    try {
+        const item = ecommerceTransferItem;
+        const qty = ecommerceTransferQty;
+        
+        if (qty > item.quantity) throw new Error("Quantidade indisponível");
+
+        // 1. Reduce from promoter
+        const newQty = item.quantity - qty;
+        if (newQty > 0) {
+            await supabase.from('promoter_inventory').update({ quantity: newQty }).eq('id', item.id);
+        } else {
+            await supabase.from('promoter_inventory').delete().eq('id', item.id);
+        }
+
+        // 2. Add to general inventory
+        const { data: invData } = await supabase.from('inventory')
+            .select('*')
+            .eq('product_id', item.product_id)
+            .eq('color', item.color)
+            .eq('size', item.size)
+            .maybeSingle();
+            
+        if (invData) {
+            await supabase.from('inventory').update({ 
+                quantity: invData.quantity + qty 
+            }).eq('id', invData.id);
+        } else {
+            await supabase.from('inventory').insert({
+                product_id: item.product_id,
+                color: item.color,
+                size: item.size,
+                quantity: qty
+            });
+        }
+        
+        // 3. Log transaction
+        const { data: { session } } = await supabase.auth.getSession();
+        const userId = session?.user?.id;
+        
+        await supabase.from('inventory_transactions').insert({
+            created_by: userId,
+            type: 'TRANSFER_IN',
+            product_id: item.product_id,
+            color: item.color,
+            size: item.size,
+            quantity: qty,
+            notes: "Para venda do ecommerce"
+        });
+        
+        toast({ title: "Sucesso", description: "Peça disponibilizada para venda (Estoque Geral)." });
+        setEcommerceTransferItem(null);
+        fetchData();
+    } catch (e: any) {
+        toast({ title: "Erro", description: e.message || "Erro ao transferir.", variant: "destructive" });
+    } finally {
+        setSubmitting(false);
+    }
+  }
+
   const selectedProductObj = products.find(p => p.id === selectedProductId)
 
   return (
@@ -470,6 +534,7 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                         <th className="px-6 py-4">Tamanho</th>
                         <th className="px-6 py-4">Cor</th>
                         <th className="px-6 py-4 text-right">Qtd com o Promotor</th>
+                        <th className="px-6 py-4 text-right">Ações</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
@@ -510,6 +575,19 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                               <span className="inline-flex items-center justify-center px-3 py-1 rounded-full text-sm font-bold bg-brand-plum/10 text-brand-plum">
                                 {item.quantity} un
                               </span>
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <Button 
+                                size="sm" 
+                                variant="outline" 
+                                onClick={() => {
+                                  setEcommerceTransferItem(item)
+                                  setEcommerceTransferQty(1)
+                                }}
+                                className="text-xs border-brand-peach text-brand-plum hover:bg-brand-peach/20"
+                              >
+                                Disponibilizar Venda
+                              </Button>
                             </td>
                           </tr>
                         ))}
@@ -915,7 +993,46 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
             </div>
           </div>
         </div>
-      )}
+      </Dialog>
+      
+      {/* Modal E-commerce */}
+      <Dialog open={!!ecommerceTransferItem} onOpenChange={(open) => { if (!open) setEcommerceTransferItem(null) }}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Disponibilizar Venda (E-commerce)</DialogTitle>
+            <DialogDescription>
+              Transfira peças do seu estoque para o Estoque Geral, disponibilizando-as para venda no E-commerce.
+            </DialogDescription>
+          </DialogHeader>
+          {ecommerceTransferItem && (
+            <div className="py-4 space-y-4">
+              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <div className="font-bold text-slate-800">{ecommerceTransferItem.product_name}</div>
+                <div className="text-sm text-slate-500">Tamanho: {ecommerceTransferItem.size} | Cor: {ecommerceTransferItem.color}</div>
+                <div className="text-sm font-medium mt-1">Disponível: {ecommerceTransferItem.quantity} un</div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">Quantidade a disponibilizar:</label>
+                <input 
+                  type="number" 
+                  min="1" 
+                  max={ecommerceTransferItem.quantity}
+                  value={ecommerceTransferQty}
+                  onChange={(e) => setEcommerceTransferQty(parseInt(e.target.value) || 1)}
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum"
+                />
+              </div>
+              <Button 
+                onClick={handleTransferToEcommerce} 
+                disabled={submitting}
+                className="w-full bg-brand-plum hover:bg-brand-rose text-white h-12 rounded-xl text-base font-bold shadow-md transition-all"
+              >
+                {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : "Confirmar Transferência"}
+              </Button>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
