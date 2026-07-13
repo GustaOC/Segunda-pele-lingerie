@@ -58,7 +58,7 @@ export default function AcertoPromotor() {
   }, [selectedPromoterId]);
 
   const fetchPeriods = async (promoterId: string) => {
-      const { data: invData } = await supabase.from('promoter_inventory').select('period, em_posse').eq('promoter_id', promoterId);
+      const { data: invData } = await supabase.from('promoter_inventory').select('period, quantity').eq('promoter_id', promoterId);
       const { data: kitsData } = await supabase.from('promoter_kits').select('period').eq('promoter_id', promoterId).like('name', '%[FINALIZADO]%').not('name', 'like', '%[ACERTADO]%');
       
       // Fetch finalized periods
@@ -69,7 +69,7 @@ export default function AcertoPromotor() {
       if (invData) {
           invData.forEach(i => {
               if (!i.period) return;
-              if (i.em_posse > 0) periodSet.add(i.period);
+              if (i.quantity > 0) periodSet.add(i.period);
               else if (!finalizedPeriods.has(i.period)) periodSet.add(i.period);
           });
       }
