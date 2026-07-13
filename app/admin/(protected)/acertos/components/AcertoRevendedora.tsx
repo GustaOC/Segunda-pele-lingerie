@@ -193,23 +193,27 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
           const { data: { session } } = await supabase.auth.getSession();
           const adminId = session?.user.id;
           
-          // 1. Process returned items to Estoque Geral (inventory)
+          // 1. Process returned items to Promoter Inventory (promoter_inventory)
+          const targetPromoterId = selectedKit?.promoter_id || resellers.find(r => r.id === selectedResellerId)?.promoter_id;
+          
           for (const item of kitItems) {
-              if (item.returned > 0) {
-                  // Find inventory item
-                  const { data: invData } = await supabase.from('inventory')
+              if (item.returned > 0 && targetPromoterId) {
+                  // Find promoter inventory item
+                  const { data: invData } = await supabase.from('promoter_inventory')
                       .select('*')
+                      .eq('promoter_id', targetPromoterId)
                       .eq('product_id', item.product_id)
                       .eq('color', item.color)
                       .eq('size', item.size)
                       .maybeSingle();
                       
                   if (invData) {
-                      await supabase.from('inventory').update({ 
+                      await supabase.from('promoter_inventory').update({ 
                           quantity: invData.quantity + item.returned 
                       }).eq('id', invData.id);
                   } else {
-                      await supabase.from('inventory').insert({
+                      await supabase.from('promoter_inventory').insert({
+                          promoter_id: targetPromoterId,
                           product_id: item.product_id,
                           color: item.color,
                           size: item.size,
@@ -225,7 +229,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                       color: item.color,
                       size: item.size,
                       quantity: item.returned,
-                      notes: `Devolução do Acerto (Revendedora: ${resellers.find(r=>r.id===selectedResellerId)?.name})`
+                      notes: `Devolução do Acerto (Revendedora: ${resellers.find(r=>r.id===selectedResellerId)?.name}) para Promotor`
                   });
               }
               
@@ -450,7 +454,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                           )}
                       </Button>
                       <p className="text-xs text-center text-slate-400 mt-3">
-                          As peças devolvidas voltarão para o Estoque Geral.
+                          As peças devolvidas voltarão para o estoque do Promotor.
                       </p>
                   </div>
               </div>
