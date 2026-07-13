@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, Package, Search, Calculator, CheckCircle, Loader2 } from "lucide-react";
+import { Users, Package, Search, Calculator, CheckCircle, Loader2, History } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export default function AcertoPromotor() {
   const [loading, setLoading] = useState(true);
@@ -15,6 +16,8 @@ export default function AcertoPromotor() {
   const [products, setProducts] = useState<any[]>([]);
   const [promoterInventory, setPromoterInventory] = useState<any[]>([]);
   const [pendingKits, setPendingKits] = useState<string[]>([]);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [historyData, setHistoryData] = useState<any[]>([]);
   
   const [periods, setPeriods] = useState<string[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState("");
@@ -60,9 +63,13 @@ export default function AcertoPromotor() {
       const { data: invData } = await supabase.from('promoter_inventory').select('period').eq('promoter_id', promoterId);
       const { data: kitsData } = await supabase.from('promoter_kits').select('period').eq('promoter_id', promoterId).like('name', '%[FINALIZADO]%').not('name', 'like', '%[ACERTADO]%');
       
+      // Fetch finalized periods
+      const { data: acertosData } = await supabase.from('promoter_acertos').select('period').eq('promoter_id', promoterId);
+      const finalizedPeriods = new Set(acertosData?.map(a => a.period) || []);
+      
       const periodSet = new Set<string>();
-      if (invData) invData.forEach(i => i.period && periodSet.add(i.period));
-      if (kitsData) kitsData.forEach(k => k.period && periodSet.add(k.period));
+      if (invData) invData.forEach(i => i.period && !finalizedPeriods.has(i.period) && periodSet.add(i.period));
+      if (kitsData) kitsData.forEach(k => k.period && !finalizedPeriods.has(k.period) && periodSet.add(k.period));
       
       const uniquePeriods = Array.from(periodSet).sort();
       setPeriods(uniquePeriods);
@@ -244,6 +251,16 @@ export default function AcertoPromotor() {
               }
           }
           
+          // 4. Save Acerto History
+          await supabase.from('promoter_acertos').insert({
+              promoter_id: selectedPromoterId,
+              period: selectedPeriod,
+              total_sold: totalSoldValue,
+              total_commission: totalCommission,
+              total_paid: finalAmountToPay,
+              created_by: adminId
+          });
+          
           toast({
               title: "Acerto Finalizado!",
               description: "Acerto do promotor registrado e estoque geral atualizado.",
@@ -264,10 +281,27 @@ export default function AcertoPromotor() {
       }
   };
 
+  const fetchHistory = async () => {
+    const { data } = await supabase.from('promoter_acertos')
+      .select('*, profiles!promoter_acertos_promoter_id_fkey(name)')
+      .order('created_at', { ascending: false });
+    if (data) setHistoryData(data);
+  };
+
   if (loading) return <div className="flex justify-center p-8"><Loader2 className="w-8 h-8 animate-spin text-brand-plum" /></div>;
 
   return (
     <div className="space-y-6">
+      <div className="flex justify-end">
+          <Button 
+              variant="outline" 
+              onClick={() => { fetchHistory(); setIsHistoryOpen(true); }}
+              className="text-brand-plum border-brand-plum hover:bg-brand-plum hover:text-white"
+          >
+              <History className="w-4 h-4 mr-2" />
+              Ver Histórico de Acertos
+          </Button>
+      </div>
       
       {/* SELETORES */}
       <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-4 items-end">
