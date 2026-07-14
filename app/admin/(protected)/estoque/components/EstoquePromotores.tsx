@@ -156,7 +156,7 @@ export default function EstoquePromotores() {
         }
       })
 
-      if (acertosRes.data) {
+      if (acertosRes.data && currentRole !== 'ADMIN') {
         const settledPeriods = new Set(acertosRes.data.map(a => `${a.promoter_id}_${a.period}`))
         mapped = mapped.filter(inv => !settledPeriods.has(`${inv.promoter_id}_${inv.period}`))
       }

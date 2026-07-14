@@ -29,7 +29,8 @@ export default function HistoricoAcertosPage() {
       // Busca promotores via API
       try {
           const res = await fetch('/api/admin/user');
-          const profilesData = await res.json();
+          const jsonRes = await res.json();
+          const profilesData = jsonRes.data;
             
           const profilesMap = new Map();
           if (profilesData && Array.isArray(profilesData)) {
