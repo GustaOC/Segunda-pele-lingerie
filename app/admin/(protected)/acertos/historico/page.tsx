@@ -5,10 +5,12 @@ import { History, ArrowLeft, PackageOpen, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { generateAcertoPDF } from "./pdfGenerator";
 
 export default function HistoricoAcertosPage() {
   const [loading, setLoading] = useState(true);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
   const [historyData, setHistoryData] = useState<any[]>([]);
   const [selectedAcerto, setSelectedAcerto] = useState<any>(null);
   const supabase = createClient();
@@ -24,21 +26,26 @@ export default function HistoricoAcertosPage() {
       .order('created_at', { ascending: false });
       
     if (acertosData) {
-      // Busca promotores
-      const { data: profilesData } = await supabase.from('profiles')
-        .select('id, nome');
-        
-      const profilesMap = new Map();
-      if (profilesData) {
-        profilesData.forEach((p: any) => profilesMap.set(p.id, p.nome));
+      // Busca promotores via API
+      try {
+          const res = await fetch('/api/admin/user');
+          const profilesData = await res.json();
+            
+          const profilesMap = new Map();
+          if (profilesData && Array.isArray(profilesData)) {
+            profilesData.forEach((p: any) => profilesMap.set(p.id, p.nome));
+          }
+          
+          const mappedData = acertosData.map((a: any) => ({
+            ...a,
+            profiles: { nome: profilesMap.get(a.promoter_id) }
+          }));
+          
+          setHistoryData(mappedData);
+      } catch (e) {
+          console.error("Erro ao buscar promotores:", e);
+          setHistoryData(acertosData); // Fallback
       }
-      
-      const mappedData = acertosData.map((a: any) => ({
-        ...a,
-        profiles: { nome: profilesMap.get(a.promoter_id) }
-      }));
-      
-      setHistoryData(mappedData);
     }
     setLoading(false);
   };
@@ -158,6 +165,42 @@ export default function HistoricoAcertosPage() {
                       </div>
                   )}
               </div>
+              
+              <DialogFooter className="mt-4 border-t pt-4">
+                  <Button 
+                      variant="outline" 
+                      onClick={() => setSelectedAcerto(null)}
+                      disabled={generatingPdf}
+                  >
+                      Fechar
+                  </Button>
+                  <Button 
+                      onClick={async () => {
+                          if (selectedAcerto) {
+                              setGeneratingPdf(true);
+                              try {
+                                  await generateAcertoPDF(selectedAcerto);
+                              } catch (err) {
+                                  console.error("Erro ao gerar PDF:", err);
+                                  alert("Ocorreu um erro ao gerar o PDF.");
+                              } finally {
+                                  setGeneratingPdf(false);
+                              }
+                          }
+                      }}
+                      disabled={generatingPdf || !selectedAcerto?.details || selectedAcerto.details.length === 0}
+                      className="bg-brand-plum hover:bg-brand-plum/90 text-white"
+                  >
+                      {generatingPdf ? (
+                          <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Gerando...
+                          </>
+                      ) : (
+                          "Baixar PDF"
+                      )}
+                  </Button>
+              </DialogFooter>
           </DialogContent>
       </Dialog>
     </div>
