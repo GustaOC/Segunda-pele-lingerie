@@ -81,20 +81,38 @@ export default function AcertoPromotor() {
   }, [selectedPromoterId, selectedPeriod]);
 
   const fetchPromoterKits = async (promoterId: string, period: string) => {
+      // Fetch products to get current prices
+      const { data: prods } = await supabase.from('products').select('id, price');
+      const productsMap = new Map();
+      if (prods) {
+          prods.forEach(p => productsMap.set(p.id, p.price));
+      }
+
       const { data: kits } = await supabase.from('promoter_kits')
-          .select('*, resellers(name)')
+          .select('*, resellers(name), items:promoter_kit_items(product_id, quantity)')
           .eq('promoter_id', promoterId)
           .eq('period', period)
           .like('name', '%[FINALIZADO]%')
           .not('name', 'like', '%[ACERTADO]%');
           
       if (kits) {
-          const mappedKits = kits.map(k => ({
-              id: k.id,
-              name: k.name,
-              reseller_name: k.resellers?.name || 'Desconhecido',
-              total_price: k.total_price || 0
-          }));
+          const mappedKits = kits.map(k => {
+              let actualSold = 0;
+              if (k.items) {
+                  k.items.forEach((item: any) => {
+                      const price = productsMap.get(item.product_id) || 0;
+                      actualSold += (item.quantity * price);
+                  });
+              }
+
+              return {
+                  id: k.id,
+                  name: k.name,
+                  reseller_name: k.resellers?.name || 'Desconhecido',
+                  total_price: k.total_price || 0,
+                  actual_sold: actualSold
+              };
+          });
           setPromoterKits(mappedKits);
       } else {
           setPromoterKits([]);
@@ -105,7 +123,7 @@ export default function AcertoPromotor() {
   let totalSoldValue = 0;
   
   promoterKits.forEach(kit => {
-      totalSoldValue += kit.total_price;
+      totalSoldValue += kit.actual_sold;
   });
   
   const totalCommission = totalSoldValue * (commissionPercent / 100);
@@ -133,7 +151,7 @@ export default function AcertoPromotor() {
           const itemsDetails = promoterKits.map(kit => ({
               id: kit.id,
               name: `Kit: ${kit.reseller_name}`,
-              price: kit.total_price,
+              price: kit.actual_sold,
               returned: 0,
               sold: 1
           }));
@@ -246,21 +264,25 @@ export default function AcertoPromotor() {
                               <tr>
                                   <th className="px-4 py-3">Revendedora</th>
                                   <th className="px-4 py-3 text-right">Valor do Kit (R$)</th>
-                                  <th className="px-4 py-3 text-right">Comissão (R$)</th>
+                                  <th className="px-4 py-3 text-right">Total Vendido (R$)</th>
+                                  <th className="px-4 py-3 text-right">Comissão ({commissionPercent}%)</th>
                                   <th className="px-4 py-3 text-right">Empresa (R$)</th>
                               </tr>
                           </thead>
                           <tbody>
                               {promoterKits.map((kit) => {
-                                  const kitCommission = kit.total_price * (commissionPercent / 100);
-                                  const kitCompany = kit.total_price - kitCommission;
+                                  const kitCommission = kit.actual_sold * (commissionPercent / 100);
+                                  const kitCompany = kit.actual_sold - kitCommission;
                                   return (
                                       <tr key={kit.id} className="border-b border-slate-50 hover:bg-slate-50/50">
                                           <td className="px-4 py-3">
                                               <div className="font-medium text-slate-800">{kit.reseller_name}</div>
                                           </td>
-                                          <td className="px-4 py-3 text-right font-medium text-slate-700">
+                                          <td className="px-4 py-3 text-right font-medium text-slate-500">
                                               R$ {kit.total_price.toFixed(2)}
+                                          </td>
+                                          <td className="px-4 py-3 text-right font-medium text-slate-700">
+                                              R$ {kit.actual_sold.toFixed(2)}
                                           </td>
                                           <td className="px-4 py-3 text-right text-brand-plum font-medium">
                                               R$ {kitCommission.toFixed(2)}
