@@ -107,6 +107,7 @@ export async function generateAcertoPDF(acerto: any) {
   // PÁGINAS SUBSEQUENTES
   // ---------------------------------------------------------
   const { data: allProds } = await supabase.from('products').select('id, name, sku, price');
+  const { data: allReturns } = await supabase.from('inventory_transactions').select('product_id, quantity, notes').like('notes', '%Devolu%').like('notes', '%Acerto%');
   const prodInfoMap = new Map();
   if (allProds) {
       allProds.forEach(p => prodInfoMap.set(p.id, p));
@@ -156,20 +157,47 @@ export async function generateAcertoPDF(acerto: any) {
       let totalPcs = 0;
       let totalItems = 0;
       
-      const itemRows = k.items.map((item: any) => {
+      const combinedItems = new Map();
+      if (k.items) {
+          k.items.forEach((item: any) => {
+              combinedItems.set(item.product_id, {
+                  product_id: item.product_id,
+                  quantity: item.quantity,
+                  returned: 0
+              });
+          });
+      }
+      
+      if (allReturns) {
+          const kitReturns = allReturns.filter((ret: any) => ret.notes.includes(`[Kit: ${k.id}]`));
+          kitReturns.forEach((ret: any) => {
+              if (combinedItems.has(ret.product_id)) {
+                  combinedItems.get(ret.product_id).returned += ret.quantity;
+              } else {
+                  combinedItems.set(ret.product_id, {
+                      product_id: ret.product_id,
+                      quantity: 0,
+                      returned: ret.quantity
+                  });
+              }
+          });
+      }
+      
+      const itemRows = Array.from(combinedItems.values()).map((item: any) => {
           const p = prodInfoMap.get(item.product_id);
           const name = p ? `${p.sku || ''} - ${p.name}` : 'Produto Desconhecido';
           const price = p ? Number(p.price) : 0;
           const lineTotal = item.quantity * price;
+          const origQuant = item.quantity + item.returned;
           
-          totalPcs += item.quantity;
+          totalPcs += origQuant;
           totalItems += 1;
           
           return [
-              item.quantity.toString(),
+              origQuant.toString(),
               name,
-              '',
-              item.quantity.toString(),
+              item.returned > 0 ? item.returned.toString() : '',
+              item.quantity > 0 ? item.quantity.toString() : '',
               price.toFixed(2),
               lineTotal.toFixed(2)
           ];

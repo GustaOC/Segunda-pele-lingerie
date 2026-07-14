@@ -229,7 +229,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                       color: item.color,
                       size: item.size,
                       quantity: item.returned,
-                      notes: `Devolução do Acerto (Revendedora: ${resellers.find(r=>r.id===selectedResellerId)?.name}) para Promotor`
+                      notes: `Devolução do Acerto [Kit: ${selectedKitId}] (Revendedora: ${resellers.find(r=>r.id===selectedResellerId)?.name}) para Promotor`
                   });
               }
               
