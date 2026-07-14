@@ -107,7 +107,7 @@ export async function generateAcertoPDF(acerto: any) {
   // PÁGINAS SUBSEQUENTES
   // ---------------------------------------------------------
   const { data: allProds } = await supabase.from('products').select('id, name, sku, price');
-  const { data: allReturns } = await supabase.from('inventory_transactions').select('product_id, quantity, notes').like('notes', '%Devolu%').like('notes', '%Acerto%');
+  const { data: allReturns } = await supabase.from('inventory_transactions').select('product_id, quantity, color, size, notes').like('notes', '%Devolu%').like('notes', '%Acerto%');
   const prodInfoMap = new Map();
   if (allProds) {
       allProds.forEach(p => prodInfoMap.set(p.id, p));
@@ -160,24 +160,34 @@ export async function generateAcertoPDF(acerto: any) {
       const combinedItems = new Map();
       if (k.items) {
           k.items.forEach((item: any) => {
-              combinedItems.set(item.product_id, {
-                  product_id: item.product_id,
-                  quantity: item.quantity,
-                  returned: 0
-              });
+              const key = `${item.product_id}_${item.size || ''}_${item.color || ''}`;
+              if (combinedItems.has(key)) {
+                  combinedItems.get(key).quantity += item.quantity;
+              } else {
+                  combinedItems.set(key, {
+                      product_id: item.product_id,
+                      quantity: item.quantity,
+                      returned: 0,
+                      size: item.size,
+                      color: item.color
+                  });
+              }
           });
       }
       
       if (allReturns) {
           const kitReturns = allReturns.filter((ret: any) => ret.notes.includes(`[Kit: ${k.id}]`));
           kitReturns.forEach((ret: any) => {
-              if (combinedItems.has(ret.product_id)) {
-                  combinedItems.get(ret.product_id).returned += ret.quantity;
+              const key = `${ret.product_id}_${ret.size || ''}_${ret.color || ''}`;
+              if (combinedItems.has(key)) {
+                  combinedItems.get(key).returned += ret.quantity;
               } else {
-                  combinedItems.set(ret.product_id, {
+                  combinedItems.set(key, {
                       product_id: ret.product_id,
                       quantity: 0,
-                      returned: ret.quantity
+                      returned: ret.quantity,
+                      size: ret.size,
+                      color: ret.color
                   });
               }
           });
@@ -185,7 +195,8 @@ export async function generateAcertoPDF(acerto: any) {
       
       const itemRows = Array.from(combinedItems.values()).map((item: any) => {
           const p = prodInfoMap.get(item.product_id);
-          const name = p ? `${p.sku || ''} - ${p.name}` : 'Produto Desconhecido';
+          const sizeColor = (item.size || item.color) ? ` (${item.size || ''}${item.size && item.color ? ' | ' : ''}${item.color || ''})` : '';
+          const name = p ? `${p.sku || ''} - ${p.name}${sizeColor}` : 'Produto Desconhecido';
           const price = p ? Number(p.price) : 0;
           const lineTotal = item.quantity * price;
           const origQuant = item.quantity + item.returned;
