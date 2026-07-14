@@ -81,11 +81,22 @@ export default function AcertoPromotor() {
   }, [selectedPromoterId, selectedPeriod]);
 
   const fetchPromoterKits = async (promoterId: string, period: string) => {
-      // Fetch products to get current prices
-      const { data: prods } = await supabase.from('products').select('id, price');
+      // Fetch products to get current prices and categories
+      const { data: prods } = await supabase.from('products').select('id, price, category_id');
+      const { data: cats } = await supabase.from('categories').select('id, name');
+      
+      const catMap = new Map();
+      if (cats) {
+          cats.forEach(c => catMap.set(c.id, c.name.toLowerCase()));
+      }
+
       const productsMap = new Map();
       if (prods) {
-          prods.forEach(p => productsMap.set(p.id, p.price));
+          prods.forEach(p => {
+              const catName = p.category_id ? catMap.get(p.category_id) : '';
+              const isRoupa = catName && catName.includes('roupa');
+              productsMap.set(p.id, { price: p.price, isRoupa });
+          });
       }
 
       const { data: kits } = await supabase.from('promoter_kits')
@@ -97,20 +108,37 @@ export default function AcertoPromotor() {
           
       if (kits) {
           const mappedKits = kits.map(k => {
-              let actualSold = 0;
+              let soldNormal = 0;
+              let soldRoupas = 0;
+              
               if (k.items) {
                   k.items.forEach((item: any) => {
-                      const price = productsMap.get(item.product_id) || 0;
-                      actualSold += (item.quantity * price);
+                      const p = productsMap.get(item.product_id);
+                      if (p) {
+                          if (p.isRoupa) soldRoupas += (item.quantity * p.price);
+                          else soldNormal += (item.quantity * p.price);
+                      }
                   });
               }
+
+              const actualSold = soldNormal + soldRoupas;
+              const percentSold = k.total_price > 0 ? (actualSold / k.total_price) * 100 : 0;
+              
+              let cp = 0;
+              if (percentSold >= 100) cp = 40;
+              else if (percentSold >= 70) cp = 35;
+              else if (percentSold >= 30) cp = 30;
+              
+              const revendedoraCommission = (soldNormal * (cp / 100)) + (soldRoupas * 0.25);
 
               return {
                   id: k.id,
                   name: k.name,
                   reseller_name: k.resellers?.name || 'Desconhecido',
                   total_price: k.total_price || 0,
-                  actual_sold: actualSold
+                  actual_sold: actualSold,
+                  revendedora_commission: revendedoraCommission,
+                  revendedora_percent: cp
               };
           });
           setPromoterKits(mappedKits);
@@ -121,13 +149,15 @@ export default function AcertoPromotor() {
 
   // Calculations
   let totalSoldValue = 0;
+  let totalRevendedoraCommission = 0;
   
   promoterKits.forEach(kit => {
       totalSoldValue += kit.actual_sold;
+      totalRevendedoraCommission += kit.revendedora_commission;
   });
   
   const totalCommission = totalSoldValue * (commissionPercent / 100);
-  const finalAmountToPay = totalSoldValue - totalCommission;
+  const finalAmountToPay = totalSoldValue - totalRevendedoraCommission - totalCommission;
 
   const handleFinalize = async () => {
       if (!selectedPromoterId) return;
@@ -265,14 +295,14 @@ export default function AcertoPromotor() {
                                   <th className="px-4 py-3">Revendedora</th>
                                   <th className="px-4 py-3 text-right">Valor do Kit (R$)</th>
                                   <th className="px-4 py-3 text-right">Total Vendido (R$)</th>
-                                  <th className="px-4 py-3 text-right">Comissão ({commissionPercent}%)</th>
+                                  <th className="px-4 py-3 text-right">Comissão Rev.</th>
                                   <th className="px-4 py-3 text-right">Empresa (R$)</th>
                               </tr>
                           </thead>
                           <tbody>
                               {promoterKits.map((kit) => {
-                                  const kitCommission = kit.actual_sold * (commissionPercent / 100);
-                                  const kitCompany = kit.actual_sold - kitCommission;
+                                  const kitPromoterCommission = kit.actual_sold * (commissionPercent / 100);
+                                  const kitCompany = kit.actual_sold - kit.revendedora_commission - kitPromoterCommission;
                                   return (
                                       <tr key={kit.id} className="border-b border-slate-50 hover:bg-slate-50/50">
                                           <td className="px-4 py-3">
@@ -285,7 +315,8 @@ export default function AcertoPromotor() {
                                               R$ {kit.actual_sold.toFixed(2)}
                                           </td>
                                           <td className="px-4 py-3 text-right text-brand-plum font-medium">
-                                              R$ {kitCommission.toFixed(2)}
+                                              R$ {kit.revendedora_commission.toFixed(2)}
+                                              <span className="block text-xs text-slate-400">({kit.revendedora_percent}%)</span>
                                           </td>
                                           <td className="px-4 py-3 text-right text-emerald-600 font-bold">
                                               R$ {kitCompany.toFixed(2)}
