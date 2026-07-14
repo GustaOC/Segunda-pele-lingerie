@@ -210,7 +210,7 @@ export default function AcertoPromotor() {
               paid_value: finalAmountToPay,
               due_date: todayStr,
               payment_date: todayStr,
-              status: "PAGO",
+              status: "QUITADO",
               category: "Acertos",
           }];
 
