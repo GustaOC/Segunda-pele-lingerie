@@ -74,7 +74,17 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
       .order('created_at', { ascending: false });
     
     if (data) {
-        setKits(data);
+        if (isPromoter) {
+            const nonFinalized = data.filter(k => !k.name?.includes('[FINALIZADO]'));
+            if (nonFinalized.length > 0) {
+                setKits([nonFinalized[0]]);
+                setSelectedKitId(nonFinalized[0].id);
+            } else {
+                setKits([]);
+            }
+        } else {
+            setKits(data);
+        }
     }
   };
 
