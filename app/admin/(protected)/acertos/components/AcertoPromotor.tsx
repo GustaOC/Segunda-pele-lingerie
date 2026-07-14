@@ -197,6 +197,28 @@ export default function AcertoPromotor() {
           });
           
           if (insertError) throw insertError;
+
+          // 3. Save to Financeiro
+          const todayStr = new Date().toISOString().split("T")[0];
+          const promoter = promoters.find(p => p.id === selectedPromoterId);
+          const promoterName = promoter ? promoter.nome : "Promotor";
+
+          const financeiroPayload = [{
+              type: "RECEIVABLE",
+              description: `Acerto Promotor: ${promoterName} - ${selectedPeriod}`,
+              total_value: finalAmountToPay,
+              paid_value: finalAmountToPay,
+              due_date: todayStr,
+              payment_date: todayStr,
+              status: "PAGO",
+              category: "Acertos",
+          }];
+
+          await fetch("/api/admin/financeiro", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(financeiroPayload),
+          });
           
           toast({
               title: "Acerto Finalizado!",
