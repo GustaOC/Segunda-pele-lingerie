@@ -339,7 +339,7 @@ export default function AcertoPromotor() {
                   <div className="space-y-4 flex-1">
                       <div className="flex justify-between items-center text-sm">
                           <span className="text-slate-500">Total Faturado</span>
-                          <span className="font-medium">R$ {totalSoldValue.toFixed(2)}</span>
+                          <span className="font-medium">R$ {(totalSoldValue - totalRevendedoraCommission).toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between items-center text-sm pb-3 border-b border-slate-100">
                           <span className="text-slate-500">Comissão Promotor ({commissionPercent}%)</span>

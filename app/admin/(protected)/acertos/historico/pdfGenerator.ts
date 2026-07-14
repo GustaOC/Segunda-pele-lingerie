@@ -99,7 +99,7 @@ export async function generateAcertoPDF(acerto: any) {
   const finalY = (doc as any).lastAutoTable.finalY || 60;
 
   doc.setFont("helvetica", "bold");
-  doc.text(`Total Faturado: R$ ${acerto.total_sold.toFixed(2)}`, 14, finalY + 15);
+  doc.text(`Total Faturado: R$ ${(acerto.total_paid + acerto.total_commission).toFixed(2)}`, 14, finalY + 15);
   doc.text(`Comissão Promotor: R$ ${acerto.total_commission.toFixed(2)}`, 14, finalY + 22);
   doc.text(`Valor Pago à Empresa: R$ ${acerto.total_paid.toFixed(2)}`, 14, finalY + 29);
 
