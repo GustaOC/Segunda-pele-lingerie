@@ -156,7 +156,7 @@ export default function AcertoPromotor() {
       totalRevendedoraCommission += kit.revendedora_commission;
   });
   
-  const totalCommission = totalSoldValue * (commissionPercent / 100);
+  const totalCommission = (totalSoldValue - totalRevendedoraCommission) * (commissionPercent / 100);
   const finalAmountToPay = totalSoldValue - totalRevendedoraCommission - totalCommission;
 
   const handleFinalize = async () => {
@@ -301,7 +301,7 @@ export default function AcertoPromotor() {
                           </thead>
                           <tbody>
                               {promoterKits.map((kit) => {
-                                  const kitPromoterCommission = kit.actual_sold * (commissionPercent / 100);
+                                  const kitPromoterCommission = (kit.actual_sold - kit.revendedora_commission) * (commissionPercent / 100);
                                   const kitCompany = kit.actual_sold - kit.revendedora_commission - kitPromoterCommission;
                                   return (
                                       <tr key={kit.id} className="border-b border-slate-50 hover:bg-slate-50/50">
