@@ -129,10 +129,11 @@ export default function EstoquePromotores() {
       setUserRole(currentRole)
     }
     
-    const [prodRes, invRes, usersRes] = await Promise.all([
+    const [prodRes, invRes, usersRes, acertosRes] = await Promise.all([
       supabase.from('products').select('id, name, sku, colors, sizes'),
       supabase.from('promoter_inventory').select('*').order('updated_at', { ascending: false }),
-      fetch('/api/admin/user').then(res => res.json())
+      fetch('/api/admin/user').then(res => res.json()),
+      supabase.from('promoter_acertos').select('promoter_id, period')
     ])
 
     if (prodRes.data) setProducts(prodRes.data)
@@ -154,6 +155,11 @@ export default function EstoquePromotores() {
           promoter_name: pr ? pr.nome : 'Promotor Desconhecido'
         }
       })
+
+      if (acertosRes.data) {
+        const settledPeriods = new Set(acertosRes.data.map(a => `${a.promoter_id}_${a.period}`))
+        mapped = mapped.filter(inv => !settledPeriods.has(`${inv.promoter_id}_${inv.period}`))
+      }
 
       if (currentRole !== 'ADMIN') {
         mapped = mapped.filter(inv => !isPeriodExpired(inv.period))
