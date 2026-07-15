@@ -35,6 +35,9 @@ type KitItem = {
   sku: string
   size: string
   color: string
+  quantity: number
+}
+
 const isPeriodExpired = (period: string | null | undefined) => {
   if (!period || period === 'null' || period === 'Sem Período Registrado') return true;
   
