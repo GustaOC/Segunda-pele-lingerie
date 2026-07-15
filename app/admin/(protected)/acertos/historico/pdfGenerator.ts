@@ -19,6 +19,8 @@ export async function generateAcertoPDF(acerto: any) {
   doc.text(`Promotor: ${acerto.profiles?.nome || 'Desconhecido'}`, 14, 38);
   doc.text(`Período: ${acerto.period || 'Não especificado'}`, 14, 44);
 
+  const { data: allReturns } = await supabase.from('inventory_transactions').select('product_id, quantity, color, size, notes').like('notes', '%Devolu%').like('notes', '%Acerto%');
+
   const kitDetails = [];
   
   if (acerto.details && acerto.details.length > 0) {
@@ -35,8 +37,6 @@ export async function generateAcertoPDF(acerto: any) {
               productsMap.set(p.id, { price: p.price, isRoupa: catName && catName.includes('roupa') });
           });
       }
-
-      const { data: allReturns } = await supabase.from('inventory_transactions').select('product_id, quantity, color, size, notes').like('notes', '%Devolu%').like('notes', '%Acerto%');
 
       for (const detail of acerto.details) {
           if (!detail.id) continue;
