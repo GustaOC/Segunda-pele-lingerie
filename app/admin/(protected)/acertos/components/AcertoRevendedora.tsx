@@ -454,22 +454,21 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                       ))}
                   </select>
                   
-                  {selectedResellerId && (
-                      <div className="mt-3">
-                          <Button 
-                              onClick={() => {
-                                  const revKits = isPromoter ? kitsFromAll.filter(k => k.name?.includes('[FINALIZADO]')) : kits.filter(k => k.name?.includes('[FINALIZADO]'));
-                                  setHistoryKits(revKits);
-                                  setShowHistoryModal(true);
-                              }}
-                              variant="outline"
-                              className="w-full text-brand-plum border-brand-plum/30 hover:bg-brand-plum hover:text-white"
-                          >
-                              <History className="w-4 h-4 mr-2" />
-                              Ver Histórico da Revendedora
-                          </Button>
-                      </div>
-                  )}
+                  <div className="mt-3">
+                      <Button 
+                          onClick={() => {
+                              const revKits = isPromoter ? kitsFromAll.filter(k => k.name?.includes('[FINALIZADO]')) : kits.filter(k => k.name?.includes('[FINALIZADO]'));
+                              setHistoryKits(revKits);
+                              setShowHistoryModal(true);
+                          }}
+                          variant="outline"
+                          disabled={!selectedResellerId}
+                          className="w-full text-brand-plum border-brand-plum/30 hover:bg-brand-plum hover:text-white disabled:opacity-50 disabled:hover:bg-transparent disabled:hover:text-brand-plum"
+                      >
+                          <History className="w-4 h-4 mr-2" />
+                          Ver Histórico da Revendedora
+                      </Button>
+                  </div>
               </div>
               
               <div>
