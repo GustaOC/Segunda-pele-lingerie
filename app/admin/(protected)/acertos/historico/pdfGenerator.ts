@@ -36,6 +36,8 @@ export async function generateAcertoPDF(acerto: any) {
           });
       }
 
+      const { data: allReturns } = await supabase.from('inventory_transactions').select('product_id, quantity, color, size, notes').like('notes', '%Devolu%').like('notes', '%Acerto%');
+
       for (const detail of acerto.details) {
           if (!detail.id) continue;
           
@@ -51,10 +53,17 @@ export async function generateAcertoPDF(acerto: any) {
               
               if (kitData.items) {
                   kitData.items.forEach((item: any) => {
+                      let returnedQty = 0;
+                      if (allReturns) {
+                          const itemReturns = allReturns.filter((r: any) => r.notes.includes(`[Kit: ${kitId}]`) && r.product_id === item.product_id && r.color === item.color && r.size === item.size);
+                          itemReturns.forEach((r: any) => returnedQty += r.quantity);
+                      }
+                      
+                      const soldQty = item.quantity - returnedQty;
                       const p = productsMap.get(item.product_id);
-                      if (p) {
-                          if (p.isRoupa) soldRoupas += (item.quantity * p.price);
-                          else soldNormal += (item.quantity * p.price);
+                      if (p && soldQty > 0) {
+                          if (p.isRoupa) soldRoupas += (soldQty * p.price);
+                          else soldNormal += (soldQty * p.price);
                       }
                   });
               }
@@ -107,7 +116,6 @@ export async function generateAcertoPDF(acerto: any) {
   // PÁGINAS SUBSEQUENTES
   // ---------------------------------------------------------
   const { data: allProds } = await supabase.from('products').select('id, name, sku, price');
-  const { data: allReturns } = await supabase.from('inventory_transactions').select('product_id, quantity, color, size, notes').like('notes', '%Devolu%').like('notes', '%Acerto%');
   const prodInfoMap = new Map();
   if (allProds) {
       allProds.forEach(p => prodInfoMap.set(p.id, p));
@@ -198,8 +206,9 @@ export async function generateAcertoPDF(acerto: any) {
           const sizeColor = (item.size || item.color) ? ` (${item.size || ''}${item.size && item.color ? ' | ' : ''}${item.color || ''})` : '';
           const name = p ? `${p.sku || ''} - ${p.name}${sizeColor}` : 'Produto Desconhecido';
           const price = p ? Number(p.price) : 0;
-          const lineTotal = item.quantity * price;
-          const origQuant = item.quantity + item.returned;
+          const origQuant = item.quantity;
+          const soldQuant = item.quantity - item.returned;
+          const lineTotal = soldQuant * price;
           
           totalPcs += origQuant;
           totalItems += 1;
@@ -208,7 +217,7 @@ export async function generateAcertoPDF(acerto: any) {
               origQuant.toString(),
               name,
               item.returned > 0 ? item.returned.toString() : '',
-              item.quantity > 0 ? item.quantity.toString() : '',
+              soldQuant > 0 ? soldQuant.toString() : '',
               price.toFixed(2),
               lineTotal.toFixed(2)
           ];
@@ -230,7 +239,7 @@ export async function generateAcertoPDF(acerto: any) {
       doc.text(`QUANT. PEÇAS: ${totalPcs}`, 14, tableEndY + 7);
       doc.text(`ITENS: ${totalItems}`, 70, tableEndY + 7);
       doc.text(`TOTAL:`, 150, tableEndY + 7);
-      doc.text(`${k.total_price.toFixed(2)}`, 175, tableEndY + 7);
+      doc.text(`${kitInfo.actualSold.toFixed(2)}`, 175, tableEndY + 7);
       
       doc.line(14, tableEndY + 10, 196, tableEndY + 10);
       
