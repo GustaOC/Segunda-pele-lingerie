@@ -165,6 +165,8 @@ export default function EstoquePromotores() {
         mapped = mapped.filter(inv => inv.promoter_id === session?.user?.id && !isPeriodExpired(inv.period))
       }
 
+      mapped = mapped.filter(inv => inv.quantity > 0)
+
       setInventory(mapped)
     }
     setLoading(false)
@@ -588,17 +590,19 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                               </span>
                             </td>
                             <td className="px-6 py-4 text-right">
-                              <Button 
-                                size="sm" 
-                                variant="outline" 
-                                onClick={() => {
-                                  setEcommerceTransferItem(item)
-                                  setEcommerceTransferQty(1)
-                                }}
-                                className="text-xs border-brand-peach text-brand-plum hover:bg-brand-peach/20"
-                              >
-                                Disponibilizar Venda
-                              </Button>
+                              {userRole === 'ADMIN' && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline" 
+                                  onClick={() => {
+                                    setEcommerceTransferItem(item)
+                                    setEcommerceTransferQty(1)
+                                  }}
+                                  className="text-xs border-brand-peach text-brand-plum hover:bg-brand-peach/20"
+                                >
+                                  Disponibilizar Venda
+                                </Button>
+                              )}
                             </td>
                           </tr>
                         ))}
