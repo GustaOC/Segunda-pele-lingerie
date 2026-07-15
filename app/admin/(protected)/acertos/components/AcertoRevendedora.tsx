@@ -491,19 +491,17 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
               
               <div>
                   <label className="block text-sm font-medium text-slate-700 mb-1">Período / Kit</label>
-                  <select 
-                      value={selectedKitId} 
-                      onChange={(e) => setSelectedKitId(e.target.value)}
+                  <SearchableSelect
+                      options={kits.map(k => ({
+                          value: k.id,
+                          label: `${k.period ? `[${k.period}] - ` : ''}${new Date(k.created_at).toLocaleDateString()} - Pedido: ${k.id.substring(0,8).toUpperCase()} ${k.name?.includes('[FINALIZADO]') ? '✅ FINALIZADO' : ''}`
+                      }))}
+                      value={selectedKitId}
+                      onChange={(val) => setSelectedKitId(val)}
+                      placeholder={kits.length === 0 ? "Nenhum kit encontrado" : "Selecione o período/kit..."}
+                      emptyMessage="Nenhum kit encontrado"
                       disabled={!selectedResellerId || kits.length === 0}
-                      className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-brand-plum bg-slate-50 disabled:opacity-50"
-                  >
-                      <option value="">{kits.length === 0 ? "Nenhum kit encontrado" : "Selecione o período/kit..."}</option>
-                      {kits.map(k => (
-                          <option key={k.id} value={k.id}>
-                              {k.period ? `[${k.period}] - ` : ''}{new Date(k.created_at).toLocaleDateString()} - Pedido: {k.id.substring(0,8).toUpperCase()} {k.name?.includes('[FINALIZADO]') ? '✅ FINALIZADO' : ''}
-                          </option>
-                      ))}
-                  </select>
+                  />
               </div>
           </div>
           

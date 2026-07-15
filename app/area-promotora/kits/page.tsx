@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { SearchableSelect } from "@/components/ui/searchable-select"
 import { Playfair_Display, Inter } from "next/font/google"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
@@ -516,22 +517,21 @@ export default function KitsPromotoraPage() {
                   )}
                   <div className="md:col-span-2">
                     <label className="block text-sm font-semibold text-slate-700 mb-2">Período *</label>
-                    <select
-                      required
+                    <SearchableSelect
+                      options={availablePeriods.map(p => ({
+                        value: p,
+                        label: p === 'null' ? 'Período Padrão' : p
+                      }))}
                       value={kitPeriod}
-                      disabled={isEditingLocked}
-                      onChange={(e) => {
-                        setKitPeriod(e.target.value)
+                      onChange={(val) => {
+                        setKitPeriod(val)
                         setKitItems([]) // clear items because period changed
                         setSelectedInvId("")
                       }}
-                      className="w-full border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-brand-plum/50 disabled:opacity-50"
-                    >
-                      <option value="" disabled>Selecione um período...</option>
-                      {availablePeriods.map(p => (
-                        <option key={p} value={p}>{p === 'null' ? 'Período Padrão' : p}</option>
-                      ))}
-                    </select>
+                      placeholder="Selecione um período..."
+                      emptyMessage="Nenhum período encontrado"
+                      disabled={isEditingLocked}
+                    />
                   </div>
                 </div>
 

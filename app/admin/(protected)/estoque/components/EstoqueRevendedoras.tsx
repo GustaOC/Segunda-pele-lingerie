@@ -610,19 +610,21 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-slate-700 mb-2">Período</label>
-                    <select disabled={isKitLocked} value={editKitPeriod}
-                      onChange={(e) => {
-                        setEditKitPeriod(e.target.value)
+                    <SearchableSelect
+                      options={Array.from(new Set([...promoterInventory.map(i => i.period || 'null'), editKitPeriod])).filter(Boolean).map(p => ({
+                        value: p,
+                        label: p === 'null' ? 'Período Padrão' : p
+                      }))}
+                      value={editKitPeriod}
+                      onChange={(val) => {
+                        setEditKitPeriod(val)
                         setEditKitItems([])
                         setSelectedInvId("")
                       }}
-                      className="w-full border border-slate-300 rounded-xl px-4 py-3 outline-none focus:border-brand-plum"
-                    >
-                      <option value="" disabled>Selecione um período...</option>
-                      {Array.from(new Set([...promoterInventory.map(i => i.period || 'null'), editKitPeriod])).filter(Boolean).map(p => (
-                        <option key={p} value={p}>{p === 'null' ? 'Período Padrão' : p}</option>
-                      ))}
-                    </select>
+                      placeholder="Selecione um período..."
+                      emptyMessage="Nenhum período pendente"
+                      disabled={isKitLocked}
+                    />
                   </div>
                 </div>
 

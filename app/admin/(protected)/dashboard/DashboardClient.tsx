@@ -911,17 +911,17 @@ export default function DashboardClient({ user }: { user: User }) {
                                                 </DialogDescription>
                                             </DialogHeader>
                                             <div className="mt-6 space-y-6">
-                                                <Select value={detailedReportPeriod} onValueChange={setDetailedReportPeriod}>
-                                                    <SelectTrigger className="w-full border-white/50 bg-white/80 focus:ring-purple-500 focus:border-purple-500 rounded-2xl">
-                                                        <SelectValue placeholder="Selecione o período" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="7">Últimos 7 dias</SelectItem>
-                                                        <SelectItem value="15">Últimos 15 dias</SelectItem>
-                                                        <SelectItem value="30">Últimos 30 dias</SelectItem>
-                                                        <SelectItem value="all">Todo o período</SelectItem>
-                                                    </SelectContent>
-                                                </Select>
+                                                <SearchableSelect
+                                                    options={[
+                                                        { value: "7", label: "Últimos 7 dias" },
+                                                        { value: "15", label: "Últimos 15 dias" },
+                                                        { value: "30", label: "Últimos 30 dias" },
+                                                        { value: "all", label: "Todo o período" }
+                                                    ]}
+                                                    value={detailedReportPeriod}
+                                                    onChange={(val) => setDetailedReportPeriod(val || "30")}
+                                                    placeholder="Selecione o período"
+                                                />
                                                 <Button
                                                     onClick={handleViewDetailedReport}
                                                     className="w-full text-white font-semibold py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-purple-500/20"

@@ -271,17 +271,14 @@ export default function AcertoPromotor() {
           </div>
           <div className="flex-1">
               <label className="block text-sm font-medium text-slate-700 mb-1">Período / Semana</label>
-              <select 
-                  value={selectedPeriod} 
-                  onChange={(e) => setSelectedPeriod(e.target.value)}
+              <SearchableSelect
+                  options={periods.map(p => ({ value: p, label: p }))}
+                  value={selectedPeriod}
+                  onChange={(val) => setSelectedPeriod(val)}
+                  placeholder={periods.length === 0 ? "Nenhum período pendente" : "Selecione o período..."}
+                  emptyMessage="Nenhum período pendente"
                   disabled={!selectedPromoterId || periods.length === 0}
-                  className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-brand-plum bg-slate-50 disabled:opacity-50"
-              >
-                  <option value="">{periods.length === 0 ? "Nenhum período pendente" : "Selecione o período..."}</option>
-                  {periods.map(p => (
-                      <option key={p} value={p}>{p}</option>
-                  ))}
-              </select>
+              />
           </div>
           <div className="w-full md:w-48">
               <label className="block text-sm font-medium text-slate-700 mb-1">Comissão Promotor (%)</label>

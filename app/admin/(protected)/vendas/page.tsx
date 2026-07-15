@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { SearchableSelect } from "@/components/ui/searchable-select"
 import { Playfair_Display, Inter } from "next/font/google"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
@@ -817,17 +818,16 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1">Período da Troca *</label>
-                      <select
-                        required
+                      <SearchableSelect
+                        options={returnAvailablePeriods.map(p => ({
+                          value: p,
+                          label: p === 'null' ? 'Período Padrão' : p
+                        }))}
                         value={returnPeriod}
-                        onChange={(e) => setReturnPeriod(e.target.value)}
-                        className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm"
-                      >
-                        <option value="" disabled>Selecione o período...</option>
-                        {returnAvailablePeriods.map(p => (
-                          <option key={p} value={p}>{p === 'null' ? 'Período Padrão' : p}</option>
-                        ))}
-                      </select>
+                        onChange={(val) => setReturnPeriod(val)}
+                        placeholder="Selecione o período..."
+                        emptyMessage="Nenhum período encontrado"
+                      />
                     </div>
                   </div>
                 )}
@@ -1054,19 +1054,17 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                 {mode === 'PROMOTER_SALE' && availablePeriods.length > 0 && (
                   <div className="mt-4">
                     <label className="block text-sm font-medium text-slate-700 mb-1">Período *</label>
-                    <select
-                      required={mode === 'EXCHANGE' || cartItems.length === 0}
+                    <SearchableSelect
+                      options={availablePeriods.map((inv: any) => ({
+                        value: inv.period || 'null',
+                        label: `${inv.period || 'Sem Período Registrado'} (Estoque disponível: ${inv.quantity} un)`
+                      }))}
                       value={selectedPeriod}
-                      onChange={(e) => setSelectedPeriod(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
-                    >
-                      <option value="" disabled>Selecione o período...</option>
-                      {availablePeriods.map((inv: any) => (
-                        <option key={inv.id} value={inv.period || 'null'}>
-                          {inv.period || 'Sem Período Registrado'} (Estoque disponível: {inv.quantity} un)
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(val) => setSelectedPeriod(val)}
+                      placeholder="Selecione o período..."
+                      emptyMessage="Nenhum período encontrado"
+                      disabled={cartItems.length > 0 && mode !== 'EXCHANGE'}
+                    />
                   </div>
                 )}
 
