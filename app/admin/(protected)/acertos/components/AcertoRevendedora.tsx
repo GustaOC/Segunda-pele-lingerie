@@ -55,7 +55,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
       resQuery,
       supabase.from('products').select('*'),
       supabase.from('categories').select('*'),
-      !isPromoter ? supabase.from('profiles').select('*').eq('role', 'PROMOTOR').order('nome') : Promise.resolve({ data: [] })
+      !isPromoter ? fetch('/api/admin/user').then(res => res.json()).then(data => ({ data: (data.data || []).filter((u: any) => u.role === 'PROMOTOR').sort((a: any, b: any) => a.nome.localeCompare(b.nome)) })) : Promise.resolve({ data: [] })
     ]);
 
     if (resRes.data) setResellers(resRes.data);
