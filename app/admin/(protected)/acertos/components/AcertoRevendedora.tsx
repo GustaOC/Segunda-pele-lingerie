@@ -401,7 +401,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
           if (session?.user?.user_metadata?.name) {
               promoterName = session.user.user_metadata.name;
           } else if (reseller?.promoter_id) {
-              const { data: pData } = await supabase.from('profiles').select('name').eq('id', reseller.promoter_id).single();
+              const { data: pData } = await supabase.from('profiles').select('name').eq('id', reseller.promoter_id).maybeSingle();
               if (pData) promoterName = pData.name;
           }
           

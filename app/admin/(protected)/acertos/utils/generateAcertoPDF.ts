@@ -1,5 +1,5 @@
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 export const generateAcertoPDF = (
     reseller: any,
@@ -21,14 +21,17 @@ export const generateAcertoPDF = (
     const doc = new jsPDF();
     
     const emissionDate = new Date().toLocaleDateString('pt-BR');
-    const transferDate = new Date(kit.created_at).toLocaleDateString('pt-BR');
+    const transferDate = new Date(kit?.created_at || Date.now()).toLocaleDateString('pt-BR');
     
-    const tDate = new Date(kit.created_at);
+    const tDate = new Date(kit?.created_at || Date.now());
     tDate.setDate(tDate.getDate() + 45); // Assuming 45 days is the charge date
     const chargeDate = tDate.toLocaleDateString('pt-BR');
 
     // HELPER to format money
-    const formatMoney = (val: number) => val.toFixed(2).replace('.', ',');
+    const formatMoney = (val: number) => {
+        if (typeof val !== 'number' || isNaN(val)) return '0,00';
+        return val.toFixed(2).replace('.', ',');
+    };
 
     // HEADER - Row 1
     doc.setFont("helvetica", "bold");
@@ -64,7 +67,7 @@ export const generateAcertoPDF = (
     // Header - Row 7
     doc.setFont("helvetica", "bold");
     doc.text(`Praça: ${reseller?.city || '_________________'} - ${transferDate} à ${chargeDate}`, 14, 60);
-    doc.text(`Vendedor: ${promoterName.toUpperCase()}`, 120, 60);
+    doc.text(`Vendedor: ${(promoterName || 'PROMOTOR(A)').toUpperCase()}`, 120, 60);
     
     // ==========================================
     // TABLE: ITEMS
@@ -85,7 +88,7 @@ export const generateAcertoPDF = (
         ];
     });
 
-    (doc as any).autoTable({
+    autoTable(doc, {
         startY: 65,
         head: [['QUANT', 'PRODUTO', 'D', 'V', 'P. UNIT (R$)', 'TOTAL (R$)']],
         body: itemsData,
