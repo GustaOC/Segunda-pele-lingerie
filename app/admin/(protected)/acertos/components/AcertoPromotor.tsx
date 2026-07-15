@@ -5,6 +5,7 @@ import { Users, Package, Search, Calculator, CheckCircle, Loader2, History, Brie
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import Link from "next/link";
 
 export default function AcertoPromotor() {
@@ -260,16 +261,13 @@ export default function AcertoPromotor() {
       <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6 flex flex-col md:flex-row gap-4 items-end">
           <div className="flex-1">
               <label className="block text-sm font-medium text-slate-700 mb-1">Promotor</label>
-              <select 
-                  value={selectedPromoterId} 
-                  onChange={(e) => setSelectedPromoterId(e.target.value)}
-                  className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-brand-plum bg-slate-50"
-              >
-                  <option value="">Selecione um promotor...</option>
-                  {promoters.map(p => (
-                      <option key={p.id} value={p.id}>{p.nome || p.email}</option>
-                  ))}
-              </select>
+              <SearchableSelect
+                  options={promoters.map(p => ({ value: p.id, label: p.nome || p.email }))}
+                  value={selectedPromoterId}
+                  onChange={(val) => setSelectedPromoterId(val)}
+                  placeholder="Selecione um promotor..."
+                  emptyMessage="Nenhum promotor encontrado."
+              />
           </div>
           <div className="flex-1">
               <label className="block text-sm font-medium text-slate-700 mb-1">Período / Semana</label>

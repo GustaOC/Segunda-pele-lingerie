@@ -5,6 +5,7 @@ import { User, Package, Search, Calculator, CheckCircle, AlertTriangle, Loader2,
 import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { addDays, differenceInDays } from "date-fns";
 import { generateAcertoPDF } from "../utils/generateAcertoPDF";
 
@@ -445,19 +446,16 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
           {!isPromoter && (
               <div className="mb-4">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Filtrar por Promotor</label>
-                  <select
+                  <SearchableSelect
+                      options={promoters.map(p => ({ value: p.id, label: p.nome || p.email }))}
                       value={selectedPromoterId}
-                      onChange={(e) => {
-                          setSelectedPromoterId(e.target.value);
+                      onChange={(val) => {
+                          setSelectedPromoterId(val);
                           setSelectedResellerId("");
                       }}
-                      className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-brand-plum bg-slate-50"
-                  >
-                      <option value="">Todos os Promotores</option>
-                      {promoters.map(p => (
-                          <option key={p.id} value={p.id}>{p.nome}</option>
-                      ))}
-                  </select>
+                      placeholder="Todos os Promotores"
+                      emptyMessage="Nenhum promotor encontrado."
+                  />
               </div>
           )}
           
@@ -466,16 +464,13 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                   <div className="flex justify-between items-center mb-1">
                       <label className="block text-sm font-medium text-slate-700">Revendedora</label>
                   </div>
-                  <select 
-                      value={selectedResellerId} 
-                      onChange={(e) => setSelectedResellerId(e.target.value)}
-                      className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-brand-plum bg-slate-50"
-                  >
-                      <option value="">Selecione uma revendedora...</option>
-                      {(isPromoter ? resellers : (selectedPromoterId ? resellers.filter(r => r.promoter_id === selectedPromoterId) : resellers)).map(r => (
-                          <option key={r.id} value={r.id}>{r.name}</option>
-                      ))}
-                  </select>
+                  <SearchableSelect
+                      options={(isPromoter ? resellers : (selectedPromoterId ? resellers.filter(r => r.promoter_id === selectedPromoterId) : resellers)).map(r => ({ value: r.id, label: r.name }))}
+                      value={selectedResellerId}
+                      onChange={(val) => setSelectedResellerId(val)}
+                      placeholder="Selecione uma revendedora..."
+                      emptyMessage="Nenhuma revendedora encontrada."
+                  />
                   
                   <div className="mt-3">
                       <Button 

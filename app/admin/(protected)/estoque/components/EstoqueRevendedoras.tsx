@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { SearchableSelect } from "@/components/ui/searchable-select"
 import { Playfair_Display, Inter } from "next/font/google"
 import { useState, useEffect } from "react"
 import { createClient } from "@/lib/supabase/client"
@@ -466,32 +467,24 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
             <label className="block text-sm font-bold text-slate-700 mb-2">1. Selecione o Promotor Responsável</label>
-<select
+            <SearchableSelect
               disabled={userRole === 'PROMOTOR' || userRole === 'CONSULTANT'}
+              options={promoters.map(p => ({ value: p.id, label: p.nome }))}
               value={selectedPromoterId}
-              onChange={(e) => setSelectedPromoterId(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm disabled:opacity-50"
-            >
-              <option value="" disabled>Selecione um promotor...</option>
-              {promoters.map(p => (
-                <option key={p.id} value={p.id}>{p.nome}</option>
-              ))}
-            </select>
+              onChange={(val) => setSelectedPromoterId(val)}
+              placeholder="Selecione um promotor..."
+            />
           </div>
           
           <div className="bg-white p-6 rounded-3xl shadow-sm border border-slate-200">
             <label className="block text-sm font-bold text-slate-700 mb-2">2. Selecione a Revendedora</label>
-            <select
+            <SearchableSelect
               disabled={!selectedPromoterId || loading}
+              options={resellers.map(r => ({ value: r.id, label: r.name }))}
               value={selectedResellerId}
-              onChange={(e) => setSelectedResellerId(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm disabled:opacity-50"
-            >
-              <option value="" disabled>Selecione a revendedora...</option>
-              {resellers.map(r => (
-                <option key={r.id} value={r.id}>{r.name}</option>
-              ))}
-            </select>
+              onChange={(val) => setSelectedResellerId(val)}
+              placeholder="Selecione a revendedora..."
+            />
           </div>
         </div>
 

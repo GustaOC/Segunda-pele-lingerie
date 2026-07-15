@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Calendar as CalendarUI } from "@/components/ui/calendar"
+import { SearchableSelect } from "@/components/ui/searchable-select"
 import { format, addDays } from "date-fns"
 import { Playfair_Display, Inter } from "next/font/google"
 import React, { useState, useEffect } from "react"
@@ -516,18 +517,19 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
           <div className="space-y-6">
             {/* Filtro por Promotor */}
             {userRole === 'ADMIN' && (
-              <div className="flex items-center gap-4 bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
+              <div className="flex items-center gap-3 bg-slate-50 p-3 rounded-xl border border-slate-100">
                 <label className="text-sm font-bold text-slate-700 whitespace-nowrap">Filtrar por Promotor:</label>
-                <select
-                  value={filterPromoterId}
-                  onChange={(e) => setFilterPromoterId(e.target.value)}
-                  className="w-full md:w-auto min-w-[200px] bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 outline-none focus:border-brand-plum text-sm cursor-pointer"
-                >
-                  <option value="ALL">Todos os Promotores</option>
-                  {promoters.map(p => (
-                    <option key={p.id} value={p.id}>{p.nome}</option>
-                  ))}
-                </select>
+                <div className="w-64">
+                  <SearchableSelect
+                    options={[
+                      { value: "ALL", label: "Todos os Promotores" },
+                      ...promoters.map(p => ({ value: p.id, label: p.nome }))
+                    ]}
+                    value={filterPromoterId}
+                    onChange={(val) => setFilterPromoterId(val || "ALL")}
+                    placeholder="Selecione um promotor..."
+                  />
+                </div>
               </div>
             )}
 
@@ -787,17 +789,12 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
               <div className="w-full md:w-1/2 p-6 border-r border-slate-100 space-y-5 bg-white">
                 <div>
                   <label className="block text-sm font-bold text-slate-700 mb-1">1. Escolha a Promotora *</label>
-                  <select
-                    required
+                  <SearchableSelect
+                    options={promoters.map(p => ({ value: p.id, label: p.nome }))}
                     value={selectedPromoterId}
-                    onChange={(e) => setSelectedPromoterId(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
-                  >
-                    <option value="" disabled>Selecione a promotora...</option>
-                    {promoters.map(p => (
-                      <option key={p.id} value={p.id}>{p.nome}</option>
-                    ))}
-                  </select>
+                    onChange={(val) => setSelectedPromoterId(val)}
+                    placeholder="Selecione a promotora..."
+                  />
                 </div>
 
                 <div className="pt-4">

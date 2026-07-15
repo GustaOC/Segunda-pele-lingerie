@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SearchableSelect } from "@/components/ui/searchable-select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar as CalendarUI } from "@/components/ui/calendar";
 import { Input } from "@/components/ui/input";
@@ -962,15 +963,15 @@ export default function DashboardClient({ user }: { user: User }) {
                                                 </DialogDescription>
                                             </DialogHeader>
                                             <div className="mt-6 space-y-6">
-                                                <Select value={selectedPromoter} onValueChange={setSelectedPromoter}>
-                                                    <SelectTrigger className="w-full border-white/50 bg-white/80 focus:ring-purple-500 focus:border-purple-500 rounded-2xl">
-                                                        <SelectValue placeholder="Selecione um promotor" />
-                                                    </SelectTrigger>
-                                                    <SelectContent>
-                                                        <SelectItem value="all">Todos os Promotores</SelectItem>
-                                                        {promoters.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                                                    </SelectContent>
-                                                </Select>
+                                                <SearchableSelect
+                                                    options={[
+                                                        { value: "all", label: "Todos os Promotores" },
+                                                        ...promoters.map(p => ({ value: p, label: p }))
+                                                    ]}
+                                                    value={selectedPromoter}
+                                                    onChange={(val) => setSelectedPromoter(val || "all")}
+                                                    placeholder="Selecione um promotor"
+                                                />
                                                 <Button
                                                     onClick={handleViewPromoterReport}
                                                     className="w-full text-white font-semibold py-3 rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-105 border border-purple-500/20"
