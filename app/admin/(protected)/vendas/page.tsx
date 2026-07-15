@@ -25,7 +25,7 @@ export default function VendasPage() {
 
   
   // PDV State
-  const [mode, setMode] = useState<'RETAIL' | 'WHOLESALE' | 'PROMOTER_SALE' | 'EXCHANGE'>('RETAIL')
+  const [mode, setMode] = useState<'RETAIL' | 'WHOLESALE' | 'EXCHANGE'>('RETAIL')
   
   const [selectedProductId, setSelectedProductId] = useState("")
   const [selectedSize, setSelectedSize] = useState("")
@@ -234,46 +234,15 @@ export default function VendasPage() {
         return
       }
 
-      if (mode === 'PROMOTER_SALE') {
-        if (!selectedPromoterId) {
-          setMaxQuantity(0)
-          setAvailablePeriods([])
-          return
-        }
-        
-        const { data } = await supabase
-          .from('promoter_inventory')
-          .select('id, quantity, period')
-          .eq('product_id', selectedProductId)
-          .eq('color', selectedColor)
-          .eq('size', selectedSize)
-          .eq('promoter_id', selectedPromoterId)
-          
-        if (data && data.length > 0) {
-          setAvailablePeriods(data)
-          // Se houver apenas 1, já podemos usar
-          if (data.length === 1 && !selectedPeriod) {
-            setSelectedPeriod(data[0].period || 'null')
-            setMaxQuantity(data[0].quantity)
-          } else {
-            const sel = data.find(d => (d.period || 'null') === selectedPeriod)
-            setMaxQuantity(sel ? sel.quantity : 0)
-          }
-        } else {
-          setAvailablePeriods([])
-          setMaxQuantity(0)
-        }
-      } else {
-        // Geral (Retail, Wholesale, Exchange)
-        const { data } = await supabase
-          .from('inventory')
-          .select('quantity')
-          .eq('product_id', selectedProductId)
-          .eq('color', selectedColor)
-          .eq('size', selectedSize)
-          .single()
-        setMaxQuantity(data?.quantity || 0)
-      }
+      // Geral (Retail, Wholesale, Exchange)
+      const { data } = await supabase
+        .from('inventory')
+        .select('quantity')
+        .eq('product_id', selectedProductId)
+        .eq('color', selectedColor)
+        .eq('size', selectedSize)
+        .single()
+      setMaxQuantity(data?.quantity || 0)
     }
     checkMax()
   }, [selectedProductId, selectedColor, selectedSize, mode, selectedPromoterId, selectedPeriod])
@@ -399,39 +368,13 @@ export default function VendasPage() {
         }
 
         for (const item of cartItems) {
-          if (mode === 'PROMOTER_SALE') {
-            let query = supabase
-              .from('promoter_inventory')
-              .select('id, quantity')
-              .eq('promoter_id', item.promoterId)
-              .eq('product_id', item.productId)
-              .eq('size', item.size)
-              .eq('color', item.color)
-              
-            if (item.period && item.period !== 'null') {
-              query = query.eq('period', item.period)
-            } else {
-              query = query.is('period', null)
-            }
-            
-            const { data: inv } = await query.single()
-              
-            if (inv) {
-              await supabase.from('promoter_inventory').update({ quantity: inv.quantity - item.quantity, updated_at: new Date().toISOString() }).eq('id', inv.id)
-              await supabase.from('inventory_transactions').insert({
-created_by: (await supabase.auth.getSession()).data.session?.user?.id,
-                type: 'OUT_PROMOTER', product_id: item.productId, size: item.size, color: item.color, quantity: -item.quantity, promoter_id: item.promoterId, notes: txNotes, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
-              })
-            }
-          } else {
-            const { data: inv } = await supabase.from('inventory').select('id, quantity').eq('product_id', item.productId).eq('size', item.size).eq('color', item.color).maybeSingle()
-            if (inv) {
-              await supabase.from('inventory').update({ quantity: inv.quantity - item.quantity, updated_at: new Date().toISOString() }).eq('id', inv.id)
-              await supabase.from('inventory_transactions').insert({
-created_by: (await supabase.auth.getSession()).data.session?.user?.id,
-                type: mode === 'RETAIL' ? 'OUT_RETAIL' : 'OUT_WHOLESALE', product_id: item.productId, size: item.size, color: item.color, quantity: -item.quantity, notes: txNotes, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
-              })
-            }
+          const { data: inv } = await supabase.from('inventory').select('id, quantity').eq('product_id', item.productId).eq('size', item.size).eq('color', item.color).maybeSingle()
+          if (inv) {
+            await supabase.from('inventory').update({ quantity: inv.quantity - item.quantity, updated_at: new Date().toISOString() }).eq('id', inv.id)
+            await supabase.from('inventory_transactions').insert({
+              created_by: (await supabase.auth.getSession()).data.session?.user?.id,
+              type: mode === 'RETAIL' ? 'OUT_RETAIL' : 'OUT_WHOLESALE', product_id: item.productId, size: item.size, color: item.color, quantity: -item.quantity, notes: txNotes, created_at: new Date(transactionDate + 'T12:00:00Z').toISOString()
+            })
           }
         }
       } else if (mode === 'EXCHANGE') {
@@ -599,7 +542,7 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
     }
   }
 
-  const handleModeChange = (newMode: 'RETAIL' | 'WHOLESALE' | 'PROMOTER_SALE' | 'EXCHANGE') => {
+  const handleModeChange = (newMode: 'RETAIL' | 'WHOLESALE' | 'EXCHANGE') => {
     setMode(newMode);
     // Reset all form fields when changing tabs
     setSelectedProductId("");
@@ -675,9 +618,7 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
             <button onClick={() => handleModeChange('WHOLESALE')} className={`px-4 py-2 rounded-xl flex items-center font-medium text-sm transition-all whitespace-nowrap ${mode === 'WHOLESALE' ? 'bg-brand-plum text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
               <Box className="w-4 h-4 mr-2" /> Venda Atacado
             </button>
-            <button onClick={() => handleModeChange('PROMOTER_SALE')} className={`px-4 py-2 rounded-xl flex items-center font-medium text-sm transition-all whitespace-nowrap ${mode === 'PROMOTER_SALE' ? 'bg-brand-plum text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
-              <ShoppingCart className="w-4 h-4 mr-2" /> Venda do Promotor
-            </button>
+
             <button onClick={() => handleModeChange('EXCHANGE')} className={`px-4 py-2 rounded-xl flex items-center font-medium text-sm transition-all whitespace-nowrap ${mode === 'EXCHANGE' ? 'bg-brand-plum text-white shadow-md' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}>
               <RefreshCw className="w-4 h-4 mr-2" /> Troca / Devolução
             </button>
@@ -685,23 +626,7 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
 
           <form onSubmit={handleSubmit} className="p-8 space-y-6">
             
-            {mode === 'PROMOTER_SALE' && (
-              <div className="bg-purple-50 p-6 rounded-2xl border border-purple-100 mb-6">
-                <label className="block text-sm font-bold text-slate-800 mb-2">Quem realizou a venda? *</label>
-                <select
-                  required
-                  value={selectedPromoterId}
-                  onChange={(e) => setSelectedPromoterId(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
-                >
-                  <option value="" disabled>Selecione o Promotor/Revendedora</option>
-                  {promoters.map(p => (
-                    <option key={p.id} value={p.id}>{p.nome || p.firstName || p.email}</option>
-                  ))}
-                </select>
-                <p className="text-xs text-purple-700 mt-2">Isso vai abater as peças do estoque pessoal deste promotor, não do estoque geral.</p>
-              </div>
-            )}
+
 
             {mode === 'EXCHANGE' && (
               <div className="bg-amber-50 p-6 rounded-2xl border border-amber-100 mb-6 space-y-4">
@@ -1051,26 +976,9 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                   </div>
                 </div>
 
-                {mode === 'PROMOTER_SALE' && availablePeriods.length > 0 && (
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium text-slate-700 mb-1">Período *</label>
-                    <SearchableSelect
-                      options={availablePeriods.map((inv: any) => ({
-                        value: inv.period || 'null',
-                        label: `${inv.period || 'Sem Período Registrado'} (Estoque disponível: ${inv.quantity} un)`
-                      }))}
-                      value={selectedPeriod}
-                      onChange={(val) => setSelectedPeriod(val)}
-                      placeholder="Selecione o período..."
-                      emptyMessage="Nenhum período encontrado"
-                      disabled={cartItems.length > 0 && mode !== 'EXCHANGE'}
-                    />
-                  </div>
-                )}
-
-                {(selectedProductId && selectedColor && selectedSize && (mode !== 'PROMOTER_SALE' || selectedPromoterId)) && (
+                {(selectedProductId && selectedColor && selectedSize) && (
                   <div className={`p-4 rounded-xl text-sm ${maxQuantity > 0 ? 'bg-blue-50 border border-blue-100 text-blue-800' : 'bg-red-50 border border-red-100 text-red-800'}`}>
-                    Estoque atual {mode === 'PROMOTER_SALE' ? 'do promotor neste período' : 'geral'}: <strong>{maxQuantity} unidades</strong>
+                    Estoque atual geral: <strong>{maxQuantity} unidades</strong>
                   </div>
                 )}
 
