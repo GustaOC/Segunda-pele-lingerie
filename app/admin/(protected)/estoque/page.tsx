@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, Package, User, Users } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { createClient } from "@/lib/supabase/client";
 import { Playfair_Display, Inter } from "next/font/google";
 
 import EstoqueGeral from "./components/EstoqueGeral";
@@ -16,6 +17,24 @@ const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variabl
 export default function EstoqueWrapperPage() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState("geral");
+  const [isAdmin, setIsAdmin] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      const role = session?.user?.user_metadata?.role;
+      if (role === 'PROMOTOR' || role === 'promoter') {
+        setIsAdmin(false);
+        setActiveTab("promotores");
+      }
+      setLoading(false);
+    };
+    fetchUser();
+  }, []);
+
+  if (loading) return null;
 
   return (
     <div className={`min-h-screen bg-slate-50 relative overflow-hidden ${inter.variable} ${playfair.variable} font-sans pb-20`}>
@@ -42,14 +61,16 @@ export default function EstoqueWrapperPage() {
         {/* TABS CONTAINER */}
         <Tabs defaultValue="geral" value={activeTab} onValueChange={setActiveTab} className="w-full space-y-6">
           <div className="bg-white p-2 rounded-2xl shadow-sm border border-slate-200 inline-block w-full max-w-3xl overflow-x-auto">
-            <TabsList className="grid w-full grid-cols-3 h-auto bg-transparent gap-2">
-              <TabsTrigger 
-                value="geral" 
-                className="data-[state=active]:bg-brand-plum data-[state=active]:text-white rounded-xl py-3 px-4 font-semibold text-slate-600 hover:bg-slate-50 transition-all"
-              >
-                <Package className="w-4 h-4 mr-2" />
-                <span className="hidden sm:inline">Estoque</span> Geral
-              </TabsTrigger>
+            <TabsList className={`grid w-full h-auto bg-transparent gap-2 ${isAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
+              {isAdmin && (
+                <TabsTrigger 
+                  value="geral" 
+                  className="data-[state=active]:bg-brand-plum data-[state=active]:text-white rounded-xl py-3 px-4 font-semibold text-slate-600 hover:bg-slate-50 transition-all"
+                >
+                  <Package className="w-4 h-4 mr-2" />
+                  <span className="hidden sm:inline">Estoque</span> Geral
+                </TabsTrigger>
+              )}
               <TabsTrigger 
                 value="promotores" 
                 className="data-[state=active]:bg-brand-plum data-[state=active]:text-white rounded-xl py-3 px-4 font-semibold text-slate-600 hover:bg-slate-50 transition-all"
@@ -67,9 +88,11 @@ export default function EstoqueWrapperPage() {
             </TabsList>
           </div>
 
-          <TabsContent value="geral" className="outline-none">
-            {activeTab === 'geral' && <EstoqueGeral />}
-          </TabsContent>
+          {isAdmin && (
+            <TabsContent value="geral" className="outline-none">
+              {activeTab === 'geral' && <EstoqueGeral />}
+            </TabsContent>
+          )}
 
           <TabsContent value="promotores" className="outline-none">
             {activeTab === 'promotores' && <EstoquePromotores />}
