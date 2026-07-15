@@ -35,10 +35,17 @@ type KitItem = {
   sku: string
   size: string
   color: string
-  quantity: number
-}
-
-
+const isPeriodExpired = (period: string | null | undefined) => {
+  if (!period || period === 'null' || period === 'Sem Período Registrado') return true;
+  
+  const match = period.match(/a\s+(\d{2})\/(\d{2})\/(\d{4})/);
+  if (match) {
+    const [_, day, month, year] = match;
+    const endDate = new Date(Number(year), Number(month) - 1, Number(day), 23, 59, 59);
+    return new Date() > endDate;
+  }
+  return true;
+};
 
 export default function EstoquePromotores() {
   const supabase = createClient()
@@ -152,7 +159,7 @@ export default function EstoquePromotores() {
       }
 
       if (currentRole !== 'ADMIN') {
-        mapped = mapped.filter(inv => inv.promoter_id === session?.user?.id)
+        mapped = mapped.filter(inv => inv.promoter_id === session?.user?.id && !isPeriodExpired(inv.period))
       }
 
       mapped = mapped.filter(inv => inv.quantity > 0)

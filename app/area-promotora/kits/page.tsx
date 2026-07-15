@@ -46,6 +46,17 @@ type Kit = {
 
 
 
+const isPeriodExpired = (period: string | null | undefined) => {
+  if (!period || period === 'null' || period === 'Sem Período Registrado') return true;
+  
+  const match = period.match(/a\s+(\d{2})\/(\d{2})\/(\d{4})/);
+  if (match) {
+    const [_, day, month, year] = match;
+    const endDate = new Date(Number(year), Number(month) - 1, Number(day), 23, 59, 59);
+    return new Date() > endDate;
+  }
+  return true;
+};
 
 export default function KitsPromotoraPage() {
   const [loading, setLoading] = useState(true)
@@ -93,7 +104,7 @@ export default function KitsPromotoraPage() {
     const products = prodRes.data || []
     
     if (invRes.data) {
-      const mappedInv = invRes.data.map(inv => {
+      const mappedInv = invRes.data.filter(inv => !isPeriodExpired(inv.period)).map(inv => {
         const p = products.find(prod => prod.id === inv.product_id)
         return {
           ...inv,
@@ -109,7 +120,7 @@ export default function KitsPromotoraPage() {
 
     if (kitsRes.data) {
       // Map products onto kit items for display
-      const mappedKits = kitsRes.data.map((kit: any) => ({
+      const mappedKits = kitsRes.data.filter((kit: any) => !isPeriodExpired(kit.period)).map((kit: any) => ({
         ...kit,
         items: (kit.items || []).map((item: any) => {
           const p = products.find((prod: any) => prod.id === item.product_id)
