@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { addDays, differenceInDays } from "date-fns";
-import { generateAcertoPDF } from "./utils/generateAcertoPDF";
+import { generateAcertoPDF } from "../utils/generateAcertoPDF";
 
 export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean }) {
   const [loading, setLoading] = useState(true);
