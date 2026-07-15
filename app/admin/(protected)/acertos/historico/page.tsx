@@ -153,11 +153,15 @@ export default function HistoricoAcertosPage() {
                                   {selectedAcerto.details.map((item: any, idx: number) => (
                                       <tr key={idx} className="hover:bg-slate-50/50">
                                           <td className="px-4 py-3 font-medium text-slate-700">{item.name}</td>
-                                          <td className="px-4 py-3 text-center text-emerald-600 font-semibold">{item.sold || 0}</td>
-                                          <td className="px-4 py-3 text-center text-amber-600 font-semibold">{item.returned || 0}</td>
+                                          <td className="px-4 py-3 text-center text-emerald-600 font-semibold">
+                                            {item.name?.startsWith('Kit:') ? '-' : (item.sold || 0)}
+                                          </td>
+                                          <td className="px-4 py-3 text-center text-amber-600 font-semibold">
+                                            {item.name?.startsWith('Kit:') ? '-' : (item.returned || 0)}
+                                          </td>
                                           <td className="px-4 py-3 text-right text-slate-600">R$ {Number(item.price).toFixed(2)}</td>
                                           <td className="px-4 py-3 text-right font-semibold text-slate-800">
-                                              R$ {(Number(item.sold || 0) * Number(item.price)).toFixed(2)}
+                                              R$ {(Number(item.sold || 1) * Number(item.price)).toFixed(2)}
                                           </td>
                                       </tr>
                                   ))}
