@@ -13,6 +13,8 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
   const [submitting, setSubmitting] = useState(false);
   const [resellers, setResellers] = useState<any[]>([]);
   const [selectedResellerId, setSelectedResellerId] = useState("");
+  const [promoters, setPromoters] = useState<any[]>([]);
+  const [selectedPromoterId, setSelectedPromoterId] = useState("");
   
   const [kits, setKits] = useState<any[]>([]);
   const [selectedKitId, setSelectedKitId] = useState("");
@@ -49,15 +51,17 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
         resQuery = resQuery.eq('promoter_id', promoterId);
     }
     
-    const [resRes, prodRes, catRes] = await Promise.all([
+    const [resRes, prodRes, catRes, promRes] = await Promise.all([
       resQuery,
       supabase.from('products').select('*'),
-      supabase.from('categories').select('*')
+      supabase.from('categories').select('*'),
+      !isPromoter ? supabase.from('profiles').select('*').eq('role', 'promoter').order('name') : Promise.resolve({ data: [] })
     ]);
 
     if (resRes.data) setResellers(resRes.data);
     if (prodRes.data) setProducts(prodRes.data);
     if (catRes.data) setCategories(catRes.data);
+    if (promRes.data) setPromoters(promRes.data);
     
     setLoading(false);
   };
@@ -438,6 +442,25 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
       
       {/* SELETORES */}
       <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
+          {!isPromoter && (
+              <div className="mb-4">
+                  <label className="block text-sm font-medium text-slate-700 mb-1">Filtrar por Promotor</label>
+                  <select
+                      value={selectedPromoterId}
+                      onChange={(e) => {
+                          setSelectedPromoterId(e.target.value);
+                          setSelectedResellerId("");
+                      }}
+                      className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-brand-plum bg-slate-50"
+                  >
+                      <option value="">Todos os Promotores</option>
+                      {promoters.map(p => (
+                          <option key={p.id} value={p.id}>{p.name}</option>
+                      ))}
+                  </select>
+              </div>
+          )}
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                   <div className="flex justify-between items-center mb-1">
@@ -449,7 +472,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                       className="w-full border border-slate-200 rounded-xl p-3 outline-none focus:border-brand-plum bg-slate-50"
                   >
                       <option value="">Selecione uma revendedora...</option>
-                      {resellers.map(r => (
+                      {(isPromoter ? resellers : (selectedPromoterId ? resellers.filter(r => r.promoter_id === selectedPromoterId) : resellers)).map(r => (
                           <option key={r.id} value={r.id}>{r.name}</option>
                       ))}
                   </select>
