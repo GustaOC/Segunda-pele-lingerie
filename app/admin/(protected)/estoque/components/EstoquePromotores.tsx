@@ -39,7 +39,7 @@ type KitItem = {
 }
 
 const isPeriodExpired = (period: string | null | undefined) => {
-  if (!period || period === 'null' || period === 'Sem Período Registrado') return true;
+  if (!period || period === 'null' || period === 'Sem Período Registrado') return false;
   
   const match = period.match(/a\s+(\d{2})\/(\d{2})\/(\d{4})/);
   if (match) {
@@ -47,7 +47,7 @@ const isPeriodExpired = (period: string | null | undefined) => {
     const endDate = new Date(Number(year), Number(month) - 1, Number(day), 23, 59, 59);
     return new Date() > endDate;
   }
-  return true;
+  return false;
 };
 
 export default function EstoquePromotores() {
@@ -162,7 +162,7 @@ export default function EstoquePromotores() {
       }
 
       if (currentRole !== 'ADMIN') {
-        mapped = mapped.filter(inv => !isPeriodExpired(inv.period))
+        mapped = mapped.filter(inv => inv.promoter_id === session?.user?.id && !isPeriodExpired(inv.period))
       }
 
       setInventory(mapped)
@@ -513,19 +513,21 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
         ) : (
           <div className="space-y-6">
             {/* Filtro por Promotor */}
-            <div className="flex items-center gap-4 bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
-              <label className="text-sm font-bold text-slate-700 whitespace-nowrap">Filtrar por Promotor:</label>
-              <select
-                value={filterPromoterId}
-                onChange={(e) => setFilterPromoterId(e.target.value)}
-                className="w-full md:w-auto min-w-[200px] bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 outline-none focus:border-brand-plum text-sm cursor-pointer"
-              >
-                <option value="ALL">Todos os Promotores</option>
-                {promoters.map(p => (
-                  <option key={p.id} value={p.id}>{p.nome}</option>
-                ))}
-              </select>
-            </div>
+            {userRole === 'ADMIN' && (
+              <div className="flex items-center gap-4 bg-white p-4 rounded-3xl shadow-sm border border-slate-200">
+                <label className="text-sm font-bold text-slate-700 whitespace-nowrap">Filtrar por Promotor:</label>
+                <select
+                  value={filterPromoterId}
+                  onChange={(e) => setFilterPromoterId(e.target.value)}
+                  className="w-full md:w-auto min-w-[200px] bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 outline-none focus:border-brand-plum text-sm cursor-pointer"
+                >
+                  <option value="ALL">Todos os Promotores</option>
+                  {promoters.map(p => (
+                    <option key={p.id} value={p.id}>{p.nome}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
               <div className="overflow-x-auto">
