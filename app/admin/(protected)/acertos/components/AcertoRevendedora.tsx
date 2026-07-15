@@ -55,7 +55,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
       resQuery,
       supabase.from('products').select('*'),
       supabase.from('categories').select('*'),
-      !isPromoter ? supabase.from('profiles').select('*').eq('role', 'promoter').order('name') : Promise.resolve({ data: [] })
+      !isPromoter ? supabase.from('profiles').select('*').eq('role', 'PROMOTOR').order('nome') : Promise.resolve({ data: [] })
     ]);
 
     if (resRes.data) setResellers(resRes.data);
@@ -405,8 +405,8 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
           if (session?.user?.user_metadata?.name) {
               promoterName = session.user.user_metadata.name;
           } else if (reseller?.promoter_id) {
-              const { data: pData } = await supabase.from('profiles').select('name').eq('id', reseller.promoter_id).maybeSingle();
-              if (pData) promoterName = pData.name;
+              const { data: pData } = await supabase.from('profiles').select('nome').eq('id', reseller.promoter_id).maybeSingle();
+              if (pData) promoterName = pData.nome;
           }
           
           generateAcertoPDF(reseller, promoterName, kit, localKitItems, {
@@ -455,7 +455,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                   >
                       <option value="">Todos os Promotores</option>
                       {promoters.map(p => (
-                          <option key={p.id} value={p.id}>{p.name}</option>
+                          <option key={p.id} value={p.id}>{p.nome}</option>
                       ))}
                   </select>
               </div>
