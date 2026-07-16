@@ -119,34 +119,24 @@ export default function ContasReceber() {
     if (!quitarItem) return;
     setIsQuitting(true);
     try {
+      const comm = parseFloat(quitarCommission) || 0;
+      const netValue = parseFloat((quitarItem.total_value - comm).toFixed(2));
+      const updatedDescription = comm > 0 
+        ? `${quitarItem.description} (Comissão Retida R$ ${comm.toFixed(2)})` 
+        : quitarItem.description;
+
       const res = await fetch(`/api/admin/financeiro/${quitarItem.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status: "QUITADO",
-          paid_value: quitarItem.total_value,
-          payment_date: new Date().toISOString()
+          total_value: netValue,
+          paid_value: netValue,
+          payment_date: new Date().toISOString(),
+          description: updatedDescription
         })
       });
       if (res.ok) {
-        
-        // If they want to generate a commission payable:
-        const comm = parseFloat(quitarCommission) || 0;
-        if (comm > 0) {
-            await fetch("/api/admin/financeiro", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify([{
-                    type: "PAYABLE",
-                    description: `Comissão Retida Parcela - Ref: ${quitarItem.description}`,
-                    total_value: comm,
-                    due_date: new Date().toISOString().split("T")[0],
-                    installment: "1/1",
-                    status: "NAO_PAGO",
-                    category: "Comissões"
-                }])
-            });
-        }
         
         toast({ title: "Sucesso", description: "Conta baixada como Quitada." });
         setQuitarItem(null);
@@ -341,7 +331,7 @@ export default function ContasReceber() {
                   
                   <div className="space-y-2 pt-2 border-t border-slate-100">
                     <label className="text-sm font-medium">Comissão do Promotor Retida (Opcional)</label>
-                    <p className="text-xs text-slate-500 mb-2">Se você preencher este campo, o sistema gerará automaticamente uma Conta a Pagar (Pendente) de comissão para hoje.</p>
+                    <p className="text-xs text-slate-500 mb-2">Se você preencher este campo, o valor retido será <strong>descontado</strong> automaticamente do valor total recebido pela empresa.</p>
                     <Input 
                       type="number" 
                       min="0"
