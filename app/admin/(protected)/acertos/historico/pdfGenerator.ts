@@ -112,6 +112,25 @@ export async function generateAcertoPDF(acerto: any) {
   doc.text(`Comissão Promotor: R$ ${acerto.total_commission.toFixed(2)}`, 14, finalY + 22);
   doc.text(`Valor Pago à Empresa: R$ ${acerto.total_paid.toFixed(2)}`, 14, finalY + 29);
 
+  let currentY = finalY + 29;
+  const installmentInfo = acerto.details?.find((d: any) => d.isInstallment);
+  if (installmentInfo) {
+      currentY += 7;
+      doc.setFont("helvetica", "normal");
+      doc.text(`- Pago no Ato: R$ ${installmentInfo.paidNow.toFixed(2)}`, 14, currentY);
+      
+      currentY += 7;
+      doc.setFont("helvetica", "bold");
+      const dueStr = installmentInfo.installmentDueDate ? new Date(installmentInfo.installmentDueDate + "T12:00:00Z").toLocaleDateString('pt-BR') : "";
+      doc.text(`- Restante (Parcela): R$ ${installmentInfo.remainingAmount.toFixed(2)} (Vencimento: ${dueStr})`, 14, currentY);
+      
+      if (installmentInfo.installmentCommission > 0) {
+          currentY += 7;
+          doc.setFont("helvetica", "normal");
+          doc.text(`(Comissão Promotor Retida na Parcela: R$ ${installmentInfo.installmentCommission.toFixed(2)})`, 14, currentY);
+      }
+  }
+
   // ---------------------------------------------------------
   // PÁGINAS SUBSEQUENTES
   // ---------------------------------------------------------

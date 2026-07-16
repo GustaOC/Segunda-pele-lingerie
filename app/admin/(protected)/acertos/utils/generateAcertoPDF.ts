@@ -16,6 +16,10 @@ export const generateAcertoPDF = (
         fineAmount: number;
         finalAmountToPay: number;
         daysLate: number;
+        isInstallment?: boolean;
+        paidNow?: number;
+        installmentDueDate?: string;
+        installmentCommission?: number;
     }
 ) => {
     const doc = new jsPDF();
@@ -173,11 +177,26 @@ export const generateAcertoPDF = (
     
     doc.text(`A PAGAR : R$ ${formatMoney(financialSummary.finalAmountToPay)}`, 100, footerY + 20);
     
-    doc.text(`DATA DE COBRANÇA: ${chargeDate}`, 100, footerY + 30);
+    if (financialSummary.isInstallment) {
+        doc.setFont("helvetica", "normal");
+        const remaining = financialSummary.finalAmountToPay - (financialSummary.paidNow || 0);
+        doc.text(`- PAGO NO ATO : R$ ${formatMoney(financialSummary.paidNow || 0)}`, 100, footerY + 25);
+        doc.setFont("helvetica", "bold");
+        doc.text(`- RESTANTE : R$ ${formatMoney(remaining)}`, 100, footerY + 30);
+        
+        let dueStr = financialSummary.installmentDueDate ? new Date(financialSummary.installmentDueDate + "T12:00:00Z").toLocaleDateString("pt-BR") : "";
+        doc.text(`VENC. RESTANTE: ${dueStr}`, 100, footerY + 35);
+        
+        if ((financialSummary.installmentCommission || 0) > 0) {
+            doc.text(`(Comissão Retida: R$ ${formatMoney(financialSummary.installmentCommission || 0)})`, 100, footerY + 40);
+        }
+    } else {
+        doc.text(`DATA DE COBRANÇA: ${chargeDate}`, 100, footerY + 30);
+    }
     
     // Empty Box for annotations
     doc.setLineWidth(0.3);
-    doc.rect(155, footerY + 5, 40, 12);
+    doc.rect(155, footerY + (financialSummary.isInstallment ? 20 : 5), 40, 12);
     
     // Signature Line
     doc.setLineWidth(0.2);

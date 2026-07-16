@@ -32,6 +32,12 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
   // States for calculation
   const [isFirstKit, setIsFirstKit] = useState(false);
   
+  // Installment states
+  const [isInstallment, setIsInstallment] = useState(false);
+  const [paidNow, setPaidNow] = useState<string>("");
+  const [installmentDueDate, setInstallmentDueDate] = useState<string>("");
+  const [installmentCommission, setInstallmentCommission] = useState<string>("");
+  
   const supabase = createClient();
   const { toast } = useToast();
 
@@ -293,6 +299,36 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
               }).eq('id', selectedKitId);
           }
           
+          // 4. Installments to Finance
+          if (isInstallment) {
+              const paidAmount = parseFloat(paidNow) || 0;
+              const remainingAmount = finalAmountToPay - paidAmount;
+              if (remainingAmount > 0 && installmentDueDate) {
+                  // Receiveable from Reseller
+                  await supabase.from('financial_transactions').insert({
+                      type: 'RECEIVABLE',
+                      description: `Parcela Acerto Revendedora (${resellers.find(r=>r.id===selectedResellerId)?.name}) - Kit #${selectedKitId.substring(0,8)}`,
+                      total_value: parseFloat(remainingAmount.toFixed(2)),
+                      due_date: installmentDueDate,
+                      installment: '1/1',
+                      status: 'pending'
+                  });
+                  
+                  // Payable for Promoter Commission (if specified)
+                  const comm = parseFloat(installmentCommission) || 0;
+                  if (comm > 0) {
+                      await supabase.from('financial_transactions').insert({
+                          type: 'PAYABLE',
+                          description: `Comissão Retida Parcela (${resellers.find(r=>r.id===selectedResellerId)?.name}) - Kit #${selectedKitId.substring(0,8)}`,
+                          total_value: parseFloat(comm.toFixed(2)),
+                          due_date: installmentDueDate,
+                          installment: '1/1',
+                          status: 'pending'
+                      });
+                  }
+              }
+          }
+          
           toast({
               title: "Acerto Finalizado!",
               description: "O acerto foi registrado e o estoque geral foi atualizado com as devoluções.",
@@ -419,7 +455,11 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
               totalCommission: tComm,
               fineAmount: fine,
               finalAmountToPay: net + fine,
-              daysLate: dLate > 0 ? dLate : 0
+              daysLate: dLate > 0 ? dLate : 0,
+              isInstallment,
+              paidNow: parseFloat(paidNow) || 0,
+              installmentDueDate,
+              installmentCommission: parseFloat(installmentCommission) || 0
           });
 
       } catch (err) {
@@ -628,6 +668,69 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                   </div>
                   
                   <div className="mt-6 pt-4 border-t border-slate-200">
+                      <div className="mb-6 space-y-4">
+                          <div className="flex items-center gap-2 mb-2">
+                              <input 
+                                  type="checkbox" 
+                                  id="isInstallment" 
+                                  checked={isInstallment} 
+                                  onChange={(e) => setIsInstallment(e.target.checked)} 
+                                  disabled={isFinalizado}
+                                  className="rounded text-brand-plum focus:ring-brand-plum w-4 h-4" 
+                              />
+                              <label htmlFor="isInstallment" className="text-sm font-medium text-slate-700">
+                                  Pagamento Parcial (Lançar Restante no Financeiro)
+                              </label>
+                          </div>
+                          
+                          {isInstallment && (
+                              <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                                  <div>
+                                      <label className="block text-xs font-medium text-slate-500 mb-1">Valor Pago no Ato (R$)</label>
+                                      <input 
+                                          type="number" 
+                                          min="0"
+                                          step="0.01"
+                                          value={paidNow}
+                                          onChange={(e) => setPaidNow(e.target.value)}
+                                          disabled={isFinalizado}
+                                          className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-brand-plum text-sm"
+                                          placeholder="Ex: 300.00"
+                                      />
+                                  </div>
+                                  <div className="flex justify-between items-center text-sm">
+                                      <span className="text-slate-500">Valor Restante:</span>
+                                      <span className="font-bold text-red-600">
+                                          R$ {Math.max(0, finalAmountToPay - (parseFloat(paidNow) || 0)).toFixed(2)}
+                                      </span>
+                                  </div>
+                                  <div>
+                                      <label className="block text-xs font-medium text-slate-500 mb-1">Data de Vencimento do Restante</label>
+                                      <input 
+                                          type="date"
+                                          value={installmentDueDate}
+                                          onChange={(e) => setInstallmentDueDate(e.target.value)}
+                                          disabled={isFinalizado}
+                                          className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-brand-plum text-sm"
+                                      />
+                                  </div>
+                                  <div>
+                                      <label className="block text-xs font-medium text-slate-500 mb-1">Comissão do Promotor Retida (R$)</label>
+                                      <input 
+                                          type="number" 
+                                          min="0"
+                                          step="0.01"
+                                          value={installmentCommission}
+                                          onChange={(e) => setInstallmentCommission(e.target.value)}
+                                          disabled={isFinalizado}
+                                          className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-brand-plum text-sm"
+                                          placeholder="Ex: 50.00"
+                                      />
+                                  </div>
+                              </div>
+                          )}
+                      </div>
+
                       <div className="flex justify-between items-center mb-6">
                           <span className="text-base text-slate-600 font-medium">Valor a Receber</span>
                           <span className="text-2xl font-bold text-slate-800">
