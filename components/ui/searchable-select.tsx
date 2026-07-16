@@ -22,6 +22,7 @@ import {
 interface Option {
   value: string
   label: string
+  searchString?: string
 }
 
 export interface SearchableSelectProps {
@@ -76,7 +77,7 @@ export function SearchableSelect({
               {options.map((option) => (
                 <CommandItem
                   key={option.value}
-                  value={option.label}
+                  value={option.searchString || option.label}
                   onSelect={() => {
                     onChange(option.value === value ? "" : option.value)
                     setOpen(false)

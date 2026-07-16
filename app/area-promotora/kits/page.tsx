@@ -540,18 +540,16 @@ export default function KitsPromotoraPage() {
                   
                   <div>
                     <label className="block text-xs font-medium text-slate-500 mb-1">Escolha a Peça</label>
-                    <select
+                    <SearchableSelect
+                      options={inventory.filter(inv => (inv.period || 'null') === (kitPeriod || 'null')).map(inv => ({
+                        value: inv.id,
+                        label: `${inv.product_name} - ${inv.color} (${inv.size}) - ${inv.quantity} disponíveis`,
+                        searchString: `${inv.product_name} ${inv.color} ${inv.size}`
+                      }))}
                       value={selectedInvId}
-                      onChange={(e) => setSelectedInvId(e.target.value)}
-                      className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-brand-plum text-sm"
-                    >
-                      <option value="" disabled>Selecione...</option>
-                      {inventory.filter(inv => (inv.period || 'null') === (kitPeriod || 'null')).map(inv => (
-                        <option key={inv.id} value={inv.id}>
-                          {inv.product_name} - {inv.color} ({inv.size}) - {inv.quantity} disponíveis
-                        </option>
-                      ))}
-                    </select>
+                      onChange={(val) => setSelectedInvId(val)}
+                      placeholder="Selecione..."
+                    />
                   </div>
 
                   <div className="flex items-end gap-3">

@@ -8,6 +8,7 @@ import { useState, useEffect } from "react"
 import { Playfair_Display, Inter } from "next/font/google"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
+import { SearchableSelect } from "@/components/ui/searchable-select"
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" })
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inter" })
@@ -308,16 +309,16 @@ export default function AtivarEcommercePage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-2">Buscar Produto por SKU / Nome</label>
-                <select
+                <SearchableSelect
+                  options={products.map(p => ({
+                    value: p.id,
+                    label: `${p.sku ? `[${p.sku}] ` : ''}${p.name} ${p.is_active ? '(Já Ativo)' : ''}`,
+                    searchString: `${p.sku || ''} ${p.name} ${Array.isArray(p.colors) ? p.colors.join(' ') : (p.colors || '')} ${Array.isArray(p.sizes) ? p.sizes.join(' ') : (p.sizes || '')} ${p.is_active ? 'Ativo' : ''}`
+                  }))}
                   value={selectedProductId}
-                  onChange={(e) => handleProductSelect(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
-                >
-                  <option value="">Selecione um produto...</option>
-                  {products.map(p => (
-                    <option key={p.id} value={p.id}>{p.sku ? `[${p.sku}] ` : ''}{p.name} {p.is_active ? '(Já Ativo)' : ''}</option>
-                  ))}
-                </select>
+                  onChange={(val) => handleProductSelect(val)}
+                  placeholder="Selecione um produto..."
+                />
               </div>
 
               {productData && (

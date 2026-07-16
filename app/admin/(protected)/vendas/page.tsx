@@ -915,14 +915,14 @@ export default function VendasPage() {
                     </PopoverTrigger>
                     <PopoverContent className="w-[400px] md:w-[600px] lg:w-[800px] max-h-[300px] p-0" align="start">
                       <Command>
-                        <CommandInput placeholder="Pesquisar por SKU ou Nome..." />
+                        <CommandInput placeholder="Pesquisar por SKU, Nome, Cor ou Tamanho..." />
                         <CommandList className="max-h-[250px]">
                           <CommandEmpty>Nenhum produto encontrado.</CommandEmpty>
                           <CommandGroup>
                             {products.map((p) => (
                               <CommandItem
                                 key={p.id}
-                                value={`${p.sku || ""} ${p.name}`}
+                                value={`${p.sku || ""} ${p.name} ${Array.isArray(p.colors) ? p.colors.join(' ') : (p.colors || '')} ${Array.isArray(p.sizes) ? p.sizes.join(' ') : (p.sizes || '')}`}
                                 onSelect={() => {
                                   setSelectedProductId(p.id);
                                   setSelectedColor("");

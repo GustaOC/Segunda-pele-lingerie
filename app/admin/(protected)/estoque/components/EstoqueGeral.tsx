@@ -1,5 +1,6 @@
 "use client";
 import { Button } from "@/components/ui/button"
+import { SearchableSelect } from "@/components/ui/searchable-select"
 import { Playfair_Display, Inter } from "next/font/google"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
@@ -656,20 +657,19 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
 
               <div>
                 <label className="block text-sm font-medium text-slate-700 mb-1">Produto *</label>
-                <select
-                  required
+                <SearchableSelect
+                  options={products.map(p => ({
+                    value: p.id,
+                    label: `${p.sku ? `[${p.sku}] ` : ''}${p.name}`,
+                    searchString: `${p.sku || ''} ${p.name} ${Array.isArray(p.colors) ? p.colors.join(' ') : (p.colors || '')} ${Array.isArray(p.sizes) ? p.sizes.join(' ') : (p.sizes || '')}`
+                  }))}
                   value={selectedProductId}
-                  onChange={(e) => {
-                    setSelectedProductId(e.target.value)
+                  onChange={(val) => {
+                    setSelectedProductId(val)
                     setSelectedColor("")
                   }}
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
-                >
-                  <option value="" disabled>Selecione o produto...</option>
-                  {products.map(p => (
-                    <option key={p.id} value={p.id}>{p.sku ? `[${p.sku}] ` : ''}{p.name}</option>
-                  ))}
-                </select>
+                  placeholder="Selecione o produto..."
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
