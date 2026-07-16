@@ -276,7 +276,23 @@ export async function generateAcertoPDF(acerto: any) {
       doc.text(`VALOR DO KIT : R$ ${k.total_price.toFixed(2)}`, 100, tableEndY + 20);
       doc.text(`COMISSÃO : R$ ${kitInfo.revComm.toFixed(2)} - ${kitInfo.cp}%`, 100, tableEndY + 30);
       doc.text(`A PAGAR : R$ ${(kitInfo.actualSold - kitInfo.revComm).toFixed(2)}`, 100, tableEndY + 40);
-      doc.text(`DATA DE COBRANÇA: ${cobranca}`, 100, tableEndY + 50);
+      
+      const match = k.name?.match(/\[PAGO:([\d.]+)\]/);
+      let nextY = tableEndY + 50;
+      
+      if (match) {
+          const paidNow = parseFloat(match[1]);
+          const remaining = (kitInfo.actualSold - kitInfo.revComm) - paidNow;
+          doc.setFont("helvetica", "normal");
+          doc.text(`- PAGO NO ATO : R$ ${paidNow.toFixed(2)}`, 100, nextY);
+          nextY += 10;
+          doc.setFont("helvetica", "bold");
+          doc.text(`- RESTANTE : R$ ${remaining.toFixed(2)}`, 100, nextY);
+          nextY += 10;
+          doc.text(`VENC. RESTANTE: ${cobranca}`, 100, nextY);
+      } else {
+          doc.text(`DATA DE COBRANÇA: ${cobranca}`, 100, nextY);
+      }
       
       doc.rect(160, tableEndY + 15, 30, 15);
       
