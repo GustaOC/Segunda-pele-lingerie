@@ -183,10 +183,12 @@ export const generateAcertoPDF = (
         doc.setFont("helvetica", "bold");
         doc.text(`- RESTANTE : R$ ${formatMoney(remaining)}`, 100, footerY + 30);
         
-        let dueStr = financialSummary.installmentDueDate ? new Date(financialSummary.installmentDueDate + "T12:00:00Z").toLocaleDateString("pt-BR") : "";
+        let dueStr = financialSummary.installmentDueDate 
+            ? new Date(financialSummary.installmentDueDate + "T12:00:00Z").toLocaleDateString("pt-BR") 
+            : chargeDateStr;
         doc.text(`VENC. RESTANTE: ${dueStr}`, 100, footerY + 35);
     } else {
-        doc.text(`DATA DE COBRANÇA: ${chargeDate}`, 100, footerY + 30);
+        doc.text(`DATA DE COBRANÇA: ${chargeDateStr}`, 100, footerY + 30);
     }
     
     // Empty Box for annotations

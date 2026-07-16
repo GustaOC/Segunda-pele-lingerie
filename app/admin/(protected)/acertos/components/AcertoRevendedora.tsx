@@ -433,6 +433,10 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
               if (pData) promoterName = pData.nome;
           }
           
+          const match = kit.name?.match(/\[PAGO:([\d.]+)\]/);
+          const historyIsInstallment = !!match;
+          const historyPaidNow = match ? parseFloat(match[1]) : 0;
+          
           generateAcertoPDF(reseller, promoterName, kit, localKitItems, {
               totalKitValue: sumTotalKit,
               totalSoldValue: sumSoldValue,
@@ -443,9 +447,9 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
               fineAmount: fine,
               finalAmountToPay: net + fine,
               daysLate: dLate > 0 ? dLate : 0,
-              isInstallment,
-              paidNow: parseFloat(paidNow) || 0,
-              installmentDueDate
+              isInstallment: historyIsInstallment,
+              paidNow: historyPaidNow,
+              installmentDueDate: historyIsInstallment ? "" : ""
           });
 
       } catch (err) {
