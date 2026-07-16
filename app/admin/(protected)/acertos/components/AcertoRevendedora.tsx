@@ -294,9 +294,11 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
           const kitName = selectedKit?.name || `Kit #${selectedKitId.substring(0,8)}`;
           if (!kitName.includes('[FINALIZADO]')) {
               const paidAmount = isInstallment ? (parseFloat(paidNow) || 0) : finalAmountToPay;
-              await supabase.from('promoter_kits').update({ 
+              const { error: updateError } = await supabase.from('promoter_kits').update({ 
                   name: `${kitName} [FINALIZADO] [PAGO:${paidAmount.toFixed(2)}]`
               }).eq('id', selectedKitId);
+              
+              if (updateError) throw updateError;
           }
           
           // 4. Installments to Finance
