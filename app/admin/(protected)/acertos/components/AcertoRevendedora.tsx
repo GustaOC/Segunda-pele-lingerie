@@ -295,10 +295,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
           if (!kitName.includes('[FINALIZADO]')) {
               const paidAmount = isInstallment ? (parseFloat(paidNow) || 0) : finalAmountToPay;
               await supabase.from('promoter_kits').update({ 
-                  name: `${kitName} [FINALIZADO] [PAGO:${paidAmount.toFixed(2)}]`,
-                  actual_sold: totalSoldValue, 
-                  revendedora_commission: totalCommission, 
-                  revendedora_percent: normalCommissionPercent
+                  name: `${kitName} [FINALIZADO] [PAGO:${paidAmount.toFixed(2)}]`
               }).eq('id', selectedKitId);
           }
           
