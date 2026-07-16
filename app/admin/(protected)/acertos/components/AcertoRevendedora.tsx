@@ -288,13 +288,17 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
               // 2. We do NOT update promoter_kit_items quantity here.
               // We want to keep the original "Enviado" quantity for the history.
               // The returned items are recorded in inventory_transactions.
+              // 3. Mark Kit as Settled (Update name to include [FINALIZADO])
           }
           
-          // 3. Mark Kit as Settled (Update name to include [FINALIZADO])
           const kitName = selectedKit?.name || `Kit #${selectedKitId.substring(0,8)}`;
           if (!kitName.includes('[FINALIZADO]')) {
+              const paidAmount = isInstallment ? (parseFloat(paidNow) || 0) : finalAmountToPay;
               await supabase.from('promoter_kits').update({ 
-                  name: `${kitName} [FINALIZADO]`
+                  name: `${kitName} [FINALIZADO] [PAGO:${paidAmount.toFixed(2)}]`,
+                  actual_sold: totalSoldValue, 
+                  revendedora_commission: totalCommission, 
+                  revendedora_percent: normalCommissionPercent
               }).eq('id', selectedKitId);
           }
           

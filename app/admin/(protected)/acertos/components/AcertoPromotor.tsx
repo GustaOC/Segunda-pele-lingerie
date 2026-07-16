@@ -156,14 +156,19 @@ export default function AcertoPromotor() {
   // Calculations
   let totalSoldValue = 0;
   let totalRevendedoraCommission = 0;
+  let totalReceivedByPromoter = 0;
   
   promoterKits.forEach(kit => {
       totalSoldValue += kit.actual_sold;
       totalRevendedoraCommission += kit.revendedora_commission;
+      
+      const match = kit.name.match(/\[PAGO:([\d.]+)\]/);
+      const kitReceived = match ? parseFloat(match[1]) : (kit.actual_sold - kit.revendedora_commission);
+      totalReceivedByPromoter += kitReceived;
   });
   
-  const totalCommission = (totalSoldValue - totalRevendedoraCommission) * (commissionPercent / 100);
-  const finalAmountToPay = totalSoldValue - totalRevendedoraCommission - totalCommission;
+  const totalCommission = totalReceivedByPromoter * (commissionPercent / 100);
+  const finalAmountToPay = totalReceivedByPromoter - totalCommission;
 
   const handleFinalize = async () => {
       if (!selectedPromoterId) return;
@@ -362,8 +367,10 @@ export default function AcertoPromotor() {
                           </thead>
                           <tbody>
                               {promoterKits.map((kit) => {
-                                  const kitPromoterCommission = (kit.actual_sold - kit.revendedora_commission) * (commissionPercent / 100);
-                                  const kitCompany = kit.actual_sold - kit.revendedora_commission - kitPromoterCommission;
+                                  const match = kit.name.match(/\[PAGO:([\d.]+)\]/);
+                                  const kitReceived = match ? parseFloat(match[1]) : (kit.actual_sold - kit.revendedora_commission);
+                                  const kitPromoterCommission = kitReceived * (commissionPercent / 100);
+                                  const kitCompany = kitReceived - kitPromoterCommission;
                                   return (
                                       <tr key={kit.id} className="border-b border-slate-50 hover:bg-slate-50/50">
                                           <td className="px-4 py-3">
@@ -379,8 +386,9 @@ export default function AcertoPromotor() {
                                               R$ {kit.revendedora_commission.toFixed(2)}
                                               <span className="block text-xs text-slate-400">({kit.revendedora_percent}%)</span>
                                           </td>
-                                          <td className="px-4 py-3 text-right text-emerald-600 font-bold">
-                                              R$ {kitCompany.toFixed(2)}
+                                          <td className="px-4 py-3 text-right text-emerald-600 font-bold flex flex-col items-end justify-center">
+                                              <span>R$ {kitCompany.toFixed(2)}</span>
+                                              {match && <span className="text-xs text-slate-400 font-normal">Recebeu da Rev. R$ {kitReceived.toFixed(2)}</span>}
                                           </td>
                                       </tr>
                                   );
@@ -399,8 +407,8 @@ export default function AcertoPromotor() {
                   
                   <div className="space-y-4 flex-1">
                       <div className="flex justify-between items-center text-sm">
-                          <span className="text-slate-500">Total Faturado</span>
-                          <span className="font-medium">R$ {(totalSoldValue - totalRevendedoraCommission).toFixed(2)}</span>
+                          <span className="text-slate-500">Total Recebido (Ato)</span>
+                          <span className="font-medium">R$ {totalReceivedByPromoter.toFixed(2)}</span>
                       </div>
                       <div className="flex justify-between items-center text-sm pb-3 border-b border-slate-100">
                           <span className="text-slate-500">Comissão Promotor ({commissionPercent}%)</span>
