@@ -185,10 +185,10 @@ export const generateAcertoPDF = (
         
         let dueStr = financialSummary.installmentDueDate 
             ? new Date(financialSummary.installmentDueDate + "T12:00:00Z").toLocaleDateString("pt-BR") 
-            : chargeDateStr;
+            : chargeDate;
         doc.text(`VENC. RESTANTE: ${dueStr}`, 100, footerY + 35);
     } else {
-        doc.text(`DATA DE COBRANÇA: ${chargeDateStr}`, 100, footerY + 30);
+        doc.text(`DATA DE COBRANÇA: ${chargeDate}`, 100, footerY + 30);
     }
     
     // Empty Box for annotations
