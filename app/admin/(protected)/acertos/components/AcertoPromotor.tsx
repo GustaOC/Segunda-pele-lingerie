@@ -24,7 +24,6 @@ export default function AcertoPromotor() {
   const [isInstallment, setIsInstallment] = useState(false);
   const [paidNow, setPaidNow] = useState<string>("");
   const [installmentDueDate, setInstallmentDueDate] = useState<string>("");
-  const [installmentCommission, setInstallmentCommission] = useState<string>("");
   
   const supabase = createClient();
   const { toast } = useToast();
@@ -198,7 +197,6 @@ export default function AcertoPromotor() {
                   isInstallment: true,
                   paidNow: parseFloat(paidNow) || 0,
                   installmentDueDate,
-                  installmentCommission: parseFloat(installmentCommission) || 0,
                   remainingAmount: finalAmountToPay - (parseFloat(paidNow) || 0)
               });
           }
@@ -247,19 +245,6 @@ export default function AcertoPromotor() {
                       category: "Acertos",
                       installment: "1/1"
                   });
-                  
-                  const comm = parseFloat(installmentCommission) || 0;
-                  if (comm > 0) {
-                      financeiroPayload.push({
-                          type: "PAYABLE",
-                          description: `Comissão Retida Parcela (${promoterName}) - ${selectedPeriod}`,
-                          total_value: comm,
-                          due_date: installmentDueDate,
-                          status: "PENDENTE",
-                          category: "Comissões",
-                          installment: "1/1"
-                      });
-                  }
               }
           } else {
               financeiroPayload.push({
@@ -468,19 +453,6 @@ export default function AcertoPromotor() {
                                           onChange={(e) => setInstallmentDueDate(e.target.value)}
                                           disabled={submitting}
                                           className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-brand-plum text-sm"
-                                      />
-                                  </div>
-                                  <div>
-                                      <label className="block text-xs font-medium text-slate-500 mb-1">Comissão Retida na Parcela (R$)</label>
-                                      <input 
-                                          type="number" 
-                                          min="0"
-                                          step="0.01"
-                                          value={installmentCommission}
-                                          onChange={(e) => setInstallmentCommission(e.target.value)}
-                                          disabled={submitting}
-                                          className="w-full bg-white border border-slate-200 rounded-lg px-3 py-2 outline-none focus:border-brand-plum text-sm"
-                                          placeholder="Ex: 50.00"
                                       />
                                   </div>
                               </div>

@@ -23,6 +23,11 @@ export default function ContasReceber() {
   const [loading, setLoading] = useState(true);
   const [isAdding, setIsAdding] = useState(false);
   
+  // Quitar Dialog State
+  const [quitarItem, setQuitarItem] = useState<any>(null);
+  const [quitarCommission, setQuitarCommission] = useState("");
+  const [isQuitting, setIsQuitting] = useState(false);
+  
   // Filters
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
@@ -110,23 +115,49 @@ export default function ContasReceber() {
     }
   };
 
-  const handleQuitar = async (id: string, total_value: number) => {
+  const confirmQuitar = async () => {
+    if (!quitarItem) return;
+    setIsQuitting(true);
     try {
-      const res = await fetch(`/api/admin/financeiro/${id}`, {
+      const res = await fetch(`/api/admin/financeiro/${quitarItem.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           status: "QUITADO",
-          paid_value: total_value,
+          paid_value: quitarItem.total_value,
           payment_date: new Date().toISOString()
         })
       });
       if (res.ok) {
+        
+        // If they want to generate a commission payable:
+        const comm = parseFloat(quitarCommission) || 0;
+        if (comm > 0) {
+            await fetch("/api/admin/financeiro", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify([{
+                    type: "PAYABLE",
+                    description: `Comissão Retida Parcela - Ref: ${quitarItem.description}`,
+                    total_value: comm,
+                    due_date: new Date().toISOString().split("T")[0],
+                    installment: "1/1",
+                    status: "PENDENTE",
+                    category: "Comissões"
+                }])
+            });
+        }
+        
         toast({ title: "Sucesso", description: "Conta baixada como Quitada." });
+        setQuitarItem(null);
+        setQuitarCommission("");
         fetchTransactions();
       }
     } catch (error) {
       console.error("Erro ao quitar", error);
+      toast({ title: "Erro", description: "Ocorreu um erro ao quitar a conta.", variant: "destructive" });
+    } finally {
+      setIsQuitting(false);
     }
   };
 
@@ -292,6 +323,45 @@ export default function ContasReceber() {
               </form>
             </DialogContent>
           </Dialog>
+
+          {/* Dialog Quitar Conta */}
+          <Dialog open={!!quitarItem} onOpenChange={(open) => !open && setQuitarItem(null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle className="font-playfair text-xl">Baixar Conta</DialogTitle>
+                <DialogDescription>Confirme a baixa da conta a receber.</DialogDescription>
+              </DialogHeader>
+              
+              {quitarItem && (
+                <div className="space-y-4 mt-4">
+                  <div className="bg-slate-50 p-4 rounded-lg border border-slate-100">
+                    <p className="text-sm font-medium text-slate-800">{quitarItem.description}</p>
+                    <p className="text-sm text-slate-500 mt-1">Valor: R$ {(quitarItem.total_value || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</p>
+                  </div>
+                  
+                  <div className="space-y-2 pt-2 border-t border-slate-100">
+                    <label className="text-sm font-medium">Comissão do Promotor Retida (Opcional)</label>
+                    <p className="text-xs text-slate-500 mb-2">Se você preencher este campo, o sistema gerará automaticamente uma Conta a Pagar (Pendente) de comissão para hoje.</p>
+                    <Input 
+                      type="number" 
+                      min="0"
+                      step="0.01"
+                      value={quitarCommission}
+                      onChange={e => setQuitarCommission(e.target.value)}
+                      placeholder="Ex: 50.00"
+                    />
+                  </div>
+                  
+                  <div className="pt-4 flex justify-end gap-2">
+                    <Button type="button" variant="ghost" onClick={() => setQuitarItem(null)}>Cancelar</Button>
+                    <Button type="button" onClick={confirmQuitar} disabled={isQuitting} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                      {isQuitting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Confirmar Baixa"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
@@ -356,7 +426,7 @@ export default function ContasReceber() {
                         <Button 
                           variant="ghost" 
                           size="sm" 
-                          onClick={() => handleQuitar(t.id, t.total_value)}
+                          onClick={() => setQuitarItem(t)}
                           className="text-emerald-600 hover:bg-emerald-50 hover:text-emerald-700 h-8"
                         >
                           <Check className="w-4 h-4 mr-1" /> Quitar

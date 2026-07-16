@@ -19,7 +19,6 @@ export const generateAcertoPDF = (
         isInstallment?: boolean;
         paidNow?: number;
         installmentDueDate?: string;
-        installmentCommission?: number;
     }
 ) => {
     const doc = new jsPDF();
@@ -186,10 +185,6 @@ export const generateAcertoPDF = (
         
         let dueStr = financialSummary.installmentDueDate ? new Date(financialSummary.installmentDueDate + "T12:00:00Z").toLocaleDateString("pt-BR") : "";
         doc.text(`VENC. RESTANTE: ${dueStr}`, 100, footerY + 35);
-        
-        if ((financialSummary.installmentCommission || 0) > 0) {
-            doc.text(`(Comissão Retida: R$ ${formatMoney(financialSummary.installmentCommission || 0)})`, 100, footerY + 40);
-        }
     } else {
         doc.text(`DATA DE COBRANÇA: ${chargeDate}`, 100, footerY + 30);
     }
