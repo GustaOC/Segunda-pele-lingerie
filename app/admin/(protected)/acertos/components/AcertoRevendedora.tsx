@@ -703,11 +703,25 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                           )}
                       </div>
 
-                      <div className="flex justify-between items-center mb-6">
-                          <span className="text-base text-slate-600 font-medium">Valor a Receber</span>
-                          <span className="text-2xl font-bold text-slate-800">
-                              R$ {finalAmountToPay.toFixed(2)}
-                          </span>
+                      <div className="flex flex-col space-y-2 mb-6">
+                          <div className="flex justify-between items-center">
+                              <span className="text-base text-slate-600 font-medium">{isInstallment ? 'Total a Receber' : 'Valor a Receber'}</span>
+                              <span className="text-2xl font-bold text-slate-800">
+                                  R$ {finalAmountToPay.toFixed(2)}
+                              </span>
+                          </div>
+                          {isInstallment && (
+                              <>
+                                  <div className="flex justify-between items-center text-emerald-700 pt-2 border-t border-slate-100">
+                                      <span className="text-sm font-semibold">Pago no Ato</span>
+                                      <span className="text-lg font-bold">R$ {(parseFloat(paidNow) || 0).toFixed(2)}</span>
+                                  </div>
+                                  <div className="flex justify-between items-center text-amber-600">
+                                      <span className="text-sm font-semibold">Restante (Lançado no Financeiro)</span>
+                                      <span className="text-lg font-bold">R$ {(finalAmountToPay - (parseFloat(paidNow) || 0)).toFixed(2)}</span>
+                                  </div>
+                              </>
+                          )}
                       </div>
                       
                        <Button 
