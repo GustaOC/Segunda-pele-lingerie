@@ -310,7 +310,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                       total_value: parseFloat(remainingAmount.toFixed(2)),
                       due_date: installmentDueDate,
                       installment: '1/1',
-                      status: 'pending'
+                      status: 'NAO_PAGO'
                   });
               }
           }

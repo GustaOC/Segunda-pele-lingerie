@@ -142,7 +142,7 @@ export default function ContasReceber() {
                     total_value: comm,
                     due_date: new Date().toISOString().split("T")[0],
                     installment: "1/1",
-                    status: "PENDENTE",
+                    status: "NAO_PAGO",
                     category: "Comissões"
                 }])
             });

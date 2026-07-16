@@ -241,7 +241,7 @@ export default function AcertoPromotor() {
                       description: `Parcela Acerto Promotor: ${promoterName} - ${selectedPeriod}`,
                       total_value: remainingAmount,
                       due_date: installmentDueDate,
-                      status: "PENDENTE",
+                      status: "NAO_PAGO",
                       category: "Acertos",
                       installment: "1/1"
                   });
