@@ -149,7 +149,7 @@ export default function EstoqueRevendedoras() {
     // Fetch kits
     const { data: kitsData } = await supabase.from('promoter_kits').select('*, items:promoter_kit_items(*)').eq('reseller_id', resellerId).order('created_at', { ascending: false })
     if (kitsData) {
-      const mappedKits = kitsData.map((kit: any) => ({
+      let mappedKits = kitsData.map((kit: any) => ({
         ...kit,
         items: (kit.items || []).map((item: any) => {
           const p = products.find((prod: any) => prod.id === item.product_id)
@@ -161,6 +161,12 @@ export default function EstoqueRevendedoras() {
           }
         })
       }))
+
+      const currentRole = (userRole || '').toUpperCase();
+      if (currentRole === 'PROMOTOR' || currentRole === 'CONSULTANT') {
+          mappedKits = mappedKits.filter(k => !k.name?.includes('[FINALIZADO]'));
+      }
+
       setResellerKits(mappedKits)
     }
     setLoading(false)
