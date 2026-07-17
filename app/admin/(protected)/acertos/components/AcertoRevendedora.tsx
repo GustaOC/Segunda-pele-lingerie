@@ -93,12 +93,19 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
     setKitsFromAll(allKits); // We'll add this state to keep track of all kits for history
 
     if (data) {
-        const nonFinalized = data.filter(k => !k.name?.includes('[FINALIZADO]'));
-        setKits(nonFinalized);
-        if (nonFinalized.length > 0) {
-            setSelectedKitId(nonFinalized[0].id);
+        if (isPromoter) {
+            const nonFinalized = data.filter(k => !k.name?.includes('[FINALIZADO]'));
+            if (nonFinalized.length > 0) {
+                setKits([nonFinalized[0]]);
+                setSelectedKitId(nonFinalized[0].id);
+            } else {
+                setKits([]);
+            }
         } else {
-            setSelectedKitId("");
+            setKits(data);
+            if (data.length > 0) {
+                setSelectedKitId(data[0].id);
+            }
         }
     }
   };
@@ -512,7 +519,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                   <div className="mt-3">
                       <Button 
                           onClick={() => {
-                              const revKits = kitsFromAll.filter(k => k.name?.includes('[FINALIZADO]'));
+                              const revKits = isPromoter ? kitsFromAll.filter(k => k.name?.includes('[FINALIZADO]')) : kits.filter(k => k.name?.includes('[FINALIZADO]'));
                               setHistoryKits(revKits);
                               setShowHistoryModal(true);
                           }}
