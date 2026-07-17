@@ -93,8 +93,8 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
     setKitsFromAll(allKits); // We'll add this state to keep track of all kits for history
 
     if (data) {
-        const nonFinalized = data.filter(k => !k.name?.includes('[FINALIZADO]'));
         if (isPromoter) {
+            const nonFinalized = data.filter(k => !k.name?.includes('[FINALIZADO]'));
             if (nonFinalized.length > 0) {
                 setKits([nonFinalized[0]]);
                 setSelectedKitId(nonFinalized[0].id);
@@ -102,9 +102,9 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                 setKits([]);
             }
         } else {
-            setKits(nonFinalized);
-            if (nonFinalized.length > 0) {
-                setSelectedKitId(nonFinalized[0].id);
+            setKits(data);
+            if (data.length > 0) {
+                setSelectedKitId(data[0].id);
             }
         }
     }
