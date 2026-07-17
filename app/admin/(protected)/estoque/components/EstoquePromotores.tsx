@@ -156,11 +156,7 @@ export default function EstoquePromotores() {
           promoter_name: pr ? pr.nome : 'Promotor Desconhecido'
         }
       })
-
-      if (acertosRes.data && currentRole !== 'ADMIN') {
-        const settledPeriods = new Set(acertosRes.data.map(a => `${a.promoter_id}_${a.period}`))
-        mapped = mapped.filter(inv => !settledPeriods.has(`${inv.promoter_id}_${inv.period}`))
-      }
+      // O filtro de períodos acertados foi removido para manter a consistência com a tela 'Peças Soltas no Estoque' da área do promotor.
 
       if (currentRole !== 'ADMIN') {
         mapped = mapped.filter(inv => inv.promoter_id === session?.user?.id && !isPeriodExpired(inv.period))

@@ -4,6 +4,8 @@ const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.
 
 async function run() {
   const { data, error } = await supabase.from('products').select('*').limit(1);
-  console.log("Products row:", data[0]);
+  if (data && data.length > 0) {
+      console.log(Object.keys(data[0]));
+  }
 }
 run();
