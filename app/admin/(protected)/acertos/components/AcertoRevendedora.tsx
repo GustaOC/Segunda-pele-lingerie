@@ -321,7 +321,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                   if (reseller?.phone) {
                       const phone = reseller.phone.replace(/\D/g, '');
                       const formattedDate = new Date(installmentDueDate + "T12:00:00Z").toLocaleDateString('pt-BR');
-                      const msg = `Olá ${reseller.name}, o seu acerto foi finalizado com sucesso!\n\n*Resumo do Acerto:*\n- Valor Pago no Ato: R$ ${paidAmount.toFixed(2).replace('.', ',')}\n- Valor Restante a Pagar: R$ ${remainingAmount.toFixed(2).replace('.', ',')}\n- Data de Vencimento: ${formattedDate}\n\nQualquer dúvida estamos à disposição!`;
+                      const msg = `Olá ${reseller.name}, o seu acerto foi finalizado com sucesso!\n\n*Resumo do Acerto:*\n- Valor Pago no Ato: R$ ${paidAmount.toFixed(2).replace('.', ',')}\n- Valor Restante a Pagar: R$ ${remainingAmount.toFixed(2).replace('.', ',')}\n- Data para pagamento do valor restante em aberto: ${formattedDate}\n\nPor favor, envie um OK para confirmar que está ciente do saldo em aberto e da data para pagamento.`;
                       window.open(`https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`, '_blank');
                   }
               }
