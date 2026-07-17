@@ -315,6 +315,15 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                       installment: '1/1',
                       status: 'NAO_PAGO'
                   });
+                  
+                  // WhatsApp message
+                  const reseller = resellers.find(r=>r.id===selectedResellerId);
+                  if (reseller?.phone) {
+                      const phone = reseller.phone.replace(/\D/g, '');
+                      const formattedDate = new Date(installmentDueDate + "T12:00:00Z").toLocaleDateString('pt-BR');
+                      const msg = `Olá ${reseller.name}, o seu acerto foi finalizado com sucesso! ✅\n\n💰 *Resumo do Acerto:*\n- Valor Pago no Ato: R$ ${paidAmount.toFixed(2).replace('.', ',')}\n- Valor Restante a Pagar: R$ ${remainingAmount.toFixed(2).replace('.', ',')}\n- 📅 Data de Vencimento: ${formattedDate}\n\nQualquer dúvida estamos à disposição!`;
+                      window.open(`https://wa.me/55${phone}?text=${encodeURIComponent(msg)}`, '_blank');
+                  }
               }
           }
           
