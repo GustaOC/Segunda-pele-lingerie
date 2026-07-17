@@ -25,7 +25,7 @@ export default function AcertosWrapperPage() {
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
         const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).maybeSingle();
-        const role = profile?.role || session.user.user_metadata?.role || "";
+        const role = (profile?.role || session.user.user_metadata?.role || "").toUpperCase();
         if (role === 'PROMOTOR' || role === 'CONSULTANT') {
           setIsPromoter(true);
           setActiveTab("revendedora");
