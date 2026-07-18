@@ -263,11 +263,11 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                       .maybeSingle();
                       
                   if (invData) {
-                      await supabase.from('promoter_inventory').update({ 
+                      await (supabase.from('promoter_inventory') as any).update({ 
                           quantity: invData.quantity + item.returned 
                       }).eq('id', invData.id);
                   } else {
-                      await supabase.from('promoter_inventory').insert({
+                      await (supabase.from('promoter_inventory') as any).insert({
                           promoter_id: targetPromoterId,
                           product_id: item.product_id,
                           color: item.color,
@@ -277,7 +277,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                   }
                   
                   // Log transaction
-                  await supabase.from('inventory_transactions').insert({
+                  await (supabase.from('inventory_transactions') as any).insert({
                       created_by: adminId,
                       type: 'EXCHANGE_IN',
                       product_id: item.product_id,
@@ -297,7 +297,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
           const kitName = selectedKit?.name || `Kit #${selectedKitId.substring(0,8)}`;
           if (!kitName.includes('[FINALIZADO]')) {
               const paidAmount = isInstallment ? (parseFloat(paidNow) || 0) : finalAmountToPay;
-              const { error: updateError } = await supabase.from('promoter_kits').update({ 
+              const { error: updateError } = await (supabase.from('promoter_kits') as any).update({ 
                   name: `${kitName} [FINALIZADO] [PAGO:${paidAmount.toFixed(2)}]`
               }).eq('id', selectedKitId);
               
@@ -310,7 +310,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
               const remainingAmount = finalAmountToPay - paidAmount;
               if (remainingAmount > 0 && installmentDueDate) {
                   // Receiveable from Reseller
-                  await supabase.from('financial_transactions').insert({
+                  await (supabase.from('financial_transactions') as any).insert({
                       type: 'RECEIVABLE',
                       description: `Parcela Acerto Revendedora (${resellers.find(r=>r.id===selectedResellerId)?.name}) - Kit #${selectedKitId.substring(0,8)}`,
                       total_value: parseFloat(remainingAmount.toFixed(2)),

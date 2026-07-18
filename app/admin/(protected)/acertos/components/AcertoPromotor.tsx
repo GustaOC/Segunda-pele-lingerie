@@ -183,7 +183,7 @@ export default function AcertoPromotor() {
               for (const kit of promoterKits) {
                   const { data: kitData } = await supabase.from('promoter_kits').select('name').eq('id', kit.id).single();
                   if (kitData && !(kitData as any).name.includes('[ACERTADO]')) {
-                      await supabase.from('promoter_kits').update({ name: `${(kitData as any).name} [ACERTADO]` }).eq('id', kit.id);
+                      await (supabase.from('promoter_kits') as any).update({ name: `${(kitData as any).name} [ACERTADO]` }).eq('id', kit.id);
                   }
               }
           }
@@ -206,7 +206,7 @@ export default function AcertoPromotor() {
               });
           }
 
-          const { error: insertError } = await supabase.from('promoter_acertos').insert({
+          const { error: insertError } = await (supabase.from('promoter_acertos') as any).insert({
               promoter_id: selectedPromoterId,
               period: selectedPeriod,
               total_sold: totalSoldValue,
