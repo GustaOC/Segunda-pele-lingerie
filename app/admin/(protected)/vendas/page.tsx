@@ -236,7 +236,8 @@ export default function VendasPage() {
         
       const { data: kits } = await kitQ
 
-      setExchangeResellerKits(kits || [])
+      const filteredKits = (kits || []).filter(k => !k.name?.includes('[FINALIZADO]') && !k.name?.includes('[ACERTADO]'))
+      setExchangeResellerKits(filteredKits)
     }
     fetchResellerInv()
   }, [exchangeResellerId, returnPeriod, supabase])
