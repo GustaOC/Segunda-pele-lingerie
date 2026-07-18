@@ -215,27 +215,29 @@ export default function VendasPage() {
 
       const pQ = returnPeriod === 'null' ? null : returnPeriod
 
-      const { data: loose } = await supabase
+      let invQ = supabase
         .from('reseller_inventory')
         .select('*, products(name, sku)')
         .eq('reseller_id', exchangeResellerId)
-        .is('period', pQ ? undefined : null)
+        
+      if (pQ) invQ = invQ.eq('period', pQ)
+      else invQ = invQ.is('period', null)
       
-      let invQuery = loose
-      if (pQ) invQuery = loose?.filter((l: any) => l.period === pQ) || []
+      const { data: loose } = await invQ
       
-      setExchangeResellerInventory(invQuery || [])
+      setExchangeResellerInventory(loose || [])
 
-      const { data: kits } = await supabase
+      let kitQ = supabase
         .from('promoter_kits')
         .select('*, items:promoter_kit_items(*, products(name, sku))')
         .eq('reseller_id', exchangeResellerId)
-        .is('period', pQ ? undefined : null)
         
-      let kitQuery = kits
-      if (pQ) kitQuery = kits?.filter((k: any) => k.period === pQ) || []
+      if (pQ) kitQ = kitQ.eq('period', pQ)
+      else kitQ = kitQ.is('period', null)
+        
+      const { data: kits } = await kitQ
 
-      setExchangeResellerKits(kitQuery || [])
+      setExchangeResellerKits(kits || [])
     }
     fetchResellerInv()
   }, [exchangeResellerId, returnPeriod, supabase])
