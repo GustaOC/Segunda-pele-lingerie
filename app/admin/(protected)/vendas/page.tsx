@@ -427,17 +427,32 @@ export default function VendasPage() {
                 })
               }
             } else {
-              let resOutQuery = supabase.from('reseller_inventory').select('*').eq('reseller_id', exchangeResellerId).eq('product_id', item.productId).eq('color', item.color).eq('size', item.size)
-              if (pQ) resOutQuery = resOutQuery.eq('period', pQ)
-              else resOutQuery = resOutQuery.is('period', null)
-              
-              const { data: resInvOut } = await resOutQuery.maybeSingle()
-              if (resInvOut) {
-                await supabase.from('reseller_inventory').update({ quantity: resInvOut.quantity + item.quantity, updated_at: new Date().toISOString() }).eq('id', resInvOut.id)
+              if (exchangeKitId) {
+                const { data: kitItem } = await supabase.from('promoter_kit_items')
+                  .select('*').eq('kit_id', exchangeKitId).eq('product_id', item.productId).eq('color', item.color).eq('size', item.size).maybeSingle()
+                if (kitItem) {
+                  await supabase.from('promoter_kit_items').update({ quantity: kitItem.quantity + item.quantity }).eq('id', kitItem.id)
+                } else {
+                  await supabase.from('promoter_kit_items').insert({ kit_id: exchangeKitId, product_id: item.productId, color: item.color, size: item.size, quantity: item.quantity })
+                }
+                const { data: outProd } = await supabase.from('products').select('price').eq('id', item.productId).maybeSingle()
+                const { data: kit } = await supabase.from('promoter_kits').select('total_price').eq('id', exchangeKitId).maybeSingle()
+                if (outProd && kit) {
+                  await supabase.from('promoter_kits').update({ total_price: Number(kit.total_price) + (Number(outProd.price) * item.quantity) }).eq('id', exchangeKitId)
+                }
               } else {
-                await supabase.from('reseller_inventory').insert({
-                  reseller_id: exchangeResellerId, product_id: item.productId, color: item.color, size: item.size, quantity: item.quantity, period: pQ
-                })
+                let resOutQuery = supabase.from('reseller_inventory').select('*').eq('reseller_id', exchangeResellerId).eq('product_id', item.productId).eq('color', item.color).eq('size', item.size)
+                if (pQ) resOutQuery = resOutQuery.eq('period', pQ)
+                else resOutQuery = resOutQuery.is('period', null)
+                
+                const { data: resInvOut } = await resOutQuery.maybeSingle()
+                if (resInvOut) {
+                  await supabase.from('reseller_inventory').update({ quantity: resInvOut.quantity + item.quantity, updated_at: new Date().toISOString() }).eq('id', resInvOut.id)
+                } else {
+                  await supabase.from('reseller_inventory').insert({
+                    reseller_id: exchangeResellerId, product_id: item.productId, color: item.color, size: item.size, quantity: item.quantity, period: pQ
+                  })
+                }
               }
             }
           } else {
@@ -481,7 +496,7 @@ export default function VendasPage() {
                   .eq('product_id', item.productId)
                   .eq('color', item.color)
                   .eq('size', item.size)
-                  .single()
+                  .maybeSingle()
                 if (kitItem) {
                   const newQ = kitItem.quantity - item.quantity
                   if (newQ <= 0) {
@@ -489,8 +504,8 @@ export default function VendasPage() {
                   } else {
                     await supabase.from('promoter_kit_items').update({ quantity: newQ }).eq('id', kitItem.id)
                   }
-                  const { data: inProd } = await supabase.from('products').select('price').eq('id', item.productId).single()
-                  const { data: kit } = await supabase.from('promoter_kits').select('total_price').eq('id', item.kitId).single()
+                  const { data: inProd } = await supabase.from('products').select('price').eq('id', item.productId).maybeSingle()
+                  const { data: kit } = await supabase.from('promoter_kits').select('total_price').eq('id', item.kitId).maybeSingle()
                   if (inProd && kit) {
                     await supabase.from('promoter_kits').update({
                       total_price: Number(kit.total_price) - (Number(inProd.price) * item.quantity)
