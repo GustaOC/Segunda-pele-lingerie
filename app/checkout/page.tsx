@@ -19,10 +19,9 @@ export default function CheckoutPage() {
   // Checkout State
   const [paymentMethod, setPaymentMethod] = useState<'credit_card' | 'pix' | 'boleto'>('credit_card')
   const [deliveryMethod, setDeliveryMethod] = useState<'delivery' | 'pickup'>('delivery')
-  const [cep, setCep] = useState("")
-  const [address, setAddress] = useState<{ logradouro: string, bairro: string, localidade: string, uf: string } | null>(null)
+  const [address, setAddress] = useState<any>(null)
+  const [hasAddresses, setHasAddresses] = useState<boolean>(true)
   const [frete, setFrete] = useState<number | null>(null)
-  const [isCalculatingFreight, setIsCalculatingFreight] = useState(false)
   const [isProcessing, setIsProcessing] = useState(false)
 
   const supabase = createClient()
@@ -57,9 +56,27 @@ export default function CheckoutPage() {
       if (!session) {
         router.push("/login?redirect=/checkout")
       } else {
+        await fetchUserAddress(session.user.id)
         fetchCartItems(session.user)
       }
     }
+    
+    const fetchUserAddress = async (userId: string) => {
+      const { data, error } = await supabase
+        .from('user_addresses')
+        .select('*')
+        .eq('user_id', userId)
+        .order('is_default', { ascending: false })
+        .limit(1)
+        
+      if (data && data.length > 0) {
+        setAddress(data[0])
+        setHasAddresses(true)
+      } else {
+        setHasAddresses(false)
+      }
+    }
+    
     checkAuth()
   }, [router, supabase])
 
@@ -81,31 +98,14 @@ export default function CheckoutPage() {
   const total = subtotal + effectiveFrete
   const originalSubtotal = nonPromoSubtotal + promoSubtotal
 
-  const handleCepSearch = async () => {
-    if (cep.replace(/\D/g, '').length !== 8) return alert("CEP inválido")
-    setIsCalculatingFreight(true)
-    
-    try {
-      const res = await fetch(`https://viacep.com.br/ws/${cep.replace(/\D/g, '')}/json/`)
-      const data = await res.json()
-      
-      if (data.erro) {
-        alert("CEP não encontrado.")
-        setAddress(null)
-        setFrete(null)
-      } else {
-        setAddress(data)
-        // Regra de frete simulada: Se for SP = 15.00, outros estados 25.00. Compras acima de 299 = grátis.
-        let valorFrete = data.uf === 'SP' ? 15.00 : 25.00
-        if (subtotal >= 299) valorFrete = 0
-        setFrete(valorFrete)
-      }
-    } catch (err) {
-      alert("Erro ao buscar CEP.")
-    } finally {
-      setIsCalculatingFreight(false)
+  // Calculate freight automatically when address or subtotal changes
+  useEffect(() => {
+    if (address && deliveryMethod === 'delivery') {
+      let valorFrete = address.estado === 'SP' ? 15.00 : 25.00
+      if (subtotal >= 299) valorFrete = 0
+      setFrete(valorFrete)
     }
-  }
+  }, [address, subtotal, deliveryMethod])
 
   const handleCheckout = async () => {
     if (deliveryMethod === 'delivery' && !address) return alert("Por favor, calcule o frete para o seu CEP primeiro.")
@@ -125,7 +125,8 @@ export default function CheckoutPage() {
         metadata: {
           user_id: session?.user?.id,
           delivery_method: deliveryMethod,
-          payment_method: paymentMethod
+          payment_method: paymentMethod,
+          shipping_address: address ? `${address.logradouro}, ${address.numero}, ${address.bairro}, ${address.cidade}-${address.estado}, CEP: ${address.cep}` : null
         }
       }
 
@@ -214,32 +215,45 @@ export default function CheckoutPage() {
 
               {deliveryMethod === 'delivery' ? (
                 <>
-                  <div className="flex gap-4 mb-6">
-                    <input
-                      type="text"
-                      placeholder="00000-000"
-                      value={cep}
-                      onChange={(e) => setCep(e.target.value)}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum focus:ring-1 focus:ring-brand-plum transition-all max-w-[200px]"
-                    />
-                    <Button 
-                      onClick={handleCepSearch} 
-                      disabled={isCalculatingFreight || !cep}
-                      className="bg-slate-900 hover:bg-slate-800 text-white rounded-xl h-[50px] px-6"
-                    >
-                      {isCalculatingFreight ? <Loader2 className="w-4 h-4 animate-spin" /> : "Calcular"}
-                    </Button>
-                  </div>
-
-                  {address && (
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-100 text-sm text-slate-600 space-y-1">
-                      <p className="font-medium text-slate-900">{address.logradouro}</p>
-                      <p>{address.bairro}</p>
-                      <p>{address.localidade} - {address.uf}</p>
-                      <div className="mt-4 flex items-center text-green-600 font-medium">
-                        <Truck className="w-4 h-4 mr-2" /> 
+                  {!hasAddresses ? (
+                    <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 text-center">
+                      <MapPin className="w-8 h-8 text-slate-400 mx-auto mb-3" />
+                      <p className="text-slate-600 mb-4">Você ainda não tem um endereço de entrega cadastrado.</p>
+                      <Link href="/conta/enderecos">
+                        <Button className="bg-brand-plum hover:bg-brand-plum/90 text-white rounded-full">
+                          Cadastrar Endereço
+                        </Button>
+                      </Link>
+                    </div>
+                  ) : address ? (
+                    <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 relative group">
+                      <div className="absolute top-4 right-4">
+                        <Link href="/conta/enderecos" className="text-sm text-brand-plum font-bold hover:underline">
+                          Trocar
+                        </Link>
+                      </div>
+                      <div className="flex items-start">
+                        <MapPin className="w-5 h-5 text-brand-plum mr-3 mt-0.5 shrink-0" />
+                        <div>
+                          <p className="font-bold text-slate-900 mb-1">Entregar em:</p>
+                          <p className="text-slate-600 text-sm">
+                            {address.logradouro}, {address.numero}
+                            {address.complemento ? ` - ${address.complemento}` : ''}
+                          </p>
+                          <p className="text-slate-600 text-sm">{address.bairro}</p>
+                          <p className="text-slate-600 text-sm">{address.cidade} - {address.estado}</p>
+                          <p className="text-slate-500 text-xs mt-1">CEP {address.cep}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="mt-4 pt-4 border-t border-slate-200 flex items-center text-green-600 font-medium">
+                        <Truck className="w-5 h-5 mr-2" /> 
                         {frete === 0 ? "Frete Grátis (Promoção)" : `Frete Transportadora: R$ ${frete?.toFixed(2).replace('.', ',')}`}
                       </div>
+                    </div>
+                  ) : (
+                    <div className="flex justify-center p-8">
+                      <Loader2 className="w-6 h-6 animate-spin text-brand-plum" />
                     </div>
                   )}
                 </>

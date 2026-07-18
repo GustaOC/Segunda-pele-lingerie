@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, LogOut, Loader2, User, Package } from "lucide-react"
+import { ArrowLeft, LogOut, Loader2, User, Package, MapPin } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import { Playfair_Display, Inter } from "next/font/google"
@@ -125,9 +125,19 @@ export default function ContaPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Link href="/conta/enderecos" className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:border-brand-plum/50 hover:shadow-md transition-all group cursor-pointer block">
+            <div className="w-12 h-12 bg-brand-peach/50 text-brand-plum rounded-full flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <MapPin className="w-6 h-6" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2" style={{ fontFamily: "var(--font-playfair)" }}>Meus Endereços</h3>
+            <p className="text-slate-500 text-sm">Gerencie seus endereços de entrega para agilizar o checkout.</p>
+          </Link>
           <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100">
-            <h3 className="text-xl font-bold text-slate-900 mb-4" style={{ fontFamily: "var(--font-playfair)" }}>Meus Pedidos</h3>
+            <div className="w-12 h-12 bg-brand-peach/50 text-brand-plum rounded-full flex items-center justify-center mb-6">
+              <Package className="w-6 h-6" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-900 mb-2" style={{ fontFamily: "var(--font-playfair)" }}>Meus Pedidos</h3>
             <p className="text-slate-500 text-sm">Você ainda não tem nenhum pedido.</p>
           </div>
           <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex flex-col max-h-[400px]">
