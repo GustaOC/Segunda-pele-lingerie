@@ -182,8 +182,11 @@ export default function VendasPage() {
       if (data) setExchangePromoterInventory(data)
       
       const { data: allInv } = await supabase.from('promoter_inventory').select('period').eq('promoter_id', exchangePromoterId)
+      const { data: settled } = await supabase.from('promoter_acertos').select('period').eq('promoter_id', exchangePromoterId)
+      
       if (allInv) {
-        const unique = Array.from(new Set(allInv.map(i => i.period || 'null')))
+        const settledPeriods = settled ? settled.map(s => s.period) : []
+        const unique = Array.from(new Set(allInv.map(i => i.period || 'null'))).filter(p => p === 'null' || !settledPeriods.includes(p))
         setReturnAvailablePeriods(unique)
       }
     }
