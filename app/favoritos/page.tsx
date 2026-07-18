@@ -85,7 +85,7 @@ export default function FavoritosPage() {
                   <div className="absolute top-4 right-4 z-10">
                     <FavoriteButton productId={product.id} className="w-10 h-10 bg-white/90 backdrop-blur rounded-full hover:bg-white shadow-sm" />
                   </div>
-                  <Image src={product.image} alt={product.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <Image src={product.image || "https://images.unsplash.com/photo-1565597920392-1262d1ec8656?q=80&w=800"} alt={product.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
                 </div>
                 <div className="p-5 flex flex-col flex-grow">
                   <div className="flex items-center mb-2">

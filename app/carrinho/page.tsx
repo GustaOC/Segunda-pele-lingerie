@@ -163,7 +163,7 @@ export default function CarrinhoPage() {
               {items.map((item) => (
                 <div key={item.cart_id} className="flex flex-col sm:flex-row items-center gap-6 p-6 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow">
                   <div className="relative w-24 h-32 rounded-xl overflow-hidden shrink-0 bg-slate-100">
-                    <Image src={item.image} alt={item.name} fill className="object-cover" />
+                    <Image src={item.image || "https://images.unsplash.com/photo-1565597920392-1262d1ec8656?q=80&w=800"} alt={item.name} fill className="object-cover" />
                   </div>
                   
                   <div className="flex-1 text-center sm:text-left">

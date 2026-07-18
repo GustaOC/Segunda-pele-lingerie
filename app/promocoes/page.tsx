@@ -101,7 +101,7 @@ export default function SalePage() {
                     }
                     return null;
                   })()}
-                  <Image src={product.image} alt={product.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <Image src={product.image || "https://images.unsplash.com/photo-1565597920392-1262d1ec8656?q=80&w=800"} alt={product.name} fill className="object-cover group-hover:scale-105 transition-transform duration-500" />
               </div>
               <div className="p-5 flex flex-col flex-grow">
                 <div className="flex items-center mb-2">
