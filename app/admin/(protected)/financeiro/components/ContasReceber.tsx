@@ -119,10 +119,11 @@ export default function ContasReceber() {
     if (!quitarItem) return;
     setIsQuitting(true);
     try {
-      const comm = parseFloat(quitarCommission) || 0;
+      const commPct = parseFloat(quitarCommission) || 0;
+      const comm = (commPct / 100) * quitarItem.total_value;
       const netValue = parseFloat((quitarItem.total_value - comm).toFixed(2));
       const updatedDescription = comm > 0 
-        ? `${quitarItem.description} (Comissão Retida R$ ${comm.toFixed(2)})` 
+        ? `${quitarItem.description} (Comissão Retida ${commPct}% - R$ ${comm.toFixed(2)})` 
         : quitarItem.description;
 
       const res = await fetch(`/api/admin/financeiro/${quitarItem.id}`, {
@@ -330,16 +331,26 @@ export default function ContasReceber() {
                   </div>
                   
                   <div className="space-y-2 pt-2 border-t border-slate-100">
-                    <label className="text-sm font-medium">Comissão do Promotor Retida (Opcional)</label>
-                    <p className="text-xs text-slate-500 mb-2">Se você preencher este campo, o valor retido será <strong>descontado</strong> automaticamente do valor total recebido pela empresa.</p>
-                    <Input 
-                      type="number" 
-                      min="0"
-                      step="0.01"
-                      value={quitarCommission}
-                      onChange={e => setQuitarCommission(e.target.value)}
-                      placeholder="Ex: 50.00"
-                    />
+                    <label className="text-sm font-medium">Comissão do Promotor Retida (Em %) (Opcional)</label>
+                    <p className="text-xs text-slate-500 mb-2">Se você preencher este campo com a porcentagem, o valor retido será <strong>descontado</strong> automaticamente do valor total recebido pela empresa.</p>
+                    <div className="relative">
+                      <Input 
+                        type="number" 
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        value={quitarCommission}
+                        onChange={e => setQuitarCommission(e.target.value)}
+                        placeholder="Ex: 10 para 10%"
+                        className="pr-8"
+                      />
+                      <span className="absolute right-3 top-2.5 text-slate-400 font-bold">%</span>
+                    </div>
+                    {quitarCommission && !isNaN(parseFloat(quitarCommission)) && parseFloat(quitarCommission) > 0 && (
+                      <p className="text-sm text-purple-700 mt-2 font-semibold">
+                        Valor descontado: R$ {((parseFloat(quitarCommission) / 100) * (quitarItem.total_value || 0)).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </p>
+                    )}
                   </div>
                   
                   <div className="pt-4 flex justify-end gap-2">
