@@ -1,17 +1,9 @@
+require('dotenv').config({ path: '.env.local' });
 const { createClient } = require('@supabase/supabase-js');
-const fs = require('fs');
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-const envPath = '.env.local';
-const envFile = fs.readFileSync(envPath, 'utf8');
-const anonKey = envFile.match(/NEXT_PUBLIC_SUPABASE_ANON_KEY=(.*)/)[1];
-const url = envFile.match(/NEXT_PUBLIC_SUPABASE_URL=(.*)/)[1];
-
-const supabase = createClient(url, anonKey);
-
-async function test() {
-  const { data: d1 } = await supabase.from('inventory_transactions').select('*').limit(1);
-  console.log('inventory_transactions:', d1);
-
-  // How are kits sent to promoters? Let's check promotores/page.tsx
+async function run() {
+  const { data: cols } = await supabase.rpc('get_schema_columns', { table_name: 'promoter_kit_items' });
+  console.log(cols);
 }
-test();
+run();

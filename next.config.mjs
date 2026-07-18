@@ -19,7 +19,7 @@ const nextConfig = {
     ],
   },
   // Configuração para transpilar módulos se necessário (opcional)
-  transpilePackages: ['bcryptjs'],
+  transpilePackages: ['bcryptjs', 'lucide-react'],
 }
 
 export default nextConfig

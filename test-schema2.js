@@ -1,19 +1,9 @@
+require('dotenv').config({ path: '.env.local' });
 const { createClient } = require('@supabase/supabase-js');
-const fs = require('fs');
+const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-const envPath = '.env.local';
-const envFile = fs.readFileSync(envPath, 'utf8');
-const anonKey = envFile.match(/NEXT_PUBLIC_SUPABASE_ANON_KEY=(.*)/)[1];
-const url = envFile.match(/NEXT_PUBLIC_SUPABASE_URL=(.*)/)[1];
-
-const supabase = createClient(url, anonKey);
-
-async function test() {
-  const { data: d1 } = await supabase.from('inventory_transactions').select('*').limit(1);
-  if (d1 && d1.length > 0) {
-     console.log('Columns:', Object.keys(d1[0]));
-  } else {
-    // Let's insert a dummy row to see columns or just query information_schema if possible
-  }
+async function run() {
+  const { data: cols, error } = await supabase.from('promoter_kit_items').select('*').limit(1);
+  console.log(cols[0]);
 }
-test();
+run();

@@ -58,7 +58,7 @@ export default function VendasPage() {
   const [returnAvailablePeriods, setReturnAvailablePeriods] = useState<any[]>([])
   const [returnCartItems, setReturnCartItems] = useState<any[]>([])
   const [returnQuantity, setReturnQuantity] = useState(1)
-  const [exchangeResellerSourceType, setExchangeResellerSourceType] = useState<'LOOSE' | 'KIT'>('KIT')
+
   const [exchangeResellerInventory, setExchangeResellerInventory] = useState<any[]>([])
   const [exchangeResellerKits, setExchangeResellerKits] = useState<any[]>([])
   const [exchangeKitId, setExchangeKitId] = useState("")
@@ -195,7 +195,6 @@ export default function VendasPage() {
         .map(k => k.period)
         
       const allValidPeriods = [
-        ...(invWithQty?.map(i => i.period || 'null') || []),
         ...activeKitPeriods
       ]
       
@@ -285,7 +284,7 @@ export default function VendasPage() {
       size: returnSize,
       quantity: returnQuantity,
       period: returnPeriod,
-      kitId: exchangeResellerSourceType === 'KIT' ? exchangeKitId : undefined
+      kitId: exchangeKitId || undefined
     };
     setReturnCartItems([...returnCartItems, item]);
     setReturnProductId("");
