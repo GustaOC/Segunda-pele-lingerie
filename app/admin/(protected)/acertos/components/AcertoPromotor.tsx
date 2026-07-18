@@ -93,12 +93,12 @@ export default function AcertoPromotor() {
       
       const catMap = new Map();
       if (cats) {
-          cats.forEach(c => catMap.set(c.id, c.name.toLowerCase()));
+          (cats as any[]).forEach(c => catMap.set(c.id, c.name.toLowerCase()));
       }
 
       const productsMap = new Map();
       if (prods) {
-          prods.forEach(p => {
+          (prods as any[]).forEach(p => {
               const catName = p.category_id ? catMap.get(p.category_id) : '';
               const isRoupa = catName && catName.includes('roupa');
               productsMap.set(p.id, { price: p.price, isRoupa });
