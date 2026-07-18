@@ -67,7 +67,7 @@ export default function AcertoPromotor() {
       
       const periodSet = new Set<string>();
       if (kitsData) {
-          kitsData.forEach(k => {
+          (kitsData as any[]).forEach(k => {
               if (k.period) periodSet.add(k.period);
           });
       }
