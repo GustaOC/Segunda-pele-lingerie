@@ -1,11 +1,12 @@
 "use client";
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { SearchableSelect } from "@/components/ui/searchable-select"
 import { Playfair_Display, Inter } from "next/font/google"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
-import { Loader2, Plus, ArrowDown, ArrowUp, Package, History, X, Palette, List, ArrowLeft, FileText } from "lucide-react"
+import { Loader2, Plus, ArrowDown, ArrowUp, Package, History, X, Palette, List, ArrowLeft, FileText, Search } from "lucide-react"
 import jsPDF from "jspdf"
 import autoTable from "jspdf-autotable"
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" })
@@ -27,6 +28,7 @@ export default function EstoqueGeral() {
   const [loading, setLoading] = useState(true)
   const [userRole, setUserRole] = useState("")
   const [inventory, setInventory] = useState<InventoryRow[]>([])
+  const [searchTerm, setSearchTerm] = useState("")
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1)
@@ -282,8 +284,13 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
 
   const selectedProductObj = products.find(p => p.id === selectedProductId)
 
-  const totalPages = Math.ceil(inventory.length / itemsPerPage)
-  const currentInventory = inventory.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+  const filteredInventory = inventory.filter(item => 
+    item.product_name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    (item.sku && item.sku.toLowerCase().includes(searchTerm.toLowerCase()))
+  )
+
+  const totalPages = Math.ceil(filteredInventory.length / itemsPerPage)
+  const currentInventory = filteredInventory.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
   return (
     <>
@@ -322,7 +329,23 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
             <Loader2 className="w-8 h-8 animate-spin text-brand-plum" />
           </div>
         ) : (
-          <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="space-y-4">
+            <div className="flex bg-white p-1 rounded-2xl shadow-sm border border-slate-200">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 w-5 h-5" />
+                <Input
+                  placeholder="Buscar por nome do produto ou SKU..."
+                  value={searchTerm}
+                  onChange={(e) => {
+                    setSearchTerm(e.target.value)
+                    setCurrentPage(1)
+                  }}
+                  className="w-full pl-10 border-none shadow-none focus-visible:ring-0 text-slate-700 placeholder:text-slate-400 bg-transparent h-10"
+                />
+              </div>
+            </div>
+            
+            <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
@@ -423,6 +446,7 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                 </Button>
               </div>
             )}
+          </div>
           </div>
         )}
       </div>
