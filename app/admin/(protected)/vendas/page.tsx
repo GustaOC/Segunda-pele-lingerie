@@ -181,14 +181,26 @@ export default function VendasPage() {
       const { data } = await query
       if (data) setExchangePromoterInventory(data)
       
-      const { data: allInv } = await supabase.from('promoter_inventory').select('period').eq('promoter_id', exchangePromoterId)
-      const { data: settled } = await supabase.from('promoter_acertos').select('period').eq('promoter_id', exchangePromoterId)
+      const { data: invWithQty } = await supabase.from('promoter_inventory')
+        .select('period')
+        .eq('promoter_id', exchangePromoterId)
+        .gt('quantity', 0)
+        
+      const { data: activeKits } = await supabase.from('promoter_kits')
+        .select('period, name')
+        .eq('promoter_id', exchangePromoterId)
+        
+      const activeKitPeriods = (activeKits || [])
+        .filter(k => !k.name?.includes('[FINALIZADO]') && !k.name?.includes('[ACERTADO]'))
+        .map(k => k.period)
+        
+      const allValidPeriods = [
+        ...(invWithQty?.map(i => i.period || 'null') || []),
+        ...activeKitPeriods
+      ]
       
-      if (allInv) {
-        const settledPeriods = settled ? settled.map(s => s.period) : []
-        const unique = Array.from(new Set(allInv.map(i => i.period || 'null'))).filter(p => p === 'null' || !settledPeriods.includes(p))
-        setReturnAvailablePeriods(unique)
-      }
+      const unique = Array.from(new Set(allValidPeriods))
+      setReturnAvailablePeriods(unique)
     }
     fetchPromoterInv()
   }, [exchangePromoterId, exchangePeriod, supabase])
