@@ -350,11 +350,7 @@ export default function VendasPage() {
     e.preventDefault()
     setSubmitting(true)
     
-    if (mode === 'EXCHANGE' && (quantity <= 0 || quantity > maxQuantity)) {
-      alert("Quantidade inválida ou maior que o estoque.")
-      setSubmitting(false)
-      return
-    }
+
 
     if (mode === 'EXCHANGE' && selectedTransactionId && isExpired) {
       alert("Esta venda expirou o prazo de troca.")
