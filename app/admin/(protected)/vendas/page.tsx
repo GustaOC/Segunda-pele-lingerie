@@ -108,7 +108,7 @@ export default function VendasPage() {
         let currentRole = ""
         if (session) {
           setCurrentUser(session.user)
-          const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single()
+          const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).maybeSingle()
           currentRole = profile?.role || session.user.user_metadata?.role || ""
           setUserRole(currentRole)
         }
