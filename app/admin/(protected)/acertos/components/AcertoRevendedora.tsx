@@ -128,7 +128,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                       .like('notes', `%[Kit: ${kit.id}]%`);
                       
                   if (txs) {
-                      txs.forEach(tx => {
+                      (txs as any[]).forEach(tx => {
                           const key = `${tx.product_id}-${tx.color}-${tx.size}`;
                           returnedMap[key] = (returnedMap[key] || 0) + tx.quantity;
                       });
@@ -362,7 +362,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                   .like('notes', `%[Kit: ${kit.id}]%`);
                   
               if (txs) {
-                  txs.forEach(tx => {
+                  (txs as any[]).forEach(tx => {
                       const key = `${tx.product_id}-${tx.color}-${tx.size}`;
                       returnedMap[key] = (returnedMap[key] || 0) + tx.quantity;
                   });

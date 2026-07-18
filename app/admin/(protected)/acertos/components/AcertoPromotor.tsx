@@ -113,7 +113,7 @@ export default function AcertoPromotor() {
           .not('name', 'like', '%[ACERTADO]%');
           
       if (kits) {
-          const mappedKits = kits.map(k => {
+          const mappedKits = (kits as any[]).map(k => {
               let soldNormal = 0;
               let soldRoupas = 0;
               
@@ -182,8 +182,8 @@ export default function AcertoPromotor() {
           if (promoterKits.length > 0) {
               for (const kit of promoterKits) {
                   const { data: kitData } = await supabase.from('promoter_kits').select('name').eq('id', kit.id).single();
-                  if (kitData && !kitData.name.includes('[ACERTADO]')) {
-                      await supabase.from('promoter_kits').update({ name: `${kitData.name} [ACERTADO]` }).eq('id', kit.id);
+                  if (kitData && !(kitData as any).name.includes('[ACERTADO]')) {
+                      await supabase.from('promoter_kits').update({ name: `${(kitData as any).name} [ACERTADO]` }).eq('id', kit.id);
                   }
               }
           }
