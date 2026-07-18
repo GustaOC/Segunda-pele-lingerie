@@ -58,7 +58,7 @@ export default function VendasPage() {
   const [returnAvailablePeriods, setReturnAvailablePeriods] = useState<any[]>([])
   const [returnCartItems, setReturnCartItems] = useState<any[]>([])
   const [returnQuantity, setReturnQuantity] = useState(1)
-  const [exchangeResellerSourceType, setExchangeResellerSourceType] = useState<'LOOSE' | 'KIT'>('LOOSE')
+  const [exchangeResellerSourceType, setExchangeResellerSourceType] = useState<'LOOSE' | 'KIT'>('KIT')
   const [exchangeResellerInventory, setExchangeResellerInventory] = useState<any[]>([])
   const [exchangeResellerKits, setExchangeResellerKits] = useState<any[]>([])
   const [exchangeKitId, setExchangeKitId] = useState("")
@@ -824,20 +824,7 @@ export default function VendasPage() {
                     </select>
 
                     {exchangeResellerId && (
-                      <div className="flex gap-4 mb-4">
-                        <label className="flex items-center text-sm">
-                          <input type="radio" checked={exchangeResellerSourceType === 'LOOSE'} onChange={() => {setExchangeResellerSourceType('LOOSE'); setReturnProductId('');}} className="mr-2" />
-                          Peças soltas
-                        </label>
-                        <label className="flex items-center text-sm">
-                          <input type="radio" checked={exchangeResellerSourceType === 'KIT'} onChange={() => {setExchangeResellerSourceType('KIT'); setReturnProductId(''); setExchangeKitId('');}} className="mr-2" />
-                          Peças de Kits
-                        </label>
-                      </div>
-                    )}
-                    
-                    {exchangeResellerId && exchangeResellerSourceType === 'KIT' && (
-                      <div className="mb-4">
+                      <div className="mb-4 pt-2">
                         <label className="block text-sm font-medium text-slate-700 mb-1">Selecione o Kit *</label>
                         <select
                           required
@@ -868,7 +855,7 @@ export default function VendasPage() {
                       setReturnSize(s);
                     }} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-50 disabled:bg-slate-100">
                       <option value="" disabled>Selecione a peça...</option>
-                      {(!exchangeResellerId ? exchangePromoterInventory : (exchangeResellerSourceType === 'LOOSE' ? exchangeResellerInventory : exchangeResellerKits.find(k => k.id === exchangeKitId)?.items || [])).map((inv: any) => (
+                      {(!exchangeResellerId ? exchangePromoterInventory : (exchangeResellerKits.find(k => k.id === exchangeKitId)?.items || [])).map((inv: any) => (
                         <option key={inv.id} value={`${inv.product_id}|${inv.color}|${inv.size}`}>
                           {inv.products?.sku ? `[${inv.products?.sku}] ` : ''}{inv.products?.name} ({inv.color} {inv.size}) - Saldo: {inv.quantity} un
                         </option>
