@@ -840,7 +840,7 @@ export default function VendasPage() {
                       <div className="mb-4 pt-2">
                         <label className="block text-sm font-medium text-slate-700 mb-1">Selecione o Kit *</label>
                         <select
-                          required={exchangeItems.length === 0}
+                          required={returnCartItems.length === 0}
                           value={exchangeKitId}
                           onChange={(e) => {
                             setExchangeKitId(e.target.value)
@@ -861,7 +861,7 @@ export default function VendasPage() {
                 <div className="pt-2 border-t border-amber-200/50">
                   <label className="block text-sm font-medium text-slate-700 mb-1">Produto que está voltando *</label>
                   {exchangeSourceType === 'OUT_PROMOTER' ? (
-                    <select required={exchangeItems.length === 0} disabled={exchangeSourceType === 'OUT_PROMOTER' ? !exchangePromoterId : !!selectedTransactionId} value={returnProductId ? `${returnProductId}|${returnColor}|${returnSize}` : ""} onChange={(e) => { 
+                    <select required={returnCartItems.length === 0} disabled={exchangeSourceType === 'OUT_PROMOTER' ? !exchangePromoterId : !!selectedTransactionId} value={returnProductId ? `${returnProductId}|${returnColor}|${returnSize}` : ""} onChange={(e) => { 
                       const [pId, c, s] = e.target.value.split('|');
                       setReturnProductId(pId);
                       setReturnColor(c);
@@ -875,7 +875,7 @@ export default function VendasPage() {
                       ))}
                     </select>
                   ) : (
-                    <select required={exchangeItems.length === 0} disabled={!!selectedTransactionId} value={returnProductId} onChange={(e) => { setReturnProductId(e.target.value); setReturnColor(""); setReturnSize("") }} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-70 disabled:bg-slate-100">
+                    <select required={returnCartItems.length === 0} disabled={!!selectedTransactionId} value={returnProductId} onChange={(e) => { setReturnProductId(e.target.value); setReturnColor(""); setReturnSize("") }} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-70 disabled:bg-slate-100">
                       <option value="" disabled>Selecione...</option>
                       {products.map(p => <option key={p.id} value={p.id}>{p.sku ? `[${p.sku}] ` : ''}{p.name}</option>)}
                     </select>
@@ -886,14 +886,14 @@ export default function VendasPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1">Cor *</label>
-                      <select required={exchangeItems.length === 0} disabled={!!selectedTransactionId || !returnProductId} value={returnColor} onChange={(e) => setReturnColor(e.target.value)} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-70 disabled:bg-slate-100">
+                      <select required={returnCartItems.length === 0} disabled={!!selectedTransactionId || !returnProductId} value={returnColor} onChange={(e) => setReturnColor(e.target.value)} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-70 disabled:bg-slate-100">
                         <option value="" disabled>Selecione...</option>
                         {returnProductObj?.colors?.map((c:any, i:number) => <option key={i} value={c.name}>{c.name}</option>)}
                       </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho *</label>
-                      <select required={exchangeItems.length === 0} disabled={!!selectedTransactionId || !returnProductId} value={returnSize} onChange={(e) => setReturnSize(e.target.value)} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-70 disabled:bg-slate-100">
+                      <select required={returnCartItems.length === 0} disabled={!!selectedTransactionId || !returnProductId} value={returnSize} onChange={(e) => setReturnSize(e.target.value)} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-70 disabled:bg-slate-100">
                         <option value="" disabled>Selecione...</option>
                         {returnProductObj?.sizes?.map((s:any, i:number) => <option key={i} value={s}>{s}</option>) || ["P","M","G","GG"].map(s => <option key={s} value={s}>{s}</option>)}
                       </select>
