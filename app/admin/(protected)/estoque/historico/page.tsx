@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Loader2, ArrowLeft, Package, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
+import { getAllProfilesForHistory } from "./actions"
 
 const playfair = Playfair_Display({ subsets: ["latin"], weight: ["400", "600", "700"], variable: "--font-playfair" })
 const inter = Inter({ subsets: ["latin"], weight: ["400", "500", "600"], variable: "--font-inter" })
@@ -62,7 +63,7 @@ export default function EstoqueHistoricoPage() {
 
       if (error) throw error
 
-      const { data: allProfiles } = await supabase.from('profiles').select('id, nome')
+      const allProfiles = await getAllProfilesForHistory()
       const pMap = new Map(allProfiles?.map(p => [p.id, p.nome]) || [])
       
       const transactionsWithCreator = (data || []).map(t => ({
@@ -84,6 +85,7 @@ export default function EstoqueHistoricoPage() {
     switch (type) {
       case 'IN': return { label: 'Entrada', color: 'bg-emerald-100 text-emerald-700' }
       case 'MANUAL_ADJUST': return { label: 'Ajuste Manual', color: 'bg-amber-100 text-amber-700' }
+      case 'TRANSFER_IN': return { label: 'Transf. de Entrada', color: 'bg-indigo-100 text-indigo-700' }
       case 'TRANSFER_PROMOTER': return { label: 'Transf. Promotora', color: 'bg-brand-rose/20 text-brand-plum' }
       case 'TRANSFER_RESELLER': return { label: 'Transf. Revendedora', color: 'bg-indigo-100 text-indigo-700' }
       case 'OUT_RETAIL': return { label: 'Venda Varejo', color: 'bg-blue-100 text-blue-700' }
