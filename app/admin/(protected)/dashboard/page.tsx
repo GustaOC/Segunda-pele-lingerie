@@ -26,7 +26,7 @@ const isPaymentOverdue = () => {
 
    */
 
-  const CONTROL_MODE: 'AUTO' | 'FORCE_LOCK' | 'FORCE_UNLOCK' = 'FORCE_UNLOCK'; // Alterar conforme necessário
+  let CONTROL_MODE: 'AUTO' | 'FORCE_LOCK' | 'FORCE_UNLOCK' = 'FORCE_UNLOCK'; // Alterar conforme necessário
 
 
 
