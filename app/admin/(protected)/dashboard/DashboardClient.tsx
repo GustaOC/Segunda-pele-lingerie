@@ -272,8 +272,8 @@ export default function DashboardClient({ user }: { user: SupabaseUser }) {
                 ['Tempo Médio', `${averageProcessingTime} dias`],
             ],
             theme: 'grid',
-            headStyles: { fillColor: primaryColor, textColor: [255, 255, 255] },
-            alternateRowStyles: { fillColor: [245, 245, 245] },
+            headStyles: { fillColor: primaryColor as any, textColor: [255, 255, 255] as any },
+            alternateRowStyles: { fillColor: [245, 245, 245] as any },
             styles: { fontSize: 10, cellPadding: 6 }
         });
         
@@ -287,8 +287,8 @@ export default function DashboardClient({ user }: { user: SupabaseUser }) {
                 ['Restante', Math.max(500 - totalLeads, 0)],
             ],
             theme: 'grid',
-            headStyles: { fillColor: primaryColor, textColor: [255, 255, 255] },
-            alternateRowStyles: { fillColor: [245, 245, 245] },
+            headStyles: { fillColor: primaryColor as any, textColor: [255, 255, 255] as any },
+            alternateRowStyles: { fillColor: [245, 245, 245] as any },
             styles: { fontSize: 10, cellPadding: 6 }
         });
         
