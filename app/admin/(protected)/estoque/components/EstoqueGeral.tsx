@@ -76,12 +76,12 @@ export default function EstoqueGeral() {
     // Fetch categories
     const { data: catData } = await supabase.from('categories').select('*').order('name')
     if (catData) {
-      const parents = catData.filter(c => !c.parent_id)
+      const parents = (catData as any[]).filter(c => !c.parent_id)
       const grouped = parents.map(parent => ({
         ...parent,
-        children: catData.filter(c => c.parent_id === parent.id).map(child => ({
+        children: (catData as any[]).filter(c => c.parent_id === parent.id).map(child => ({
           ...child,
-          children: catData.filter(model => model.parent_id === child.id)
+          children: (catData as any[]).filter(model => model.parent_id === child.id)
         }))
       }))
       setCategories(grouped)

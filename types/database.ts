@@ -214,8 +214,16 @@ export interface Database {
           notes?: string | null
         }
       }
+      categories: { Row: any; Insert: any; Update: any; }
+      consultant: { Row: any; Insert: any; Update: any; }
+      financial_transactions: { Row: any; Insert: any; Update: any; }
+      products: { Row: any; Insert: any; Update: any; }
+      promoter_acertos: { Row: any; Insert: any; Update: any; }
+      promoter_kit_items: { Row: any; Insert: any; Update: any; }
+      promoter_kits: { Row: any; Insert: any; Update: any; }
+      reseller_inventory: { Row: any; Insert: any; Update: any; }
+      resellers: { Row: any; Insert: any; Update: any; }
     }
-    & { [key: string]: any }
     Views: {
       [_ in never]: never
     }

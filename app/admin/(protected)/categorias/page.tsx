@@ -80,7 +80,7 @@ export default function CategoriasPage() {
     const slug = generateSlug(newName)
 
     try {
-      const { error } = await supabase.from('categories').insert({
+      const { error } = await (supabase.from('categories') as any).insert({
         name: newName,
         slug,
         parent_id: parentId
@@ -102,7 +102,7 @@ export default function CategoriasPage() {
     if (!confirm("Tem certeza que deseja excluir? Você não pode excluir se houver produtos vinculados ou se houver subitens.")) return
     
     try {
-      const { error } = await supabase.from('categories').delete().eq('id', id)
+      const { error } = await (supabase.from('categories') as any).delete().eq('id', id)
       if (error) {
          if (error.code === '23503') alert("Não é possível excluir pois existem produtos ou subcategorias vinculadas.")
          else alert("Erro ao excluir.")
