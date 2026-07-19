@@ -415,15 +415,15 @@ export default function AtivarEcommercePage() {
                   </div>
                   
                   <div className="space-y-3">
-                    <div className="flex items-center space-x-3 bg-purple-50 p-3 rounded-lg border border-purple-100">
+                    <div className="flex items-center space-x-3 bg-brand-plum/10 p-3 rounded-lg border border-brand-plum/20">
                       <input
                         type="checkbox"
                         id="isPromo"
                         checked={isPromo}
                         onChange={(e) => setIsPromo(e.target.checked)}
-                        className="w-5 h-5 rounded border-purple-300 text-purple-600 focus:ring-purple-500"
+                        className="w-5 h-5 rounded border-brand-plum/30 text-brand-plum focus:ring-brand-plum"
                       />
-                      <label htmlFor="isPromo" className="text-sm font-medium text-purple-900">
+                      <label htmlFor="isPromo" className="text-sm font-medium text-brand-plum">
                         Ativar Preço Promocional?
                       </label>
                     </div>
