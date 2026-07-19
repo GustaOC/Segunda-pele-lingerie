@@ -320,7 +320,7 @@ export default function EcommerceHome() {
                   style={{ objectFit: "cover" }}
                   className="object-cover group-hover:scale-110 transition-transform duration-700" 
                 />
-                <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 to-transparent opacity-90 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.9)_0%,rgba(0,0,0,0)_50%)] opacity-90 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div className="absolute bottom-6 left-0 w-full text-center">
                   <h3 className="text-white text-2xl font-semibold tracking-wide leading-normal pb-1" style={{ fontFamily: "var(--font-playfair)" }}>{cat.name}</h3>
                   <span className="inline-block mt-3 text-white/80 text-sm uppercase tracking-widest border-b border-transparent group-hover:border-white transition-colors pb-1">Ver coleção</span>
