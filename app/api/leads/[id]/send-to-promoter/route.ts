@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-server'
 
-export async function POST(req: NextRequest) {
+export async function POST(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const id = req.nextUrl.searchParams.get("id")
+    const { id } = await params;
     if (!id) return NextResponse.json({ error: 'missing_id' }, { status: 400 })
     const body = await req.json().catch(() => ({}))
     const canal = body.canal === 'WA' ? 'WhatsApp' : 'Email'

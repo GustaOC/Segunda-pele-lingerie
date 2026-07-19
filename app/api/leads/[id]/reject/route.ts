@@ -3,9 +3,10 @@ import { supabaseAdmin } from '@/lib/supabase-server'
 
 export async function PATCH(
   req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const id = req.nextUrl.searchParams.get("id")
+    const { id } = await params;
     const body = await req.json().catch(() => ({}))
     const { motivo, observacoes } = body
 

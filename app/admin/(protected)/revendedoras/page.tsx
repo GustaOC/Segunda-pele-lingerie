@@ -135,7 +135,7 @@ export default function ConsultantManagement() {
 
   const handleStatusChange = async (leadId: string, newStatus: string, details: any) => {
     try {
-        const endpoint = newStatus === 'APROVADO' ? `/api/leads/id/approve?id=${leadId}` : `/api/leads/id/reject?id=${leadId}`;
+        const endpoint = newStatus === 'APROVADO' ? `/api/leads/${leadId}/approve` : `/api/leads/${leadId}/reject`;
         const body = newStatus === 'APROVADO'
             ? { promotorId: details.promoter, observacoes: details.notes }
             : { motivo: details.rejectionReason, observacoes: details.notes };
