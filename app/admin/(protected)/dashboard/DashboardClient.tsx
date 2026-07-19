@@ -672,7 +672,6 @@ export default function DashboardClient({ user }: { user: SupabaseUser }) {
                                         if (range?.from) setStartDate(range.from);
                                         if (range?.to) setEndDate(range.to);
                                     }}
-                                    initialFocus
                                     locale={ptBR}
                                     className="p-3"
                                 />
