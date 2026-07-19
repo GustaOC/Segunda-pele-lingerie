@@ -311,17 +311,13 @@ export default function EcommerceHome() {
                 href={`/categoria/${cat.slug}`} 
                 className="group block relative w-[280px] sm:w-[300px] h-[400px] rounded-3xl overflow-hidden shadow-lg cursor-pointer flex-none snap-start"
               >
-                <Image 
+                <img 
                   src={cat.image} 
                   alt={cat.name} 
-                  fill 
-                  unoptimized={true}
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  quality={100}
-                  style={{ objectFit: "cover", WebkitTransform: "translateZ(0)" }}
-                  className="object-cover group-hover:scale-110 transition-transform duration-700 backface-hidden will-change-transform" 
+                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
+                  style={{ backfaceVisibility: "hidden", WebkitTransform: "translateZ(0)" }}
                 />
-                <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.9)_0%,rgba(0,0,0,0)_50%)] opacity-90 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 opacity-90 group-hover:opacity-100 transition-opacity duration-300" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0) 100%)" }}></div>
                 <div className="absolute bottom-6 left-0 w-full text-center">
                   <h3 className="text-white text-2xl font-semibold tracking-wide leading-normal pb-1" style={{ fontFamily: "var(--font-playfair)" }}>{cat.name}</h3>
                   <span className="inline-block mt-3 text-white/80 text-sm uppercase tracking-widest border-b border-transparent group-hover:border-white transition-colors pb-1">Ver coleção</span>
