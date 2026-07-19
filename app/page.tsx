@@ -309,13 +309,17 @@ export default function EcommerceHome() {
               <Link 
                 key={cat.id} 
                 href={`/categoria/${cat.slug}`} 
-                className="group block relative w-[280px] sm:w-[300px] h-[400px] rounded-3xl overflow-hidden shadow-lg cursor-pointer flex-none snap-start"
+                className="group block relative w-[280px] sm:w-[300px] h-[400px] rounded-3xl overflow-hidden shadow-lg cursor-pointer flex-none snap-start isolate"
+                style={{ transform: "translateZ(0)", WebkitMaskImage: "-webkit-radial-gradient(white, black)" }}
               >
-                <img 
+                <Image 
                   src={cat.image} 
                   alt={cat.name} 
-                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" 
-                  style={{ backfaceVisibility: "hidden", WebkitTransform: "translateZ(0)" }}
+                  fill 
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                  quality={100}
+                  style={{ objectFit: "cover" }}
+                  className="object-cover group-hover:scale-110 transition-transform duration-700" 
                 />
                 <div className="absolute inset-0 opacity-90 group-hover:opacity-100 transition-opacity duration-300" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0) 100%)" }}></div>
                 <div className="absolute bottom-6 left-0 w-full text-center">
