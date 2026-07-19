@@ -1597,7 +1597,7 @@ export default function DashboardClient({ user }: { user: SupabaseUser }) {
                                                         {city.status?.APROVADO || 0} aprovadas
                                                     </div>
                                                     <Badge variant="outline" className="text-xs bg-[#4B2C4E]/10 text-[#4B2C4E] border-[#4B2C4E]/20 rounded-lg">
-                                                        {((city.count / Math.max(1, topCities.reduce((a: any, b: any) => a + b.count, 0))) * 100).toFixed(1)}%
+                                                        {((city.count / Math.max(1, Number(topCities.reduce((a: any, b: any) => a + (b.count || 0), 0)))) * 100).toFixed(1)}%
                                                     </Badge>
                                                 </div>
                                             </div>
