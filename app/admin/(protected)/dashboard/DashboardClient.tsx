@@ -965,7 +965,7 @@ export default function DashboardClient({ user }: { user: SupabaseUser }) {
                                                 <SearchableSelect
                                                     options={[
                                                         { value: "all", label: "Todos os Promotores" },
-                                                        ...promoters.map(p => ({ value: p, label: p }))
+                                                        ...promoters.map((p: any) => ({ value: p, label: p }))
                                                     ]}
                                                     value={selectedPromoter}
                                                     onChange={(val) => setSelectedPromoter(val || "all")}
