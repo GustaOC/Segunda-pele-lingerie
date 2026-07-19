@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     database: {
       connected: false,
       tableExists: false,
-      users: [],
+      users: [] as any[],
       error: null as any
     },
     testLogin: {

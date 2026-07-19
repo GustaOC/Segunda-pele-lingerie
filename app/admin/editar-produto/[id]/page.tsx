@@ -90,7 +90,7 @@ export default function EditarProdutoPage() {
           
           if (prodData.category_id && data) {
             let current = data.find(c => c.id === prodData.category_id)
-            let path = []
+            let path: any[] = []
             while (current) {
               path.unshift(current)
               current = data.find(c => c.id === current.parent_id)

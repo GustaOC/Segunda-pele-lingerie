@@ -91,8 +91,8 @@ export default function EstoqueGeral() {
     const { data: invData, error } = await supabase.from('inventory').select('*').order('created_at', { ascending: false })
     
     if (invData && prodData) {
-      const mapped = invData.map(inv => {
-        const p = prodData.find(p => p.id === inv.product_id)
+      const mapped = (invData as any[]).map(inv => {
+        const p = (prodData as any[]).find(p => p.id === inv.product_id)
         return {
           ...inv,
           product_name: p ? p.name : 'Produto Desconhecido',
@@ -140,7 +140,7 @@ export default function EstoqueGeral() {
     }
 
     try {
-      const { error } = await supabase.from('products').insert({
+      const { error } = await (supabase.from('products') as any).insert({
         sku: newSku,
         name: newName,
         price: priceNum,
@@ -193,13 +193,15 @@ export default function EstoqueGeral() {
     }
 
     try {
-      const { data: existingInv } = await supabase
+      const { data: existingInvData } = await supabase
         .from('inventory')
         .select('*')
         .eq('product_id', selectedProductId)
         .eq('size', selectedSize)
         .eq('color', selectedColor)
         .single()
+      
+      const existingInv = existingInvData as any;
 
       let newQuantity = quantity
       
@@ -210,16 +212,14 @@ export default function EstoqueGeral() {
           newQuantity = quantity
         }
         
-        await supabase
-          .from('inventory')
+        await (supabase.from('inventory') as any)
           .update({ quantity: newQuantity, updated_at: new Date().toISOString() })
           .eq('id', existingInv.id)
       } else {
         if (transactionType === 'MANUAL_ADJUST') {
            newQuantity = quantity
         }
-        await supabase
-          .from('inventory')
+        await (supabase.from('inventory') as any)
           .insert({
             product_id: selectedProductId,
             size: selectedSize,
@@ -230,7 +230,7 @@ export default function EstoqueGeral() {
 
       const logQty = transactionType === 'MANUAL_ADJUST' ? newQuantity - (existingInv?.quantity || 0) : quantity
       
-      await supabase.from('inventory_transactions').insert({
+      await (supabase.from('inventory_transactions') as any).insert({
 created_by: (await supabase.auth.getSession()).data.session?.user?.id,
         type: transactionType,
         product_id: selectedProductId,

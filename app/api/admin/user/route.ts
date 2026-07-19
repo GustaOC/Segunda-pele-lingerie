@@ -39,7 +39,7 @@ export async function GET(req: NextRequest) {
     }
 
     const profilesMap = new Map((profiles || []).map(p => [p.id, p]));
-    const combinedUsers = [];
+    const combinedUsers: any[] = [];
 
     // Add all auth users
     users.users.forEach(user => {

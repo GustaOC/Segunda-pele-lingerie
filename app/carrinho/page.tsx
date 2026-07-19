@@ -28,16 +28,19 @@ export default function CarrinhoPage() {
 
       if (!error && data) {
         // Mapear para o formato do layout, filtrando itens que perderam o produto
-        const mappedItems = data.filter(item => item.products).map(item => ({
-          cart_id: item.id,
-          id: item.product_id,
-          name: item.products.name,
-          price: item.products.price,
-          old_price: item.products.old_price,
-          image: item.products.image,
-          size: item.size || 'U',
-          quantity: item.quantity
-        }))
+        const mappedItems = data.filter(item => item.products).map(item => {
+          const p: any = item.products;
+          return {
+            cart_id: item.id,
+            id: item.product_id,
+            name: p.name,
+            price: p.price,
+            old_price: p.old_price,
+            image: p.image,
+            size: item.size || 'U',
+            quantity: item.quantity
+          }
+        })
         setItems(mappedItems)
       }
       setIsLoadingAuth(false)

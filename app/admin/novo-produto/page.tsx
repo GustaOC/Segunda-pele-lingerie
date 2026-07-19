@@ -84,7 +84,7 @@ export default function AtivarEcommercePage() {
     if (p) {
       if (p.category_id && allCategories.length > 0) {
         let current = allCategories.find(c => c.id === p.category_id)
-        let path = []
+        let path: any[] = []
         while (current) {
           path.unshift(current)
           current = allCategories.find(c => c.id === current.parent_id)
@@ -211,7 +211,7 @@ export default function AtivarEcommercePage() {
       }
     }
 
-    let updatedColors = []
+    let updatedColors: any[] = []
     if (productData.colors) {
       for (const color of productData.colors) {
         const colorFiles = colorImageFiles[color.name]?.files || []

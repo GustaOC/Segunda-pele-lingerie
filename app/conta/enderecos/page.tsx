@@ -299,7 +299,7 @@ export default function EnderecosPage() {
                       </div>
                     </div>
                   </div>
-                  <div className="pl-13 text-sm text-slate-600 mb-6 space-y-1 ml-13">
+                  <div className="pl-[52px] text-sm text-slate-600 mb-6 space-y-1 text-left">
                     {addr.complemento && <p>{addr.complemento}</p>}
                     <p>{addr.bairro}</p>
                     <p>{addr.cidade} - {addr.estado}</p>

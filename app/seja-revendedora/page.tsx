@@ -359,8 +359,7 @@ export default function HomePage() {
                   type="submit" 
                   className="w-full mt-8 text-white font-semibold py-4 rounded-2xl text-lg shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-[1.02] border border-purple-500/20"
                   style={{ 
-                    background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)",
-                    hover: { background: "linear-gradient(to right, #4A2E49, #3B2338, #2C1B29)" }
+                    background: "linear-gradient(to right, #5D3A5B, #4A2E49, #3B2338)"
                   }}
                   disabled={isLoading}
                 >

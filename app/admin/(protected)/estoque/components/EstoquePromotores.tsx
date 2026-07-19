@@ -139,7 +139,7 @@ export default function EstoquePromotores() {
 
     if (prodRes.data) setProducts(prodRes.data)
     
-    let promData = []
+    let promData: any[] = []
     if (usersRes.data) {
       promData = usersRes.data.filter((u: any) => ['CONSULTANT', 'PROMOTOR', 'ADMIN', 'USER'].includes(u.role))
       setPromoters(promData)
@@ -447,6 +447,7 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
         
         await supabase.from('inventory_transactions').insert({
             created_by: userId,
+            promoter_id: item.promoter_id,
             type: 'TRANSFER_IN',
             product_id: item.product_id,
             color: item.color,
@@ -821,7 +822,7 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                             setWeeklyPeriod("");
                           }
                         }}
-                        initialFocus
+
                         className="p-3"
                       />
                       <div className="p-3 border-t text-xs text-slate-500 text-center bg-slate-50 rounded-b-2xl">

@@ -90,7 +90,7 @@ export default function PrintPdfModal({ isOpen, onClose, kit, reseller, promoter
     if (showPrecoUnit) head[0].push("P. UNIT (R$)")
     if (showTotalItem) head[0].push("TOTAL (R$)")
 
-    const body = []
+    const body: any[] = []
     let totalPieces = 0
     let totalValue = 0
 
@@ -110,7 +110,7 @@ export default function PrintPdfModal({ isOpen, onClose, kit, reseller, promoter
     }
 
     itemsToPrint.forEach((item: any) => {
-      const row = []
+      const row: any[] = []
       if (showQtyKit) row.push(item.quantity.toString())
       const prodName = groupProductCode 
           ? `${item.sku || '-'} - ${item.product_name}` 

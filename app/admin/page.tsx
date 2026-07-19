@@ -228,8 +228,8 @@ export default function UserManagementPage() {
       
       console.log('📤 Dados sendo enviados:', {
         ...dataToSend,
-        password: dataToSend.password ? '[OCULTADO]' : undefined,
-        confirmPassword: dataToSend.confirmPassword ? '[OCULTADO]' : undefined
+        password: (dataToSend as any).password ? '[OCULTADO]' : undefined,
+        confirmPassword: (dataToSend as any).confirmPassword ? '[OCULTADO]' : undefined
       });
       
       const response = await fetch(endpoint, {

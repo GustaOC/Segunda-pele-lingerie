@@ -396,7 +396,7 @@ Por favor, entre em contato para os próximos passos.
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedConsultants.map((lead) => (
+                {paginatedConsultants.map((lead: any) => (
                   <TableRow key={lead.id} className="border-b border-white/30 hover:bg-white/50">
                     <TableCell>
                       <div className="font-medium text-slate-800" style={{ fontFamily: "var(--font-inter)" }}>{lead.consultant?.nome}</div>

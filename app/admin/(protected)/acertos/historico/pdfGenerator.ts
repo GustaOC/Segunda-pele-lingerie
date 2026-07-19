@@ -21,7 +21,7 @@ export async function generateAcertoPDF(acerto: any) {
 
   const { data: allReturns } = await supabase.from('inventory_transactions').select('product_id, quantity, color, size, notes').like('notes', '%Devolu%').like('notes', '%Acerto%');
 
-  const kitDetails = [];
+  const kitDetails: any[] = [];
   
   if (acerto.details && acerto.details.length > 0) {
       const { data: prods } = await supabase.from('products').select('id, price, category_id');

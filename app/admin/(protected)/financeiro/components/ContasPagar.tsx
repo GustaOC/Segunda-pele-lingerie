@@ -70,7 +70,7 @@ export default function ContasPagar() {
       const totalParsed = parseFloat(formData.total_value);
       const valorPorParcela = totalParsed / qtdParcelas;
       
-      const payload = [];
+      const payload: any[] = [];
       
       for (let i = 0; i < qtdParcelas; i++) {
         // We add i months to the base date. Adding 'T12:00:00' prevents timezone bugs.

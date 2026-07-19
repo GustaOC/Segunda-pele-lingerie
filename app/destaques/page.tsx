@@ -63,7 +63,7 @@ export default function DestaquesPage() {
       // Merge and deduplicate
       const merged = [...(manualHighlights || []), ...popularProducts]
       const uniqueIds = new Set()
-      const finalProducts = []
+      const finalProducts: any[] = []
 
       for (const p of merged) {
         if (!uniqueIds.has(p.id)) {

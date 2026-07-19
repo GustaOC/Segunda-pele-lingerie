@@ -7,7 +7,7 @@ export function createClient() {
   const cookieStore = cookies()
 
   // Create a server-side client with the cookies passed in
-  return createServerClient<Database>(
+  return createServerClient<any>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
