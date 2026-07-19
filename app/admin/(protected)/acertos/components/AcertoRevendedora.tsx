@@ -264,8 +264,8 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                       
                   if (invData) {
                       await (supabase.from('promoter_inventory') as any).update({ 
-                          quantity: invData.quantity + item.returned 
-                      }).eq('id', invData.id);
+                          quantity: (invData as any).quantity + item.returned 
+                      }).eq('id', (invData as any).id);
                   } else {
                       await (supabase.from('promoter_inventory') as any).insert({
                           promoter_id: targetPromoterId,
@@ -444,7 +444,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
               promoterName = session.user.user_metadata.name;
           } else if (reseller?.promoter_id) {
               const { data: pData } = await supabase.from('profiles').select('nome').eq('id', reseller.promoter_id).maybeSingle();
-              if (pData) promoterName = pData.nome;
+              if (pData) promoterName = (pData as any).nome;
           }
           
           const match = kit.name?.match(/\[PAGO:([\d.]+)\]/);
