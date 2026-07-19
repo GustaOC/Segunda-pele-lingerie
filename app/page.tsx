@@ -179,7 +179,6 @@ export default function EcommerceHome() {
               fill
               quality={100}
               sizes="(max-width: 768px) 100vw, 50vw"
-              style={{ objectFit: "cover", objectPosition: "top" }}
               className="object-cover object-top hover:scale-105 transition-transform duration-[20s]"
               priority
             />
@@ -309,8 +308,7 @@ export default function EcommerceHome() {
               <Link 
                 key={cat.id} 
                 href={`/categoria/${cat.slug}`} 
-                className="group block relative w-[280px] sm:w-[300px] h-[400px] rounded-3xl overflow-hidden shadow-lg cursor-pointer flex-none snap-start isolate"
-                style={{ transform: "translateZ(0)", WebkitMaskImage: "-webkit-radial-gradient(white, black)" }}
+                className="group block relative w-[280px] sm:w-[300px] h-[400px] rounded-3xl overflow-hidden shadow-lg cursor-pointer flex-none snap-start"
               >
                 <Image 
                   src={cat.image} 
@@ -318,7 +316,6 @@ export default function EcommerceHome() {
                   fill 
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   quality={100}
-                  style={{ objectFit: "cover" }}
                   className="object-cover group-hover:scale-110 transition-transform duration-700" 
                 />
                 <div className="absolute inset-0 opacity-90 group-hover:opacity-100 transition-opacity duration-300" style={{ background: "linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 50%, rgba(0,0,0,0) 100%)" }}></div>
@@ -407,7 +404,6 @@ export default function EcommerceHome() {
                   <Image src={product.image || "https://images.unsplash.com/photo-1565597920392-1262d1ec8656?q=80&w=800"} 
                     alt={product.name} 
                     fill 
-                    style={{ objectFit: "cover" }}
                     className="object-cover group-hover:scale-105 transition-transform duration-500" 
                   />
                   
@@ -474,7 +470,6 @@ export default function EcommerceHome() {
                 src="/modelovitrine2.jpg" 
                 alt="Seja uma Revendedora" 
                 fill 
-                style={{ objectFit: "cover", objectPosition: "top" }}
                 className="object-cover object-top"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
