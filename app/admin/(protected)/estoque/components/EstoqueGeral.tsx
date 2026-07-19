@@ -66,7 +66,7 @@ export default function EstoqueGeral() {
     const { data: { session } } = await supabase.auth.getSession()
     if (session) {
       const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).maybeSingle()
-      setUserRole(profile?.role || session.user.user_metadata?.role || "")
+      setUserRole((profile as any)?.role || session.user.user_metadata?.role || "")
     }
 
     // Fetch products
