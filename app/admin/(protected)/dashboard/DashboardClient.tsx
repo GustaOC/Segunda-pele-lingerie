@@ -4,7 +4,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
-import type { User } from "@supabase/supabase-js";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 import useSWR, { mutate } from 'swr';
 import { CadastroClienteModal } from "../../components/CadastroClienteModal";
 
@@ -84,7 +84,7 @@ const monthlyEvolution = [
   { mes: "Mar", cadastros: 134, aprovados: 98, vendas: 478000 }
 ];
 
-export default function DashboardClient({ user }: { user: User }) {
+export default function DashboardClient({ user }: { user: SupabaseUser }) {
     const router = useRouter();
     const { toast } = useToast();
 

@@ -215,6 +215,7 @@ export interface Database {
         }
       }
     }
+    & { [key: string]: any }
     Views: {
       [_ in never]: never
     }
