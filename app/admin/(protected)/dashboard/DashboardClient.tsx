@@ -337,7 +337,7 @@ export default function DashboardClient({ user }: { user: SupabaseUser }) {
     const handleApprove = async (leadId: string) => {
         setIsUpdating(leadId);
         try {
-            const response = await fetch(`/api/leads/id/approve`, {
+            const response = await fetch(`/api/leads/${leadId}/approve`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -371,7 +371,7 @@ export default function DashboardClient({ user }: { user: SupabaseUser }) {
     const handleReject = async (leadId: string) => {
         setIsUpdating(leadId);
         try {
-            const response = await fetch(`/api/leads/id/reject`, {
+            const response = await fetch(`/api/leads/${leadId}/reject`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
