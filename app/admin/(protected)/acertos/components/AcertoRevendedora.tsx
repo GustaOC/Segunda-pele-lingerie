@@ -94,7 +94,7 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
 
     if (data) {
         if (isPromoter) {
-            const nonFinalized = data.filter(k => !k.name?.includes('[FINALIZADO]'));
+            const nonFinalized = (data as any[]).filter(k => !k.name?.includes('[FINALIZADO]'));
             if (nonFinalized.length > 0) {
                 setKits([nonFinalized[0]]);
                 setSelectedKitId(nonFinalized[0].id);
@@ -102,9 +102,9 @@ export default function AcertoRevendedora({ isPromoter }: { isPromoter: boolean 
                 setKits([]);
             }
         } else {
-            setKits(data);
-            if (data.length > 0) {
-                setSelectedKitId(data[0].id);
+            setKits(data as any[]);
+            if ((data as any[]).length > 0) {
+                setSelectedKitId((data as any[])[0].id);
             }
         }
     }
