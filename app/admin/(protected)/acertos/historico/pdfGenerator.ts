@@ -28,11 +28,11 @@ export async function generateAcertoPDF(acerto: any) {
       const { data: cats } = await supabase.from('categories').select('id, name');
       
       const catMap = new Map();
-      if (cats) cats.forEach(c => catMap.set(c.id, c.name.toLowerCase()));
+      if (cats) (cats as any[]).forEach(c => catMap.set(c.id, c.name.toLowerCase()));
 
       const productsMap = new Map();
       if (prods) {
-          prods.forEach(p => {
+          (prods as any[]).forEach(p => {
               const catName = p.category_id ? catMap.get(p.category_id) : '';
               productsMap.set(p.id, { price: p.price, isRoupa: catName && catName.includes('roupa') });
           });
@@ -48,14 +48,15 @@ export async function generateAcertoPDF(acerto: any) {
               .single();
               
           if (kitData) {
+              const kData = kitData as any;
               let soldNormal = 0;
               let soldRoupas = 0;
               
-              if (kitData.items) {
-                  kitData.items.forEach((item: any) => {
+              if (kData.items) {
+                  kData.items.forEach((item: any) => {
                       let returnedQty = 0;
                       if (allReturns) {
-                          const itemReturns = allReturns.filter((r: any) => r.notes.includes(`[Kit: ${kitId}]`) && r.product_id === item.product_id && r.color === item.color && r.size === item.size);
+                          const itemReturns = (allReturns as any[]).filter((r: any) => r.notes.includes(`[Kit: ${kitId}]`) && r.product_id === item.product_id && r.color === item.color && r.size === item.size);
                           itemReturns.forEach((r: any) => returnedQty += r.quantity);
                       }
                       
@@ -69,7 +70,7 @@ export async function generateAcertoPDF(acerto: any) {
               }
 
               const actualSold = soldNormal + soldRoupas;
-              const percentSold = kitData.total_price > 0 ? (actualSold / kitData.total_price) * 100 : 0;
+              const percentSold = kData.total_price > 0 ? (actualSold / kData.total_price) * 100 : 0;
               
               let cp = 0;
               if (percentSold >= 100) cp = 40;
@@ -79,12 +80,12 @@ export async function generateAcertoPDF(acerto: any) {
               const revComm = (soldNormal * (cp / 100)) + (soldRoupas * 0.25);
               
               kitDetails.push({
-                  kit: kitData,
+                  kit: kData,
                   actualSold,
                   revComm,
                   cp,
-                  items: kitData.items,
-                  reseller: kitData.resellers
+                  items: kData.items,
+                  reseller: kData.resellers
               });
           }
       }
@@ -131,7 +132,7 @@ export async function generateAcertoPDF(acerto: any) {
   const { data: allProds } = await supabase.from('products').select('id, name, sku, price');
   const prodInfoMap = new Map();
   if (allProds) {
-      allProds.forEach(p => prodInfoMap.set(p.id, p));
+      (allProds as any[]).forEach(p => prodInfoMap.set(p.id, p));
   }
 
   for (const kitInfo of kitDetails) {
@@ -197,7 +198,7 @@ export async function generateAcertoPDF(acerto: any) {
       }
       
       if (allReturns) {
-          const kitReturns = allReturns.filter((ret: any) => ret.notes.includes(`[Kit: ${k.id}]`));
+          const kitReturns = (allReturns as any[]).filter((ret: any) => ret.notes.includes(`[Kit: ${k.id}]`));
           kitReturns.forEach((ret: any) => {
               const key = `${ret.product_id}_${ret.size || ''}_${ret.color || ''}`;
               if (combinedItems.has(key)) {
