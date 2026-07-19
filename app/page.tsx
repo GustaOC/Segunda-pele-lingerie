@@ -315,10 +315,11 @@ export default function EcommerceHome() {
                   src={cat.image} 
                   alt={cat.name} 
                   fill 
+                  unoptimized={true}
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   quality={100}
-                  style={{ objectFit: "cover" }}
-                  className="object-cover group-hover:scale-110 transition-transform duration-700" 
+                  style={{ objectFit: "cover", WebkitTransform: "translateZ(0)" }}
+                  className="object-cover group-hover:scale-110 transition-transform duration-700 backface-hidden will-change-transform" 
                 />
                 <div className="absolute inset-0 bg-[linear-gradient(to_top,rgba(0,0,0,0.9)_0%,rgba(0,0,0,0)_50%)] opacity-90 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div className="absolute bottom-6 left-0 w-full text-center">
