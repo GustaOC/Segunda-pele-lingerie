@@ -179,6 +179,7 @@ export default function EcommerceHome() {
               fill
               quality={100}
               sizes="(max-width: 768px) 100vw, 50vw"
+              style={{ objectFit: "cover", objectPosition: "top" }}
               className="object-cover object-top hover:scale-105 transition-transform duration-[20s]"
               priority
             />
@@ -316,6 +317,7 @@ export default function EcommerceHome() {
                   fill 
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                   quality={100}
+                  style={{ objectFit: "cover" }}
                   className="object-cover group-hover:scale-110 transition-transform duration-700" 
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
@@ -404,6 +406,7 @@ export default function EcommerceHome() {
                   <Image src={product.image || "https://images.unsplash.com/photo-1565597920392-1262d1ec8656?q=80&w=800"} 
                     alt={product.name} 
                     fill 
+                    style={{ objectFit: "cover" }}
                     className="object-cover group-hover:scale-105 transition-transform duration-500" 
                   />
                   
@@ -470,6 +473,7 @@ export default function EcommerceHome() {
                 src="/modelovitrine2.jpg" 
                 alt="Seja uma Revendedora" 
                 fill 
+                style={{ objectFit: "cover", objectPosition: "top" }}
                 className="object-cover object-top"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
