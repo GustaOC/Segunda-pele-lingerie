@@ -45,24 +45,14 @@ export default function SucessoPage() {
           Seu pedido foi recebido e já estamos preparando com muito carinho para o envio.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10 text-left">
-          <div className="bg-brand-peach/50 p-6 rounded-2xl border border-brand-peach flex items-start space-x-4">
+        <div className="flex justify-center mb-10 text-left">
+          <div className="bg-brand-peach/50 p-6 rounded-2xl border border-brand-peach flex items-start space-x-4 max-w-md w-full">
             <div className="bg-white p-2 rounded-full shadow-sm text-brand-plum">
               <Package className="w-6 h-6" />
             </div>
             <div>
               <h4 className="font-bold text-slate-900">Rastreamento</h4>
               <p className="text-sm text-slate-500 mt-1">Em breve você receberá o código de rastreio no seu e-mail.</p>
-            </div>
-          </div>
-          
-          <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 flex items-start space-x-4">
-            <div className="bg-white p-2 rounded-full shadow-sm text-brand-rose">
-              <Heart className="w-6 h-6" />
-            </div>
-            <div>
-              <h4 className="font-bold text-slate-900">Mimo Exclusivo</h4>
-              <p className="text-sm text-slate-500 mt-1">Um presente surpresa foi adicionado à sua caixinha!</p>
             </div>
           </div>
         </div>
