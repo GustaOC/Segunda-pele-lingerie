@@ -15,16 +15,19 @@ export async function POST(req: NextRequest) {
     }
 
     // ====== PAGAMENTO FANTASMA TEMPORÁRIO ======
-    // Dá baixa no estoque diretamente
+    // Dá baixa no estoque e cria histórico de venda
     for (const item of items) {
-      if (!item.id || !item.color || !item.size) continue;
+      if (!item.id) continue;
       
+      const itemColor = item.color || 'Cor Única';
+      const itemSize = item.size || 'U';
+
       const { data: invData } = await supabase
         .from('inventory')
         .select('id, quantity')
         .eq('product_id', item.id)
-        .eq('color', item.color)
-        .eq('size', item.size)
+        .eq('color', itemColor)
+        .eq('size', itemSize)
         .single();
         
       if (invData && invData.quantity >= Number(item.quantity)) {
@@ -32,6 +35,19 @@ export async function POST(req: NextRequest) {
           .from('inventory')
           .update({ quantity: invData.quantity - Number(item.quantity) })
           .eq('id', invData.id);
+          
+        // Cria o registro no histórico de vendas (PDV/Vendas)
+        await supabase
+          .from('transactions')
+          .insert({
+            product_id: item.id,
+            type: 'OUT_RETAIL',
+            quantity: Number(item.quantity),
+            price: Number(item.unit_price || item.price),
+            color: itemColor,
+            size: itemSize,
+            user_id: payer?.email ? null : undefined // mock simplificado
+          });
       }
     }
 
