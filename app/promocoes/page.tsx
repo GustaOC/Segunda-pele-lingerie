@@ -35,6 +35,7 @@ export default function SalePage() {
       const { data, error } = await supabase
         .from('products')
         .select('*, inventory(quantity)')
+        .eq('is_active', true)
         .not('old_price', 'is', null)
 
       if (error || !data || data.length === 0) {
@@ -45,6 +46,21 @@ export default function SalePage() {
     }
     fetchProducts()
   }, [supabase, supabase.auth])
+
+  const handleDeleteProduct = async (e: React.MouseEvent, productId: string) => {
+    e.preventDefault()
+    if (!confirm("Tem certeza que deseja excluir este produto do e-commerce? Ele será desativado, mas continuará no estoque.")) return
+    
+    try {
+      const res = await fetch(`/api/products/${productId}/deactivate`, { method: 'POST' })
+      if (!res.ok) throw new Error("Erro ao desativar produto")
+      
+      setProducts(products.filter(p => p.id !== productId))
+    } catch (err) {
+      console.error(err)
+      alert("Não foi possível excluir o produto.")
+    }
+  }
 
   return (
     <div className={`min-h-screen bg-slate-50 ${inter.variable} ${playfair.variable} font-sans`}>
@@ -79,7 +95,7 @@ export default function SalePage() {
                   Oferta
                 </div>
                 {isAdmin ? (
-                  <button onClick={(e) => { e.preventDefault(); alert("Produto excluído (mock)"); }} className="absolute top-4 right-4 z-20 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-red-500 hover:text-white hover:bg-red-500 shadow-md transition-colors translate-x-4 group-hover:translate-x-0 opacity-0 group-hover:opacity-100 duration-300">
+                  <button onClick={(e) => handleDeleteProduct(e, product.id)} className="absolute top-4 right-4 z-20 w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-red-500 hover:text-white hover:bg-red-500 shadow-md transition-colors translate-x-4 group-hover:translate-x-0 opacity-0 group-hover:opacity-100 duration-300">
                     <Trash2 className="w-5 h-5" />
                   </button>
                 ) : (

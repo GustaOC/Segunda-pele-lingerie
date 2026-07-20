@@ -31,6 +31,7 @@ export default function DestaquesPage() {
       const { data: manualHighlights } = await supabase
         .from('products')
         .select('*, inventory(quantity)')
+        .eq('is_active', true)
         .eq('is_highlight', true)
 
       // Fetch cart items to find most added products
@@ -55,7 +56,8 @@ export default function DestaquesPage() {
       if (topProductIds.length > 0) {
         const { data: popData } = await supabase
           .from('products')
-        .select('*, inventory(quantity)')
+          .select('*, inventory(quantity)')
+          .eq('is_active', true)
           .in('id', topProductIds)
         if (popData) popularProducts = popData
       }
@@ -78,6 +80,21 @@ export default function DestaquesPage() {
 
     fetchHighlights()
   }, [supabase])
+
+  const handleDeleteProduct = async (e: React.MouseEvent, productId: string) => {
+    e.preventDefault()
+    if (!confirm("Tem certeza que deseja excluir este produto do e-commerce? Ele será desativado, mas continuará no estoque.")) return
+    
+    try {
+      const res = await fetch(`/api/products/${productId}/deactivate`, { method: 'POST' })
+      if (!res.ok) throw new Error("Erro ao desativar produto")
+      
+      setProducts(products.filter(p => p.id !== productId))
+    } catch (err) {
+      console.error(err)
+      alert("Não foi possível excluir o produto.")
+    }
+  }
 
   return (
     <div className={`min-h-screen bg-slate-50 ${inter.variable} ${playfair.variable} font-sans`}>
@@ -113,7 +130,7 @@ export default function DestaquesPage() {
                   {isAdmin ? (
                     <div className="absolute top-4 right-4 z-20 flex flex-col gap-2">
                       <HighlightButton productId={product.id} initialHighlight={product.is_highlight} className="w-10 h-10 bg-white/90 backdrop-blur rounded-full shadow-md translate-x-4 group-hover:translate-x-0 opacity-0 group-hover:opacity-100 duration-300 hover:scale-110" />
-                      <button onClick={(e) => { e.preventDefault(); alert("Produto excluído (mock)"); }} className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-red-500 hover:text-white hover:bg-red-500 shadow-md transition-colors translate-x-4 group-hover:translate-x-0 opacity-0 group-hover:opacity-100 duration-300">
+                      <button onClick={(e) => handleDeleteProduct(e, product.id)} className="w-10 h-10 bg-white/90 backdrop-blur rounded-full flex items-center justify-center text-red-500 hover:text-white hover:bg-red-500 shadow-md transition-colors translate-x-4 group-hover:translate-x-0 opacity-0 group-hover:opacity-100 duration-300">
                         <Trash2 className="w-5 h-5" />
                       </button>
                     </div>

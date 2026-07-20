@@ -78,6 +78,7 @@ export default function CategoryPage({ params }: { params: { slug: string } }) {
       const { data: productsData, error: prodError } = await supabase
         .from('products')
         .select('*, inventory(quantity)')
+        .eq('is_active', true)
         .in('category_id', allowedCategoryIds)
       
       if (!prodError && productsData) {
