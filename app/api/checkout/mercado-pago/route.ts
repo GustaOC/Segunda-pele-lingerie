@@ -19,15 +19,15 @@ export async function POST(req: NextRequest) {
     for (const item of items) {
       if (!item.id) continue;
       
-      const itemColor = item.color || 'Cor Única';
       const itemSize = item.size || 'U';
 
+      // Removemos o filtro de cor porque a tabela cart_items atual não salva a cor
       const { data: invData } = await supabase
         .from('inventory')
-        .select('id, quantity')
+        .select('id, quantity, color')
         .eq('product_id', item.id)
-        .eq('color', itemColor)
         .eq('size', itemSize)
+        .limit(1)
         .single();
         
       if (invData && invData.quantity >= Number(item.quantity)) {
@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
             type: 'OUT_RETAIL',
             quantity: Number(item.quantity),
             price: Number(item.unit_price || item.price),
-            color: itemColor,
+            color: invData.color || 'Cor Única',
             size: itemSize,
             user_id: payer?.email ? null : undefined // mock simplificado
           });
