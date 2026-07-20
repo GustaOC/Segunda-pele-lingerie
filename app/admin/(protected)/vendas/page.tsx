@@ -631,7 +631,7 @@ export default function VendasPage() {
               <ArrowLeft className="w-5 h-5 text-slate-600" />
             </button>
             <h1 className="text-3xl font-bold text-slate-800" style={{ fontFamily: "var(--font-playfair)" }}>
-              PDV / Vendas
+              Vendas e Trocas
             </h1>
           </div>
           <p className="text-slate-500">Registre saídas e trocas para dar baixa no estoque automaticamente.</p>
