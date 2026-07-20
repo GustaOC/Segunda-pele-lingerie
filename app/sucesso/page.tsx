@@ -1,7 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { CheckCircle, Heart, Package, ArrowRight } from "lucide-react"
+import { CheckCircle, Heart, Receipt, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { Playfair_Display, Inter } from "next/font/google"
 import Confetti from 'react-confetti'
@@ -48,11 +48,11 @@ export default function SucessoPage() {
         <div className="flex justify-center mb-10 text-left">
           <div className="bg-brand-peach/50 p-6 rounded-2xl border border-brand-peach flex items-start space-x-4 max-w-md w-full">
             <div className="bg-white p-2 rounded-full shadow-sm text-brand-plum">
-              <Package className="w-6 h-6" />
+              <Receipt className="w-6 h-6" />
             </div>
             <div>
-              <h4 className="font-bold text-slate-900">Rastreamento</h4>
-              <p className="text-sm text-slate-500 mt-1">Em breve você receberá o código de rastreio no seu e-mail.</p>
+              <h4 className="font-bold text-slate-900">Nota Fiscal</h4>
+              <p className="text-sm text-slate-500 mt-1">A nota fiscal do seu pedido foi enviada para o seu e-mail.</p>
             </div>
           </div>
         </div>
