@@ -1,5 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
+import { MercadoPagoConfig, Preference } from "mercadopago";
 import { createClient } from "@supabase/supabase-js";
+
+// Inicializa o cliente do Mercado Pago com o Access Token
+const accessToken = process.env.MP_ACCESS_TOKEN || "TEST-8730999516641619-070802-dc90e6a8e52e4fb803d35ef2e4df8e1c-164478796";
+const client = new MercadoPagoConfig({ accessToken });
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
@@ -14,67 +19,76 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Carrinho vazio" }, { status: 400 });
     }
 
-    // ====== PAGAMENTO FANTASMA TEMPORÁRIO ======
-    // Dá baixa no estoque e cria histórico de venda
-    for (const item of items) {
-      if (!item.id) continue;
-      
-      const itemColor = item.color || 'Cor Única';
-      const itemSize = item.size || 'U';
+    const userId = metadata?.user_id || payer?.email || "anonymous";
 
-      const { data: invData } = await supabase
-        .from('inventory')
-        .select('id, quantity, color')
-        .eq('product_id', item.id)
-        .eq('color', itemColor)
-        .eq('size', itemSize)
-        .single();
-        
-      if (invData && invData.quantity >= Number(item.quantity)) {
-        await supabase
-          .from('inventory')
-          .update({ quantity: invData.quantity - Number(item.quantity) })
-          .eq('id', invData.id);
-          
-        // Cria o registro no histórico de vendas (PDV/Vendas financeiro)
-        await supabase
-          .from('transactions')
-          .insert({
-            product_id: item.id,
-            type: 'OUT_RETAIL',
-            quantity: Number(item.quantity),
-            price: Number(item.unit_price || item.price),
-            color: invData.color || 'Cor Única',
-            size: itemSize,
-            user_id: payer?.email ? null : undefined // mock simplificado
-          });
-          
-        // Cria o registro no histórico do ESTOQUE GERAL
-        await supabase
-          .from('inventory_transactions')
-          .insert({
-            product_id: item.id,
-            type: 'OUT_RETAIL',
-            quantity: -Number(item.quantity), // negativo porque é saída
-            color: invData.color || 'Cor Única',
-            size: itemSize,
-            notes: 'Venda Ecommerce (Teste)'
-          });
-      }
+    // Calcular total
+    let total = items.reduce((acc: number, item: any) => acc + (Number(item.quantity) * Number(item.unit_price || item.price)), 0);
+    if (shippingCost) total += shippingCost;
+
+    // Criar o pedido na tabela orders como "pending"
+    const { data: orderData, error: orderError } = await supabase.from('orders').insert({
+      user_id: metadata?.user_id || null,
+      status: 'pending',
+      total: total,
+    }).select('id').single();
+
+    if (orderError) {
+      console.error("Erro ao criar pedido:", orderError);
+      return NextResponse.json({ error: "Erro interno ao criar pedido" }, { status: 500 });
     }
 
-    // Retorna direto para a tela de sucesso
-    return NextResponse.json({ 
-      init_point: `/sucesso`, 
-      id: "PAGAMENTO-FANTASMA-TESTE" 
-    }, { status: 200 });
-    // ===========================================
+    const orderId = orderData.id;
 
-  } catch (error: any) {
-    console.error("Erro no pagamento fantasma:", error);
-    return NextResponse.json(
-      { error: "Erro interno ao processar pagamento." },
-      { status: 500 }
-    );
+    // Inserir os itens na tabela order_items
+    const orderItemsToInsert = items.map((item: any) => ({
+      order_id: orderId,
+      product_id: item.id,
+      quantity: Number(item.quantity),
+      size: item.size || 'U',
+      color: item.color || null,
+      price_at_time: Number(item.unit_price || item.price)
+    }));
+
+    await supabase.from('order_items').insert(orderItemsToInsert);
+
+    // Preparar os metadados para o Mercado Pago
+    const enrichedMetadata = {
+      ...metadata,
+      order_id: orderId
+    };
+
+    // Criar preferência no Mercado Pago
+    const host = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+    
+    const preference = new Preference(client);
+    const result = await preference.create({
+      body: {
+        items: items.map((item: any) => ({
+          id: item.id,
+          title: item.title || item.name,
+          quantity: Number(item.quantity),
+          unit_price: Number(item.unit_price || item.price)
+        })),
+        payer: {
+          email: payer?.email || "teste@teste.com",
+          name: payer?.name || "Teste",
+        },
+        back_urls: {
+          success: `${host}/sucesso`,
+          failure: `${host}/checkout`,
+          pending: `${host}/checkout`
+        },
+        auto_return: "approved",
+        metadata: enrichedMetadata, // Contém o order_id para o webhook processar
+      }
+    });
+
+    return NextResponse.json({ 
+      init_point: result.init_point, 
+      id: result.id 
+    }, { status: 200 });
+  } catch (error) {
+    console.error("Erro na API Mercado Pago:", error);
+    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }
