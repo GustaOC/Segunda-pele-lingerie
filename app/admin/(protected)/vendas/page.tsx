@@ -888,14 +888,25 @@ export default function VendasPage() {
                       <label className="block text-sm font-medium text-slate-700 mb-1">Cor *</label>
                       <select required={returnCartItems.length === 0} disabled={!!selectedTransactionId || !returnProductId} value={returnColor} onChange={(e) => setReturnColor(e.target.value)} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-70 disabled:bg-slate-100">
                         <option value="" disabled>Selecione...</option>
-                        {returnProductObj?.colors?.map((c:any, i:number) => <option key={i} value={c.name}>{c.name}</option>)}
+                        {returnProductObj?.colors && returnProductObj.colors.length > 0 ? (
+                          returnProductObj.colors.map((c:any, i:number) => <option key={i} value={c.name}>{c.name}</option>)
+                        ) : (
+                          <option value="Cor Única">Cor Única</option>
+                        )}
                       </select>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-1">Tamanho *</label>
                       <select required={returnCartItems.length === 0} disabled={!!selectedTransactionId || !returnProductId} value={returnSize} onChange={(e) => setReturnSize(e.target.value)} className="w-full bg-white border border-amber-200 rounded-xl px-4 py-3 outline-none focus:border-amber-400 text-sm disabled:opacity-70 disabled:bg-slate-100">
                         <option value="" disabled>Selecione...</option>
-                        {returnProductObj?.sizes?.map((s:any, i:number) => <option key={i} value={s}>{s}</option>) || ["P","M","G","GG"].map(s => <option key={s} value={s}>{s}</option>)}
+                        {returnProductObj?.sizes && returnProductObj.sizes.length > 0 ? (
+                          returnProductObj.sizes.map((s:any, i:number) => <option key={i} value={s}>{s}</option>)
+                        ) : (
+                          <>
+                            <option value="U">U (Tamanho Único)</option>
+                            {["P","M","G","GG"].map(s => <option key={s} value={s}>{s}</option>)}
+                          </>
+                        )}
                       </select>
                     </div>
                   </div>
@@ -973,7 +984,11 @@ export default function VendasPage() {
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm disabled:opacity-50"
                     >
                       <option value="" disabled>Selecione...</option>
-                      {selectedProductObj?.colors?.map((c: any, i: number) => <option key={i} value={c.name}>{c.name}</option>)}
+                      {selectedProductObj?.colors && selectedProductObj.colors.length > 0 ? (
+                        selectedProductObj.colors.map((c: any, i: number) => <option key={i} value={c.name}>{c.name}</option>)
+                      ) : (
+                        <option value="Cor Única">Cor Única</option>
+                      )}
                     </select>
                   </div>
                   <div>
@@ -986,7 +1001,14 @@ export default function VendasPage() {
                       className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm disabled:opacity-50"
                     >
                       <option value="" disabled>Selecione...</option>
-                      {selectedProductObj?.sizes?.map((s: string, i: number) => <option key={i} value={s}>{s}</option>) || ["P","M","G","GG"].map(s => <option key={s} value={s}>{s}</option>)}
+                      {selectedProductObj?.sizes && selectedProductObj.sizes.length > 0 ? (
+                        selectedProductObj.sizes.map((s: string, i: number) => <option key={i} value={s}>{s}</option>)
+                      ) : (
+                        <>
+                          <option value="U">U (Tamanho Único)</option>
+                          {["P","M","G","GG"].map(s => <option key={s} value={s}>{s}</option>)}
+                        </>
+                      )}
                     </select>
                   </div>
                 </div>

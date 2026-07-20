@@ -707,9 +707,13 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm disabled:opacity-50"
                   >
                     <option value="" disabled>Selecione a cor...</option>
-                    {selectedProductObj?.colors?.map((c: any, i: number) => (
-                      <option key={i} value={c.name}>{c.name}</option>
-                    ))}
+                    {selectedProductObj?.colors && selectedProductObj.colors.length > 0 ? (
+                      selectedProductObj.colors.map((c: any, i: number) => (
+                        <option key={i} value={c.name}>{c.name}</option>
+                      ))
+                    ) : (
+                      <option value="Cor Única">Cor Única</option>
+                    )}
                   </select>
                 </div>
                 
@@ -723,7 +727,14 @@ created_by: (await supabase.auth.getSession()).data.session?.user?.id,
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm disabled:opacity-50"
                   >
                     <option value="" disabled>Selecione...</option>
-                    {selectedProductObj?.sizes?.map((s: string, i: number) => <option key={i} value={s}>{s}</option>) || ["P", "M", "G", "GG"].map(s => <option key={s} value={s}>{s}</option>)}
+                    {selectedProductObj?.sizes && selectedProductObj.sizes.length > 0 ? (
+                      selectedProductObj.sizes.map((s: string, i: number) => <option key={i} value={s}>{s}</option>)
+                    ) : (
+                      <>
+                        <option value="U">U (Tamanho Único)</option>
+                        {["P", "M", "G", "GG"].map(s => <option key={s} value={s}>{s}</option>)}
+                      </>
+                    )}
                   </select>
                 </div>
               </div>
