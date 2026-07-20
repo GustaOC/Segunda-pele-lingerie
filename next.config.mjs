@@ -8,6 +8,18 @@ const nextConfig = {
   },
   // Configuração para transpilar módulos se necessário (opcional)
   transpilePackages: ['bcryptjs'],
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'zmamgftjxnivlwudgzqm.supabase.co',
+      }
+    ],
+  },
 }
 
 export default nextConfig
