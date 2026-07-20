@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
           .update({ quantity: invData.quantity - Number(item.quantity) })
           .eq('id', invData.id);
           
-        // Cria o registro no histórico de vendas (PDV/Vendas)
+        // Cria o registro no histórico de vendas (PDV/Vendas financeiro)
         await supabase
           .from('transactions')
           .insert({
@@ -47,6 +47,18 @@ export async function POST(req: NextRequest) {
             color: invData.color || 'Cor Única',
             size: itemSize,
             user_id: payer?.email ? null : undefined // mock simplificado
+          });
+          
+        // Cria o registro no histórico do ESTOQUE GERAL
+        await supabase
+          .from('inventory_transactions')
+          .insert({
+            product_id: item.id,
+            type: 'OUT_RETAIL',
+            quantity: -Number(item.quantity), // negativo porque é saída
+            color: invData.color || 'Cor Única',
+            size: itemSize,
+            notes: 'Venda Ecommerce (Teste)'
           });
       }
     }
