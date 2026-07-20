@@ -23,21 +23,30 @@ export default function CarrinhoPage() {
     const fetchCartItems = async (user: any) => {
       const { data, error } = await supabase
         .from('cart_items')
-        .select('id, quantity, size, product_id, products(*)')
+        .select('id, quantity, size, color, product_id, products(*)')
         .eq('user_id', user.id)
 
-      if (!error && data) {
-        // Mapear para o formato do layout, filtrando itens que perderam o produto
+      if (!error && data && data.length > 0) {
         const mappedItems = data.filter(item => item.products).map(item => {
           const p: any = item.products;
+          
+          let displayImage = p.image;
+          if (item.color && p.colors && Array.isArray(p.colors)) {
+            const matchedColor = p.colors.find((c: any) => c.name.toLowerCase() === item.color.toLowerCase());
+            if (matchedColor && matchedColor.images && matchedColor.images.length > 0) {
+              displayImage = matchedColor.images[0];
+            }
+          }
+
           return {
             cart_id: item.id,
             id: item.product_id,
             name: p.name,
             price: p.price,
             old_price: p.old_price,
-            image: p.image,
+            image: displayImage,
             size: item.size || 'U',
+            color: item.color,
             quantity: item.quantity
           }
         })
@@ -171,7 +180,12 @@ export default function CarrinhoPage() {
                   
                   <div className="flex-1 text-center sm:text-left">
                     <h3 className="text-xl font-bold text-slate-900 mb-1" style={{ fontFamily: "var(--font-playfair)" }}>{item.name}</h3>
-                    <p className="text-slate-500 mb-2">Tamanho: <span className="font-medium text-slate-900">{item.size}</span></p>
+                  <div className="mb-2">
+                    <p className="text-slate-500 inline-block mr-4">Tamanho: <span className="font-medium text-slate-900">{item.size}</span></p>
+                    {item.color && (
+                      <p className="text-slate-500 inline-block">Cor: <span className="font-medium text-slate-900 capitalize">{item.color}</span></p>
+                    )}
+                  </div>
                     <p className="text-brand-plum font-bold text-lg">R$ {item.price.toFixed(2).replace('.', ',')}</p>
                   </div>
 

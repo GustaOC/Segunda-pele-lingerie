@@ -148,11 +148,18 @@ export default function ProdutoPage() {
         return
       }
 
+      // Validação: Exigir que a cor seja selecionada se houver cores
+      if (product.colors && product.colors.length > 0 && !selectedColor) {
+        alert("Por favor, selecione uma cor antes de adicionar ao carrinho.")
+        return
+      }
+
       const { error } = await supabase.from('cart_items').insert({
         user_id: user.id,
         product_id: product.id,
         quantity: 1,
-        size: selectedSize
+        size: selectedSize,
+        color: selectedColor ? selectedColor.name : null
       })
 
       if (!error) {

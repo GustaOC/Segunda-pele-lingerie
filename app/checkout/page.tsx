@@ -31,20 +31,30 @@ export default function CheckoutPage() {
     const fetchCartItems = async (user: any) => {
       const { data, error } = await supabase
         .from('cart_items')
-        .select('id, quantity, size, product_id, products(*)')
+        .select('id, quantity, size, color, product_id, products(*)')
         .eq('user_id', user.id)
 
       if (!error && data && data.length > 0) {
         const mappedItems = data.filter(item => item.products).map(item => {
           const p: any = item.products;
+          
+          let displayImage = p.image;
+          if (item.color && p.colors && Array.isArray(p.colors)) {
+            const matchedColor = p.colors.find((c: any) => c.name.toLowerCase() === item.color.toLowerCase());
+            if (matchedColor && matchedColor.images && matchedColor.images.length > 0) {
+              displayImage = matchedColor.images[0];
+            }
+          }
+
           return {
             cart_id: item.id,
             id: item.product_id,
             name: p.name,
             price: p.price,
             old_price: p.old_price,
-            image: p.image,
+            image: displayImage,
             size: item.size || 'U',
+            color: item.color,
             quantity: item.quantity
           }
         })

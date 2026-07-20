@@ -19,15 +19,15 @@ export async function POST(req: NextRequest) {
     for (const item of items) {
       if (!item.id) continue;
       
+      const itemColor = item.color || 'Cor Única';
       const itemSize = item.size || 'U';
 
-      // Removemos o filtro de cor porque a tabela cart_items atual não salva a cor
       const { data: invData } = await supabase
         .from('inventory')
         .select('id, quantity, color')
         .eq('product_id', item.id)
+        .eq('color', itemColor)
         .eq('size', itemSize)
-        .limit(1)
         .single();
         
       if (invData && invData.quantity >= Number(item.quantity)) {
