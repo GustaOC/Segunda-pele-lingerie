@@ -400,16 +400,20 @@ export default function AtivarEcommercePage() {
                     {subCategoryId && categories.find(c => c.id === mainCategoryId)?.children?.find((c: any) => c.id === subCategoryId)?.children?.length > 0 && (
                       <div>
                         <label className="block text-sm font-medium text-slate-700 mb-2">Modelo (Opcional)</label>
-                        <select 
-                          value={modelId} 
-                          onChange={(e) => setModelId(e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-brand-plum text-sm"
-                        >
-                          <option value="">Nenhum modelo específico</option>
-                          {categories.find(c => c.id === mainCategoryId)?.children?.find((c: any) => c.id === subCategoryId)?.children?.map((model: any) => (
-                            <option key={model.id} value={model.id}>{model.name}</option>
-                          ))}
-                        </select>
+                        <SearchableSelect
+                          options={[
+                            { value: "none", label: "Nenhum modelo específico" },
+                            ...(categories.find(c => c.id === mainCategoryId)?.children?.find((c: any) => c.id === subCategoryId)?.children?.map((model: any) => ({
+                              value: model.id,
+                              label: model.name,
+                              searchString: model.name
+                            })) || [])
+                          ]}
+                          value={modelId || "none"}
+                          onChange={(val) => setModelId(val === "none" ? "" : val)}
+                          placeholder="Selecione ou pesquise um modelo..."
+                          className="w-full bg-slate-50 border-slate-200 rounded-xl text-sm h-[46px]"
+                        />
                       </div>
                     )}
                   </div>
